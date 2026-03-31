@@ -108,14 +108,14 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     verandah.name = "Cottage_Verandah"
     verandah.scale = (VERANDAH_LENGTH/2, VERANDAH_WIDTH/2, VERANDAH_HEIGHT/2) 
     bpy.ops.object.transform_apply(scale=True)
-    verandah.data.materials.append(create_material("VerandahWood", (0.6, 0.4, 0.2, 1)))
+    verandah.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
 
     # Apply shadowclad grooves to the cottage shell
     # apply_shadowclad_grooves("Cottage_Shell", W, H, spacing=0.15)
     
     # Add windows on North, East, and West faces
     window_z = oz + 1.2  # 1.2m above ground
-    add_window("Cottage_Shell", position=(ox-1, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=0.4)  # North
+    add_window("Cottage_Shell", position=(ox-1.2, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=0.4)  # North
     add_window("Cottage_Shell", position=(ox+2, oy - D/2, oz+1.6), width=1.0, height=1.125, depth=0.4)  # North
     #add_window("Cottage_Shell", position=(ox + W/2, oy, window_z), width=1.0, height=1.0, depth=D)  # East
     #add_window("Cottage_Shell", position=(ox - W/2, oy, window_z), width=1.0, height=1.0, depth=D)  # West

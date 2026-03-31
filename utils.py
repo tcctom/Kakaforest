@@ -73,7 +73,7 @@ def apply_shadowclad_grooves(target_name, width, height, spacing=0.150):
     master_cutter.hide_viewport = True
     master_cutter.hide_render = True
 
-def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thickness=0.05):
+def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thickness=0.05, axis='Y', inward_offset=None):
     """
     Adds a window to a wall by cutting a hole and adding glass.
     
@@ -84,6 +84,8 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
         height: Window height in meters (default 1.4m) 
         depth: Wall depth to cut through (default 0.5m)
         frame_thickness: Thickness of window frame (default 0.05m)
+        axis: 'Y' for north/south walls (default), 'X' for east/west walls
+        inward_offset: Override auto-detection: '+X', '-X', '+Y', '-Y' or None for auto
     """
     wall = bpy.data.objects.get(wall_name)
     if not wall:
@@ -92,15 +94,40 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
     
     x, y, z = position
     
-    # Position adjustments - offset inward from wall face
-    # The position given is the outer wall face, so offset by depth/2 to get center
-    y_offset = depth / 2  # Offset inward from the face
+    # Determine offset direction based on axis and wall name/position
+    if axis == 'Y':  # North/South walls (perpendicular to Y axis)
+        if inward_offset:
+            y_off = depth/2 if inward_offset == '+Y' else -depth/2
+        else:
+            y_off = depth / 2  # Default: offset inward (+Y for north walls)
+        center_offset = (x, y + y_off, z)
+        cutter_dims = (width, depth * 1.1, height)
+        frame_dims = (width, depth * 0.9, height)
+        frame_cutter_dims = (width - frame_thickness*2, depth * 0.9 + 0.04, height - frame_thickness*2)
+        glass_dims = (width - frame_thickness*2, 0.004, height - frame_thickness*2)
+    else:  # axis == 'X': East/West walls (perpendicular to X axis)
+        # For X-axis walls, determine offset from wall name or explicit parameter
+        if inward_offset:
+            x_off = depth/2 if inward_offset == '+X' else -depth/2
+        elif 'West' in wall_name:
+            x_off = depth/2  # West wall: offset eastward (+X) to go inward
+        elif 'East' in wall_name:
+            x_off = -depth/2  # East wall: offset westward (-X) to go inward
+        else:
+            # Fallback to position comparison
+            x_off = depth/2 if x < wall.location.x else -depth/2
+        
+        center_offset = (x + x_off, y, z)
+        cutter_dims = (depth * 1.1, width, height)
+        frame_dims = (depth * 0.9, width, height)
+        frame_cutter_dims = (depth * 0.9 + 0.04, width - frame_thickness*2, height - frame_thickness*2)
+        glass_dims = (0.004, width - frame_thickness*2, height - frame_thickness*2)
     
     # Create window opening (cutter) - positioned at center of wall thickness
-    bpy.ops.mesh.primitive_cube_add(location=(x, y + y_offset, z))
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
     cutter = bpy.context.active_object
     cutter.name = f"Window_Opening_{wall_name}"
-    cutter.dimensions = (width, depth * 1.1, height)  # Slightly oversized to ensure clean cut
+    cutter.dimensions = cutter_dims  # Slightly oversized to ensure clean cut
     
     # Add Boolean modifier to wall (use EXACT solver for clean cuts)
     bool_mod = wall.modifiers.new(name="Window_Cut", type='BOOLEAN')
@@ -114,11 +141,10 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
     
     # Create window frame (painted wood) - positioned slightly inward
     # Use most of the depth for the frame so it's visible
-    frame_depth = depth * 0.9
-    bpy.ops.mesh.primitive_cube_add(location=(x, y + y_offset, z))
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
     frame = bpy.context.active_object
     frame.name = f"Window_Frame_{wall_name}"
-    frame.dimensions = (width, frame_depth, height)
+    frame.dimensions = frame_dims
     
     # Create frame material (painted wood - white/cream)
     frame_mat = bpy.data.materials.get("WindowFrame") or bpy.data.materials.new(name="WindowFrame")
@@ -134,9 +160,9 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
         frame.data.materials[0] = frame_mat
     
     # Cut hole in frame for glass  
-    bpy.ops.mesh.primitive_cube_add(location=(x, y + y_offset, z))
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
     frame_cutter = bpy.context.active_object
-    frame_cutter.dimensions = (width - frame_thickness*2, frame_depth + 0.04, height - frame_thickness*2)
+    frame_cutter.dimensions = frame_cutter_dims
     
     bool_mod = frame.modifiers.new(name="Frame_Opening", type='BOOLEAN')
     bool_mod.object = frame_cutter
@@ -147,10 +173,10 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
     frame_cutter.hide_render = True
     
     # Create glass pane (transparent) - centered in the opening
-    bpy.ops.mesh.primitive_cube_add(location=(x, y + y_offset, z))
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
     glass = bpy.context.active_object
     glass.name = f"Window_Glass_{wall_name}"
-    glass.dimensions = (width - frame_thickness*2, 0.004, height - frame_thickness*2)
+    glass.dimensions = glass_dims
     
     # Glass material with proper transparency
     glass_mat = bpy.data.materials.get("Glass") or bpy.data.materials.new(name="Glass")

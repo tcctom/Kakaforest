@@ -15,6 +15,16 @@ This project creates a modular site planning system for architectural visualizat
 - `utils.py` - Shared utility functions (shadowclad grooves, windows, materials)
 - Module reloading pattern used for iterative development
 
+## Coordinate System
+- **Origin**: (0, 0, 0) is ground level  
+- **X-axis**: West (+X) / East (-X)
+  - Red cottage (Björken) at X=0 is on the EAST side
+  - Wet wing at X=11 is on the WEST side
+- **Y-axis**: South (+Y) / North (-Y) 
+- **Z-axis**: Up (+Z) / Down (-Z)
+- Building fronts typically face North (-Y direction)
+- When adding windows: use `axis='Y'` for north/south walls, `axis='X'` for east/west walls
+
 ## Coding Conventions
 - Use `# type: ignore` comment after `import bpy` to suppress type checking warnings
 - Functions use tuple unpacking for origin coordinates: `ox, oy, oz = origin`
