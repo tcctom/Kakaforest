@@ -214,10 +214,23 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     
     bpy.ops.mesh.primitive_cube_add(location=(verandah_x, verandah_y, verandah_z))
     verandah = bpy.context.active_object
-    verandah.name = "WetWing_Verandah"
+    verandah.name = "WetWing_Verandah_North"
     verandah.scale = (VERANDAH_LENGTH/2, VERANDAH_WIDTH/2, VERANDAH_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     verandah.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
+    
+    # Verandah along east face (1.5m x 7.5m - extends to overlap with north verandah)
+    verandah_east_length = D + VERANDAH_WIDTH  # 6m + 1.5m = 7.5m
+    verandah_east_x = ox - W/2 - VERANDAH_WIDTH/2  # East of building (negative X)
+    verandah_east_y = oy - VERANDAH_WIDTH/2  # Shifted north to extend past north wall
+    verandah_east_z = oz + VERANDAH_HEIGHT/2  # Just above ground
+    
+    bpy.ops.mesh.primitive_cube_add(location=(verandah_east_x, verandah_east_y, verandah_east_z))
+    verandah_east = bpy.context.active_object
+    verandah_east.name = "WetWing_Verandah_East"
+    verandah_east.scale = (VERANDAH_WIDTH/2, verandah_east_length/2, VERANDAH_HEIGHT/2)  # Width in X, length in Y
+    bpy.ops.object.transform_apply(scale=True)
+    verandah_east.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
     
     # Add furniture
     wet_wing_furniture.build_wet_wing_furniture(origin=(ox, oy, oz), building_width=W, building_depth=D, exterior_wall_thickness=EXTERIOR_WALL_THICKNESS)
