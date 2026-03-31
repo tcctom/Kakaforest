@@ -11,6 +11,7 @@ if dir not in sys.path:
 import björken_module
 import wet_wing_module
 import wet_wing_furniture
+import ground_module
 import utils
 
 # Reload modules to pick up any changes
@@ -18,12 +19,20 @@ reload(utils)
 reload(björken_module)
 reload(wet_wing_module)
 reload(wet_wing_furniture)
+reload(ground_module)
 
 def cleanup():
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
 
 cleanup()
+
+# Toggle features on/off
+SHOW_GROUND = True  # Set to False to hide ground terrain
+
+# 0. Build ground terrain (optional)
+if SHOW_GROUND:
+    ground_module.build_ground_terrain(cottage_origin=(0, 0, 0))
 
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing

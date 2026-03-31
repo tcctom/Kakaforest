@@ -16,13 +16,50 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     EXTERIOR_WALL_THICKNESS = 0.15  # 150mm exterior walls
     INTERIOR_WALL_THICKNESS = 0.11  # 110mm interior walls 
     
-    # Main Shell
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + H/2))
-    cottage = bpy.context.active_object
-    cottage.name = "Cottage_Shell"
-    cottage.scale = (W/2, D/2, H/2)
+    # Create red cottage material
+    red_mat = create_material("RedCottage", (0.7, 0.05, 0.05, 1))
+    
+    # Build 4 exterior walls as separate solid boxes
+    # North Wall (-Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy - D/2 + EXTERIOR_WALL_THICKNESS/2, oz + H/2))
+    north_wall = bpy.context.active_object
+    north_wall.name = "Cottage_NorthWall"
+    north_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H/2)
     bpy.ops.object.transform_apply(scale=True)
-    cottage.data.materials.append(create_material("RedCottage", (0.7, 0.05, 0.05, 1)))
+    north_wall.data.materials.append(red_mat)
+    
+    # South Wall (+Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy + D/2 - EXTERIOR_WALL_THICKNESS/2, oz + H/2))
+    south_wall = bpy.context.active_object
+    south_wall.name = "Cottage_SouthWall"
+    south_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H/2)
+    bpy.ops.object.transform_apply(scale=True)
+    south_wall.data.materials.append(red_mat)
+    
+    # East Wall (-X side, negative X = east direction)
+    wall_depth = D - 2*EXTERIOR_WALL_THICKNESS
+    bpy.ops.mesh.primitive_cube_add(location=(ox - W/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz + H/2))
+    east_wall = bpy.context.active_object
+    east_wall.name = "Cottage_EastWall"
+    east_wall.scale = (EXTERIOR_WALL_THICKNESS/2, wall_depth/2, H/2)
+    bpy.ops.object.transform_apply(scale=True)
+    east_wall.data.materials.append(red_mat)
+    
+    # West Wall (+X side, positive X = west direction)
+    bpy.ops.mesh.primitive_cube_add(location=(ox + W/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz + H/2))
+    west_wall = bpy.context.active_object
+    west_wall.name = "Cottage_WestWall"
+    west_wall.scale = (EXTERIOR_WALL_THICKNESS/2, wall_depth/2, H/2)
+    bpy.ops.object.transform_apply(scale=True)
+    west_wall.data.materials.append(red_mat)
+    
+    # Floor
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + 0.05))
+    floor = bpy.context.active_object
+    floor.name = "Cottage_Floor"
+    floor.scale = (W/2, D/2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+    floor.data.materials.append(create_material("FloorWood", (0.5, 0.35, 0.2, 1)))
 
     # Verandah dimensions (defined early for roof calculation)
     VERANDAH_LENGTH = 4.0  # meters (along north face, X-direction)
@@ -110,15 +147,15 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     bpy.ops.object.transform_apply(scale=True)
     verandah.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
 
-    # Apply shadowclad grooves to the cottage shell
-    # apply_shadowclad_grooves("Cottage_Shell", W, H, spacing=0.15)
-    
-    # Add windows on North, East, and West faces
-    window_z = oz + 1.2  # 1.2m above ground
-    add_window("Cottage_Shell", position=(ox-1.2, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=0.4)  # North
-    add_window("Cottage_Shell", position=(ox+2, oy - D/2, oz+1.6), width=1.0, height=1.125, depth=0.4)  # North
-    #add_window("Cottage_Shell", position=(ox + W/2, oy, window_z), width=1.0, height=1.0, depth=D)  # East
-    #add_window("Cottage_Shell", position=(ox - W/2, oy, window_z), width=1.0, height=1.0, depth=D)  # West
-    
+    # Add windows on North wall
+    add_window("Cottage_NorthWall", position=(ox-1.2, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("Cottage_NorthWall", position=(ox+2, oy - D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS)
+
+    # Add window on East wall (east = -X direction)
+    add_window("Cottage_EastWall", position=(ox - W/2, oy - 0.8, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+
+    # Add window on West wall (west = +X direction)
+    add_window("Cottage_WestWall", position=(ox + W/2, oy - 0.8, oz + 1.6), width=0.8, height=1.125, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+
     # Add white corner trim to all 4 exterior corners
     add_corner_trim(origin=(ox, oy, oz), width=W, depth=D, height=H)
