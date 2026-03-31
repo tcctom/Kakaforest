@@ -1,7 +1,8 @@
 import bpy  # type: ignore
 import math
 
-from utils import create_corrugated_iron_material, add_corner_trim, add_window
+from utils import create_corrugated_iron_material, add_corner_trim, add_window, add_door
+import wet_wing_furniture
 
 def create_material(name, color):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name=name)
@@ -134,6 +135,11 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     interior_wall.location = (ox, oy, oz)
     interior_wall.data.materials.append(create_material("InteriorWhite", (0.95, 0.95, 0.95, 1)))
     
+    # Add door to interior wall - 2m from north wall (north wall is at oy - D/2)
+    # Interior wall runs N-S along X=0, so use axis='X' for the cut
+    door_y_position = oy - D/2 + 2.0  # 2 meters from north wall
+    add_door("WetWing_InteriorWall", position=(ox, door_y_position, oz), width=0.9, height=2.1, depth=INTERIOR_WALL_THICKNESS, axis='X')
+    
     # Skillion Roof (HIGH ON NORTH: -Y)
     if show_roof:  # Set show_roof=False in function call to hide roof
         bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + ROOF_HEIGHT_CENTER))
@@ -189,7 +195,14 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     # Add window on West face (0.5m wide, 1.2m tall, 0.8m off floor, 0.5m in from north)  
     # West = +X side (higher X values = west)
     add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 0.5, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 2.5, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
+    add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 4.5, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 1.5, oz + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+
+
+
+
     # Verandah along north face (1.5m x 6m)
     VERANDAH_LENGTH = W  # 6.0m - full width of building
     VERANDAH_WIDTH = 1.5  # meters (depth from building, Y-direction)
@@ -205,3 +218,6 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     verandah.scale = (VERANDAH_LENGTH/2, VERANDAH_WIDTH/2, VERANDAH_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     verandah.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
+    
+    # Add furniture
+    wet_wing_furniture.build_wet_wing_furniture(origin=(ox, oy, oz), building_width=W, building_depth=D, exterior_wall_thickness=EXTERIOR_WALL_THICKNESS)

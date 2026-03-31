@@ -268,4 +268,50 @@ def add_corner_trim(origin, width, depth, height, trim_width=0.15, trim_depth=0.
     
     return trim_objects
 
+def add_door(wall_name, position, width=0.9, height=2.1, depth=0.5, axis='Y'):
+    """
+    Adds a door opening to a wall by cutting a hole.
+    
+    Args:
+        wall_name: Name of the wall object to cut into
+        position: (x, y, z) world position for door bottom center at wall surface
+        width: Door width in meters (default 0.9m - standard single door)
+        height: Door height in meters (default 2.1m - standard door height)
+        depth: Wall depth to cut through (default 0.5m)
+        axis: 'Y' for north/south walls (default), 'X' for east/west walls
+    """
+    wall = bpy.data.objects.get(wall_name)
+    if not wall:
+        print(f"Wall '{wall_name}' not found")
+        return
+    
+    x, y, z = position
+    door_center_z = z + height/2  # Center height of door opening
+    
+    # Position cutter at the wall's location (no offset needed for simple opening)
+    if axis == 'Y':  # North/South walls (perpendicular to Y axis)
+        center_offset = (x, y, door_center_z)
+        cutter_dims = (width, depth * 1.2, height)
+    else:  # axis == 'X': East/West walls (perpendicular to X axis)
+        center_offset = (x, y, door_center_z)
+        cutter_dims = (depth * 1.2, width, height)
+    
+    # Create door opening (cutter) - positioned at wall center
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
+    cutter = bpy.context.active_object
+    cutter.name = f"Door_Opening_{wall_name}"
+    cutter.dimensions = cutter_dims  # Oversized to ensure clean cut through entire wall
+    
+    # Add Boolean modifier to wall (use EXACT solver for clean cuts)
+    bool_mod = wall.modifiers.new(name="Door_Cut", type='BOOLEAN')
+    bool_mod.object = cutter
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.solver = 'EXACT'
+    
+    # Move cutter to separate collection and hide it
+    cutter.hide_viewport = True
+    cutter.hide_render = True
+    
+    return cutter
+
 
