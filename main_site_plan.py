@@ -24,10 +24,13 @@ def cleanup():
 cleanup()
 
 # 1. Build existing cottage
+# Set show_roof=False to hide roof for interior viewing
 björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 2. Build Wet Wing at your specific coords
 # Moved 9m West (+X) and 4m South (+Y)
+# Set show_roof=False to hide roof for interior viewing
 wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 2.7))
+#wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 2.7), show_roof=False)
 
 print("Modular Site Build Complete.")
