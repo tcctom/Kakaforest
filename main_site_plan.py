@@ -40,21 +40,25 @@ if SHOW_GROUND:
     
     #misc = [point(0, -10, -4.5),point(0, -11, -4.5)]
     
-    badminton = grid_points((-7, -10, -4.5), (15, -14, -4.5), x_spacing=0.5)
+    badminton = grid_points((-7, -10, -3), (5, -14, -3), x_spacing=0.5)
     under_björken = grid_points((-7, -2.5, -0.5), (5, 3.1, -0.5), x_spacing=0.5)
     north_björken = grid_points((-4, -2.5, -0.5), (1, -6, -0.5), x_spacing=0.5)
     
+    south_björken = grid_points((-3, 3.1, -0.5), (3, 5.1, 1.8), x_spacing=0.5,slope_direction='y')
+    southwest_björken = grid_points((3, 3.1, -0.5), (13, 9.1, 1.8), x_spacing=0.5,slope_direction='y')
+
     # Ridge 3m south of cottage, 2m above floor level
-    ridge = line_points((-3, 5.1, 2), (4, 5.1, 2), spacing=0.5)
-    ridge2 = line_points((-4, 6.1, 2.2), (6, 6.1, 2.2), spacing=0.5)
+#    ridge = line_points((-3, 5.1, 2), (4, 5.1, 2), spacing=0.5)
+#    ridge2 = line_points((-4, 6.1, 2.2), (6, 6.1, 2.2), spacing=0.5)
     
     # Valley area northeast, 2m below floor level
-    drive_end_parking = grid_points((6, -8, -2), (12, -5, -2), x_spacing=0.5)
-    drive_border_slope = grid_points((6, -8, -2), (12, -9, -2.7), x_spacing=0.25)
-    slope1 = grid_points((6, -9, -2.7), (12, -14, -3.7), x_spacing=0.25)
+    drive_end_parking = grid_points((6, -8, -2), (15, -4, -2), x_spacing=0.5)
+    drive_end_parking2 = grid_points((7, -4, -2), (10, -2, -2), x_spacing=0.5)
+    #drive_border_slope = grid_points((6, -8, -2), (15, -9, -2.7), x_spacing=0.25,slope_direction='y')
+    #slope1 = grid_points((6, -10, -2.7), (12, -9, -2.7), x_spacing=0.25,slope_direction='y')
     
     # Combine all survey points
-    survey_points = combine_points(badminton, under_björken, north_björken, ridge, ridge2, drive_end_parking, drive_border_slope, slope1)
+    survey_points = combine_points(badminton, under_björken, north_björken, south_björken, southwest_björken, drive_end_parking, drive_end_parking2)
     
     ground_module.build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=survey_points,)
         #ground_module.build_ground_terrain(cottage_origin=(0, 0, 0))
@@ -66,7 +70,7 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 # 2. Build Wet Wing at your specific coords
 # Moved 9m West (+X) and 4m South (+Y)
 # Set show_roof=False to hide roof for interior viewing
-wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 0.7))
+wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
 #wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 2.7), show_roof=False)
 
 print("Modular Site Build Complete.")

@@ -49,18 +49,22 @@ def line_points(start, end, num_points=None, spacing=None):
     
     return points
 
-def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None):
+def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None, slope_direction='xy'):
     """
     Generate a rectangular grid of points with bilinear interpolation for slopes.
     
-    The Z elevation is interpolated diagonally between the two opposite corners.
-    This creates a planar slope from corner1 to corner2.
+    The Z elevation is interpolated between the two opposite corners.
+    The slope direction controls how the interpolation occurs.
     
     Args:
         corner1: (x, y, z) first corner
         corner2: (x, y, z) opposite corner
         x_spacing: Spacing in X direction (meters)
         y_spacing: Spacing in Y direction (meters), defaults to x_spacing
+        slope_direction: How to interpolate Z values: 'x', 'y', or 'xy'/'diagonal'
+            'x': slope only in X direction (constant along Y)
+            'y': slope only in Y direction (constant along X)
+            'xy' or 'diagonal': diagonal slope (default)
     
     Returns:
         List of (x, y, z) tuples
@@ -69,8 +73,11 @@ def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None):
         # Flat 1m grid at elevation 0
         grid_points((-5,-5,0), (5,5,0), x_spacing=1.0)
         
-        # Sloped grid: SW corner at -2m, NE corner at -3.7m
-        grid_points((6,-8,-2), (12,-14,-3.7), x_spacing=0.5)
+        # Sloped grid along X axis: SW corner at -2m, NE corner at -3.7m
+        grid_points((6,-8,-2), (12,-14,-3.7), x_spacing=0.5, slope_direction='x')
+        
+        # Diagonal slope (default behavior)
+        grid_points((6,-8,-2), (12,-14,-3.7), x_spacing=0.5, slope_direction='xy')
     """
     if y_spacing is None:
         y_spacing = x_spacing
@@ -91,11 +98,18 @@ def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None):
             tx = (x - x_min) / (x_max - x_min) if x_max > x_min else 0
             ty = (y - y_min) / (y_max - y_min) if y_max > y_min else 0
             
-            # Bilinear interpolation for Z
-            # This creates a plane between the two opposite corners
-            # The diagonal interpolation factor combines both X and Y position
-            t_diagonal = (tx + ty) / 2  # Average of both directions
-            z = z1 + t_diagonal * (z2 - z1)
+            # Interpolate Z based on slope direction
+            if slope_direction == 'x':
+                # Slope only in X direction (constant along Y)
+                t = tx
+            elif slope_direction == 'y':
+                # Slope only in Y direction (constant along X)
+                t = ty
+            else:  # 'xy' or 'diagonal'
+                # Diagonal slope - average of both directions
+                t = (tx + ty) / 2
+            
+            z = z1 + t * (z2 - z1)
             
             points.append((x, y, z))
             y += y_spacing
