@@ -11,6 +11,8 @@ if dir not in sys.path:
 import björken_module
 import wet_wing_module
 import wet_wing_furniture
+import wet_wing_option2_module
+import wet_wing_option2_furniture
 import ground_module
 import utils
 
@@ -19,6 +21,8 @@ reload(utils)
 reload(björken_module)
 reload(wet_wing_module)
 reload(wet_wing_furniture)
+reload(wet_wing_option2_module)
+reload(wet_wing_option2_furniture)
 reload(ground_module)
 
 def cleanup():
@@ -67,10 +71,19 @@ if SHOW_GROUND:
 # Set show_roof=False to hide roof for interior viewing
 björken_module.build_red_cottage(origin=(0, 0, 0))
 
-# 2. Build Wet Wing at your specific coords
+# 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y)
 # Set show_roof=False to hide roof for interior viewing
-wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
-#wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 2.7), show_roof=False)
+# wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
+
+# 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
+# Main building: 10m wide (X) × 6m deep (Y)
+wet_wing_option2_module.build_potius_wet_wing_option2(origin=(11.0, 4.0, 2.4), show_roof=True)
+# Under extension: 10m wide (X) × 4m deep (Y), positioned beneath the main building
+wet_wing_option2_module.build_under_extension(origin=(11.0, 3.0, 0))
+
+
+
+
 
 print("Modular Site Build Complete.")
