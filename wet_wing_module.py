@@ -194,8 +194,8 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     
     # Add window on West face (0.5m wide, 1.2m tall, 0.8m off floor, 0.5m in from north)  
     # West = +X side (higher X values = west)
-    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 0.5, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 2.5, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 0.6, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 3.2, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 4.5, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 1.5, oz + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
