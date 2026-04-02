@@ -97,15 +97,16 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y)
 # Set show_roof=False to hide roof for interior viewing
-wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
+#wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
-# Main building: 10m wide (X) × 6m deep (Y)
-#wet_wing_option2_module.build_potius_wet_wing_option2(origin=(12.0, 4.0, 2.4), show_roof=True)
-# Add furniture to wet wing option 2
-#wet_wing_option2_furniture.build_wet_wing_option2_furniture(origin=(12.0, 4.0, 2.4), building_width=10.0, building_depth=6.0)
-# Under extension: 10m wide (X) × 4m deep (Y), positioned beneath the main building
-#wet_wing_option2_module.build_under_extension(origin=(12.0, 3.0, 0))
+# Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
+wet_wing_option2_module.build_potius_wet_wing_option2(origin=(12.0, 4.0, 2.4), show_roof=False)
+wet_wing_option2_furniture.build_wet_wing_option2_furniture(origin=(12.0, 4.0, 2.4), building_width=10.0, building_depth=6.0)
+
+# Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
+wet_wing_option2_module.build_under_extension(origin=(12.0, 3.0, 0))
+wet_wing_option2_furniture.build_under_extension_furniture(origin=(12.0, 3.0, 0), building_width=10.0, building_depth=4.0)
 
 
 

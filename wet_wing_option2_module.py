@@ -11,11 +11,19 @@ def create_material(name, color):
     return mat
 
 def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_roof=False to hide roof
+    """
+    Build a two-level wet wing with:
+    - Lower Level (40m²): 10m x 4m - Entry & Utility wing
+    - Upper Level (60m²): 10m x 6m - Sanctuary wing
+    
+    Layout:
+    - Lower: Mudroom (SW corner), staircase, guest suite + bathroom/laundry
+    - Upper: Great room (full 10m north wall), master suite (SE corner), deck
+    """
     ox, oy, oz = origin
     W, D = 10.0, 6.0  # Changed from 6.0, 6.0 to 10.0 (X-width), 6.0 (Y-depth)
     H_BASE = 2.4
     EXTERIOR_WALL_THICKNESS = 0.15  # 150mm exterior walls
-    INTERIOR_WALL_THICKNESS = 0.11  # 110mm interior wall
     ROOF_PITCH = 12  # degrees (skillion roof pitch)
     ROOF_HEIGHT_CENTER = 3.2  # meters above origin
     roof_thickness = 0.05
@@ -102,43 +110,10 @@ def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_r
     bpy.ops.object.transform_apply(scale=True)
     floor.data.materials.append(create_material("FloorWood", (0.5, 0.35, 0.2, 1)))
     
-    # Interior Wall - North to South divider in the middle with sloped top
-    mesh = bpy.data.meshes.new("InteriorWallMesh")
-    interior_wall = bpy.data.objects.new("WetWing2_InteriorWall", mesh)
-    bpy.context.collection.objects.link(interior_wall)
-    
-    half_thick_int = INTERIOR_WALL_THICKNESS / 2
-    
-    verts = [
-        # Bottom face
-        (-half_thick_int, -half_depth, 0),  # 0: N bottom west
-        (half_thick_int, -half_depth, 0),   # 1: N bottom east
-        (half_thick_int, half_depth, 0),    # 2: S bottom east
-        (-half_thick_int, half_depth, 0),   # 3: S bottom west
-        # Top face (north is taller)
-        (-half_thick_int, -half_depth, H_NORTH),  # 4: N top west
-        (half_thick_int, -half_depth, H_NORTH),   # 5: N top east
-        (half_thick_int, half_depth, H_SOUTH),    # 6: S top east
-        (-half_thick_int, half_depth, H_SOUTH),   # 7: S top west
-    ]
-    
-    faces = [
-        (0, 1, 2, 3),    # Bottom
-        (4, 5, 6, 7),    # Top (sloped)
-        (0, 4, 5, 1),    # North end
-        (2, 6, 7, 3),    # South end
-        (1, 5, 6, 2),    # East face
-        (3, 7, 4, 0),    # West face
-    ]
-    
-    mesh.from_pydata(verts, [], faces)
-    interior_wall.location = (ox, oy, oz)
-    interior_wall.data.materials.append(create_material("InteriorWhite", (0.95, 0.95, 0.95, 1)))
-    
-    # Add door to interior wall - 2m from north wall (north wall is at oy - D/2)
-    # Interior wall runs N-S along X=0, so use axis='X' for the cut
-    door_y_position = oy - D/2 + 2.0  # 2 meters from north wall
-    add_door("WetWing2_InteriorWall", position=(ox, door_y_position, oz), width=0.9, height=2.1, depth=INTERIOR_WALL_THICKNESS, axis='X')
+    # === UPPER LEVEL (60m²) - This entire 10m x 6m building ===
+    # This is the sanctuary wing - great room with full north wall, master suite
+    # The lower level (40m²) is a separate 10m x 4m structure built by build_under_extension()
+    # No internal floor division needed - this whole building is one open upper level
     
     # Skillion Roof (HIGH ON NORTH: -Y)
     if show_roof:  # Set show_roof=False in function call to hide roof
@@ -298,14 +273,35 @@ def build_under_extension(origin=(0,0,0)):
     sw_trim.data.materials.append(trim_mat)
     
     # Add windows on North face - spread across the 10m wide wall
-    add_window("UnderExt_NorthWall", position=(ox-3.0, oy - D/2, oz+1.1), width=1.5, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("UnderExt_NorthWall", position=(ox-0.5, oy - D/2, oz+1.1), width=1.5, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("UnderExt_NorthWall", position=(ox+2.0, oy - D/2, oz+1.1), width=1.5, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("UnderExt_NorthWall", position=(ox-3.0, oy - D/2, oz+1.1), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("UnderExt_NorthWall", position=(ox-0.5, oy - D/2, oz+1.1), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("UnderExt_NorthWall", position=(ox+2.0, oy - D/2, oz+1.1), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
     
     # Add windows on West and East walls - 4m deep walls
-    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.0, oz + 1.2), width=0.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.0, oz + 1.2), width=2.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
-    add_window("UnderExt_EastWall", position=(ox - W/2, oy - D/2 + 2.0, oz + 1.2), width=0.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("UnderExt_EastWall", position=(ox - W/2, oy + D/2 - 1.0, oz + 1.2), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
-    # Add door on south wall to connect to main house
-    add_door("UnderExt_SouthWall", position=(ox, oy + D/2, oz), width=0.9, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    # Add entrance door on East wall near north wall - Mudroom entrance
+    entrance_y_position = oy - D/2 + 0.8  # 0.8m from north wall
+    add_door("UnderExt_EastWall", position=(ox - W/2, entrance_y_position, oz), width=1.1, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X')
+    
+    # Staircase going up from lower to upper level - along east wall, going south
+    # Staircase starts near the entrance and runs south (towards +Y)
+    STAIR_WIDTH = 1.2  # meters wide
+    STAIR_RUN = 3.0  # meters long (going south)
+    STAIR_HEIGHT = 2.4  # rises to upper level
+    
+    stair_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + STAIR_WIDTH/2  # Just inside east wall
+    stair_y = oy - D/2 + 1.5 + STAIR_RUN/2  # Starting 1.5m from north, running south
+    stair_z = oz + STAIR_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(stair_x, stair_y, stair_z))
+    stairs = bpy.context.active_object
+    stairs.name = "UnderExt_Staircase"
+    stairs.scale = (STAIR_WIDTH/2, STAIR_RUN/2, STAIR_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    stairs.data.materials.append(create_material("StairOak", (0.6, 0.45, 0.3, 1)))
+    
+    # Add door on south wall to connect to upper level (at top of stairs)
+    add_door("UnderExt_SouthWall", position=(ox - W/2 + STAIR_WIDTH + 0.5, oy + D/2, oz + STAIR_HEIGHT), width=0.9, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
