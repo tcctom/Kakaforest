@@ -151,22 +151,6 @@ def build_under_extension_furniture(origin=(0,0,0), building_width=10.0, buildin
     W, D = building_width, building_depth
     EXTERIOR_WALL_THICKNESS = exterior_wall_thickness
     
-    # === MUDROOM AREA (NE Corner) ===
-    # Mudroom bench near entrance on east wall (entrance is near north wall)
-    BENCH_WIDTH = 1.5
-    BENCH_DEPTH = 0.45
-    BENCH_HEIGHT = 0.45
-    
-    bench_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + BENCH_DEPTH/2
-    bench_y = oy - D/2 + 0.8  # Near entrance door on east wall
-    bench_z = oz + BENCH_HEIGHT/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(bench_x, bench_y, bench_z))
-    bench = bpy.context.active_object
-    bench.name = "UnderExt_MudroomBench"
-    bench.scale = (BENCH_DEPTH/2, BENCH_WIDTH/2, BENCH_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    bench.data.materials.append(create_material("OakFurniture", (0.6, 0.45, 0.3, 1)))
     
     # === GUEST SUITE (West Side) ===
     # Guest bed - Double bed against west wall (moved from east to avoid stairs)
@@ -202,7 +186,7 @@ def build_under_extension_furniture(origin=(0,0,0), building_width=10.0, buildin
     washer.data.materials.append(create_material("WhiteAppliance", (0.95, 0.95, 0.95, 1)))
     
     # Bathroom sink/vanity next to washer
-    SINK_WIDTH = 0.8
+    SINK_WIDTH = 2.8
     SINK_DEPTH = 0.5
     SINK_HEIGHT = 0.85
     

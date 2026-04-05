@@ -51,7 +51,7 @@ if SHOW_GROUND:
     
     # South of cottage - upward slope
     south_björken = grid_points((-3, 3.1, -0.5), (3, 5.1, 1.8), x_spacing=0.4, slope_direction='y')
-    southwest_björken = grid_points((3, 3.1, -0.5), (13, 9.1, 1.8), x_spacing=0.4, slope_direction='y')
+    southwest_björken = grid_points((4, 4.1, -0.5), (16, 11.1, 1.8), x_spacing=0.4, slope_direction='y')
     
     # PARKING & DRIVE AREAS - with natural variation (not perfectly flat)
     # Main parking area - slight undulation
@@ -101,12 +101,12 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
-wet_wing_option2_module.build_potius_wet_wing_option2(origin=(12.0, 4.0, 2.4), show_roof=False)
-wet_wing_option2_furniture.build_wet_wing_option2_furniture(origin=(12.0, 4.0, 2.4), building_width=10.0, building_depth=6.0)
+wet_wing_option2_module.build_potius_wet_wing_option2(origin=(13.0, 6.0, 2.4), show_roof=False)
+#wet_wing_option2_furniture.build_wet_wing_option2_furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
-wet_wing_option2_module.build_under_extension(origin=(12.0, 3.0, 0))
-wet_wing_option2_furniture.build_under_extension_furniture(origin=(12.0, 3.0, 0), building_width=10.0, building_depth=4.0)
+wet_wing_option2_module.build_under_extension(origin=(13.0, 5.0, 0))
+#wet_wing_option2_furniture.build_under_extension_furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
 
 
 
