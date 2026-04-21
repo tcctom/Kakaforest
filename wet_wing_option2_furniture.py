@@ -27,42 +27,14 @@ def build_wet_wing_option2_furniture(origin=(0,0,0), building_width=10.0, buildi
     
     # ==================== UPPER LEVEL (60m²) - This entire building ====================
     
-    # === GREAT ROOM (Full North Wall - 10m) ===
-    # Kitchen counter along west portion of north wall
-    KITCHEN_LENGTH = 4.0  # meters along north wall
-    KITCHEN_DEPTH = 0.65  # meters extending into room
-    KITCHEN_HEIGHT = 0.9
-    KITCHEN_TOP_THICKNESS = 0.04
-    
-    kitchen_x = ox + W/2 - KITCHEN_LENGTH/2  # West side of north wall
-    kitchen_y = oy - D/2 + EXTERIOR_WALL_THICKNESS + KITCHEN_DEPTH/2
-    kitchen_z = oz + KITCHEN_HEIGHT/2
-    
-    # Kitchen base cabinets
-    bpy.ops.mesh.primitive_cube_add(location=(kitchen_x, kitchen_y, kitchen_z))
-    kitchen_base = bpy.context.active_object
-    kitchen_base.name = "WetWing2_KitchenBase"
-    kitchen_base.scale = (KITCHEN_LENGTH/2, KITCHEN_DEPTH/2, KITCHEN_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    kitchen_base.data.materials.append(create_material("KitchenCabinet", (0.3, 0.25, 0.2, 1)))
-    
-    # Kitchen countertop
-    kitchen_top_z = oz + KITCHEN_HEIGHT + KITCHEN_TOP_THICKNESS/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(kitchen_x, kitchen_y, kitchen_top_z))
-    kitchen_top = bpy.context.active_object
-    kitchen_top.name = "WetWing2_KitchenCounter"
-    kitchen_top.scale = ((KITCHEN_LENGTH + 0.05)/2, (KITCHEN_DEPTH + 0.05)/2, KITCHEN_TOP_THICKNESS/2)
-    bpy.ops.object.transform_apply(scale=True)
-    kitchen_top.data.materials.append(create_material("WhiteCountertop", (0.88, 0.85, 0.8, 1)))
-    
+    # === GREAT ROOM ===
     # Dining table in center of great room
     TABLE_LENGTH = 2.0
     TABLE_WIDTH = 1.0
     TABLE_HEIGHT = 0.75
     TABLE_THICKNESS = 0.05
     
-    table_x = ox  # Center of room
+    table_x = ox - 3    # Center of room
     table_y = oy - D/2 + 2.5  # Middle of north half
     table_z = oz + TABLE_HEIGHT
     
@@ -79,7 +51,7 @@ def build_wet_wing_option2_furniture(origin=(0,0,0), building_width=10.0, buildi
     SOFA_HEIGHT = 0.4
     SOFA_BACK_HEIGHT = 0.8
     
-    sofa_x = ox - 1.5  # East side of great room
+    sofa_x = ox - 3  # East side of great room
     sofa_y = oy - D/2 + 3.5
     sofa_z = oz + SOFA_HEIGHT/2
     
@@ -102,14 +74,16 @@ def build_wet_wing_option2_furniture(origin=(0,0,0), building_width=10.0, buildi
     bpy.ops.object.transform_apply(scale=True)
     sofa_back.data.materials.append(create_material("SofaFabric", (0.35, 0.45, 0.5, 1)))
     
-    # === MASTER SUITE (Upper Level SE Corner) ===
-    # King bed against east wall, in SE corner
+    # === MASTER SUITE (Northwest Corner Room - 3.6m x 4m) ===
+    # King bed with headboard against west side of north-south partition wall
     MASTER_BED_WIDTH = 2.0  # meters (X-direction) - king bed
-    MASTER_BED_LENGTH = 2.0  # meters (Y-direction)
+    MASTER_BED_LENGTH = 1.8  # meters (Y-direction)
     MASTER_BED_HEIGHT = 0.5
     
-    master_bed_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + MASTER_BED_WIDTH/2
-    master_bed_y = oy + D/2 - EXTERIOR_WALL_THICKNESS - 1.5 - MASTER_BED_LENGTH/2
+    # Partition wall is at ox + W/2 - 3.6, bed is west of partition (in the NW room)
+    partition_x = ox + W/2 - 3.6
+    master_bed_x = partition_x + MASTER_BED_WIDTH/2 + 0.05  # West of partition (higher X), headboard against partition
+    master_bed_y = oy - D/2 + EXTERIOR_WALL_THICKNESS + MASTER_BED_LENGTH/2 + 1  # Near north wall
     master_bed_z = oz + MASTER_BED_HEIGHT/2
     
     bpy.ops.mesh.primitive_cube_add(location=(master_bed_x, master_bed_y, master_bed_z))
@@ -119,11 +93,11 @@ def build_wet_wing_option2_furniture(origin=(0,0,0), building_width=10.0, buildi
     bpy.ops.object.transform_apply(scale=True)
     master_bed.data.materials.append(create_material("MasterBedding", (0.25, 0.3, 0.4, 1)))
     
-    # Master bedside table
+    # Master bedside table - on west side of bed (away from partition)
     NIGHTSTAND_SIZE = 0.5
     NIGHTSTAND_HEIGHT = 0.6
     
-    nightstand_x = master_bed_x + MASTER_BED_WIDTH/2 + NIGHTSTAND_SIZE/2 + 0.1
+    nightstand_x = master_bed_x + MASTER_BED_WIDTH/2 + NIGHTSTAND_SIZE/2 + 0.1  # West side of bed (higher X)
     nightstand_y = master_bed_y
     nightstand_z = oz + NIGHTSTAND_HEIGHT/2
     
@@ -151,6 +125,34 @@ def build_under_extension_furniture(origin=(0,0,0), building_width=10.0, buildin
     W, D = building_width, building_depth
     EXTERIOR_WALL_THICKNESS = exterior_wall_thickness
     
+    # === KITCHEN (South Wall) ===
+    # Kitchen counter along south wall
+    KITCHEN_LENGTH = 4.0  # meters along south wall
+    KITCHEN_DEPTH = 0.65  # meters extending into room (northward)
+    KITCHEN_HEIGHT = 0.9
+    KITCHEN_TOP_THICKNESS = 0.04
+    
+    kitchen_x = ox  # Centered along south wall
+    kitchen_y = oy + D/2 - EXTERIOR_WALL_THICKNESS - KITCHEN_DEPTH/2
+    kitchen_z = oz + KITCHEN_HEIGHT/2
+    
+    # Kitchen base cabinets
+    bpy.ops.mesh.primitive_cube_add(location=(kitchen_x, kitchen_y, kitchen_z))
+    kitchen_base = bpy.context.active_object
+    kitchen_base.name = "UnderExt_KitchenBase"
+    kitchen_base.scale = (KITCHEN_LENGTH/2, KITCHEN_DEPTH/2, KITCHEN_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    kitchen_base.data.materials.append(create_material("KitchenCabinet", (0.3, 0.25, 0.2, 1)))
+    
+    # Kitchen countertop
+    kitchen_top_z = oz + KITCHEN_HEIGHT + KITCHEN_TOP_THICKNESS/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(kitchen_x, kitchen_y, kitchen_top_z))
+    kitchen_top = bpy.context.active_object
+    kitchen_top.name = "UnderExt_KitchenCounter"
+    kitchen_top.scale = ((KITCHEN_LENGTH + 0.05)/2, (KITCHEN_DEPTH + 0.05)/2, KITCHEN_TOP_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    kitchen_top.data.materials.append(create_material("WhiteCountertop", (0.88, 0.85, 0.8, 1)))
     
     # === GUEST SUITE (West Side) ===
     # Guest bed - Double bed against west wall (moved from east to avoid stairs)

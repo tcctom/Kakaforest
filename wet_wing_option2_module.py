@@ -102,34 +102,13 @@ def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_r
     east_wall.location = (ox - W/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz)  # EAST wall at -X (lower X = east)
     east_wall.data.materials.append(red_mat)
     
-    # Floor
+    # Floor (stairwell opening will be created from build_under_extension)
     bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + 0.05))
     floor = bpy.context.active_object
     floor.name = "WetWing2_Floor"
     floor.scale = (W/2, D/2, 0.05)
     bpy.ops.object.transform_apply(scale=True)
     floor.data.materials.append(create_material("FloorWood", (0.5, 0.35, 0.2, 1)))
-    
-    # Create stairwell opening in floor (west wall, near south edge)
-    STAIR_WIDTH_OPENING = 1.3  # slightly larger than stair width for clearance
-    STAIR_RUN_OPENING = 3.1  # slightly larger than stair run
-    #stairwell_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - STAIR_WIDTH_OPENING/2
-    stairwell_x = ox
-    stairwell_y = oy + D/2 - 1.5 - STAIR_RUN_OPENING/2  # positioned to align with stairs from below
-    
-    bpy.ops.mesh.primitive_cube_add(location=(stairwell_x, stairwell_y, oz + 0.05))
-    stairwell_cutter = bpy.context.active_object
-    stairwell_cutter.name = "StairwellCutter"
-    stairwell_cutter.scale = (STAIR_WIDTH_OPENING/2, STAIR_RUN_OPENING/2, 0.1)
-    bpy.ops.object.transform_apply(scale=True)
-    
-    # Boolean difference to cut hole in floor
-    bool_mod = floor.modifiers.new(name="StairwellCut", type='BOOLEAN')
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.object = stairwell_cutter
-    bpy.context.view_layer.objects.active = floor
-    bpy.ops.object.modifier_apply(modifier="StairwellCut")
-    bpy.data.objects.remove(stairwell_cutter, do_unlink=True)
     
     # === UPPER LEVEL (60m²) - This entire 10m x 6m building ===
     # This is the sanctuary wing - great room with full north wall, master suite
@@ -182,10 +161,10 @@ def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_r
     bpy.ops.object.transform_apply(scale=True)
     sw_trim.data.materials.append(trim_mat)
     
-    # Internal partition wall running north-south, 3.6m from west wall
+    # Internal partition wall running north-south, aligned with west edge of stairs
     INTERNAL_WALL_THICKNESS = 0.1  # 100mm internal wall
     INTERNAL_WALL_HEIGHT = 2.4  # Standard room height
-    partition_x = ox + W/2 - 3.6  # 3.6m from west wall
+    partition_x = ox + 1.2  # Aligns with west edge of staircase (stair_x + STAIR_WIDTH/2)
     
     bpy.ops.mesh.primitive_cube_add(location=(partition_x, oy, oz + INTERNAL_WALL_HEIGHT/2))
     partition_wall = bpy.context.active_object
@@ -197,10 +176,19 @@ def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_r
     white_wall_mat = create_material("WhiteWall", (0.95, 0.95, 0.95, 1))
     partition_wall.data.materials.append(white_wall_mat)
     
+    # Add two door openings in the partition wall - one near north, one near south
+    # Wall runs from oy - 2.85 to oy + 2.85 (5.7m total length)
+    # North door: 0.5m from north edge
+    add_door("WetWing2_PartitionWall", position=(partition_x, oy - D/2 + EXTERIOR_WALL_THICKNESS + 0.5, oz), 
+             width=0.9, height=2.1, depth=INTERNAL_WALL_THICKNESS, axis='X')
+    # South door: 0.5m from south edge  
+    add_door("WetWing2_PartitionWall", position=(partition_x, oy + D/2 - EXTERIOR_WALL_THICKNESS - 0.5, oz), 
+             width=0.9, height=2.1, depth=INTERNAL_WALL_THICKNESS, axis='X')
+    
     # Internal wall running east-west, 4m south of north wall, connecting west wall to partition
     cross_wall_y = oy - D/2 + 4.0  # 4m south of north wall
-    cross_wall_length = 3.6 - EXTERIOR_WALL_THICKNESS  # From west wall inner edge to partition center
-    cross_wall_x = ox + W/2 - 3.6/2 - EXTERIOR_WALL_THICKNESS/2  # Centered between west wall and partition
+    cross_wall_length = (W/2 - EXTERIOR_WALL_THICKNESS) - (partition_x - ox)  # From west wall inner edge to partition center
+    cross_wall_x = partition_x + cross_wall_length/2  # Centered between partition and west wall
     
     bpy.ops.mesh.primitive_cube_add(location=(cross_wall_x, cross_wall_y, oz + INTERNAL_WALL_HEIGHT/2))
     cross_wall = bpy.context.active_object
@@ -209,13 +197,35 @@ def build_potius_wet_wing_option2(origin=(0,0,0), show_roof=True):  # Set show_r
     bpy.ops.object.transform_apply(scale=True)
     cross_wall.data.materials.append(white_wall_mat)
     
+    # Add door opening in cross wall near west wall
+    door_x_position = ox + W/2 - EXTERIOR_WALL_THICKNESS - 0.5  # 0.5m from west wall inner edge
+    add_door("WetWing2_CrossWall", position=(door_x_position, cross_wall_y, oz), 
+             width=0.9, height=2.1, depth=INTERNAL_WALL_THICKNESS, axis='Y')
+    
+    # Additional north-south wall, 1.8m east of west wall, running from cross wall to south wall
+    ns_wall_x = ox + W/2 - 1.9  # 1.8m from west wall inner edge
+    ns_wall_length = (D/2 - EXTERIOR_WALL_THICKNESS) - (4.0 - D/2)  # From cross wall to south wall
+    ns_wall_y = cross_wall_y + ns_wall_length/2  # Centered between cross wall and south wall
+    
+    bpy.ops.mesh.primitive_cube_add(location=(ns_wall_x, ns_wall_y, oz + INTERNAL_WALL_HEIGHT/2))
+    ns_wall = bpy.context.active_object
+    ns_wall.name = "WetWing2_NSWall"
+    ns_wall.scale = (INTERNAL_WALL_THICKNESS/2, ns_wall_length/2, INTERNAL_WALL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    ns_wall.data.materials.append(white_wall_mat)
+    
     # Add windows on North face - spread across the 10m wide wall
-    add_window("WetWing2_NorthWall", position=(ox-3.3, oy - D/2, oz+1.4), width=2.0, height=1.8, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing2_NorthWall", position=(ox-3.3, oy - D/2, oz+1.4), width=2.0, height=1.6, depth=EXTERIOR_WALL_THICKNESS)
     add_window("WetWing2_NorthWall", position=(ox-3.3, oy - D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing2_NorthWall", position=(ox, oy - D/2, oz+1.4), width=2.0, height=1.8, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing2_NorthWall", position=(ox, oy - D/2, oz+1.4), width=2.0, height=1.6, depth=EXTERIOR_WALL_THICKNESS)
     add_window("WetWing2_NorthWall", position=(ox, oy - D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing2_NorthWall", position=(ox+3.3, oy - D/2, oz+1.4), width=2.0, height=1.8, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing2_NorthWall", position=(ox+3.3, oy - D/2, oz+1.4), width=2.0, height=1.6, depth=EXTERIOR_WALL_THICKNESS)
     add_window("WetWing2_NorthWall", position=(ox+3.3, oy - D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
+    
+    # Add windows on South face - spread across the 10m wide wall
+    add_window("WetWing2_SouthWall", position=(ox-3.3, oy + D/2, oz+1.4), width=2.0, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("WetWing2_SouthWall", position=(ox, oy + D/2, oz+1.4), width=2.0, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("WetWing2_SouthWall", position=(ox+3.3, oy + D/2, oz+1.4), width=2.0, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # Add windows on West face (+X side) - 6m deep wall
     add_window("WetWing2_WestWall", position=(ox + W/2, oy - D/2 + 1.3, oz + 1.4), width=1.5, height=1.4, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
@@ -391,8 +401,8 @@ def build_under_extension(origin=(0,0,0)):
     STEP_DEPTH = STAIR_RUN / NUM_STEPS  # 0.25m per step
     
     #stair_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - STAIR_WIDTH/2  # Just inside west wall
-    stair_x = ox
-    stair_start_y = oy - D/2 + 1.5  # Starting 1.5m from north wall
+    stair_x = ox + 0.6
+    stair_start_y = oy - D/2 + 1.4  # Starting 1.5m from north wall
     
     stair_mat = create_material("StairOak", (0.6, 0.45, 0.3, 1))
     
@@ -407,6 +417,44 @@ def build_under_extension(origin=(0,0,0)):
         step.scale = (STAIR_WIDTH/2, STEP_DEPTH/2, STEP_HEIGHT/2)
         bpy.ops.object.transform_apply(scale=True)
         step.data.materials.append(stair_mat)
+    
+    # === CREATE STAIRWELL OPENING IN UPPER FLOOR ===
+    # This cuts a hole in the floor above to allow the stairs to pass through
+    upper_floor_z = oz + STAIR_HEIGHT  # Upper floor is at this height
+    STAIR_WIDTH_OPENING = 1.3  # slightly larger than stair width for clearance
+    STAIR_RUN_OPENING = 3.1  # slightly larger than stair run
+    stairwell_x = stair_x  # Same X as stairs
+    stairwell_y = stair_start_y + STAIR_RUN_OPENING/2  # Aligned with stairs
+    
+    # Get the upper floor object and cut the opening
+    upper_floor = bpy.data.objects.get("WetWing2_Floor")
+    if upper_floor:
+        bpy.ops.mesh.primitive_cube_add(location=(stairwell_x, stairwell_y, upper_floor_z + 0.05))
+        stairwell_cutter = bpy.context.active_object
+        stairwell_cutter.name = "StairwellCutter"
+        stairwell_cutter.scale = (STAIR_WIDTH_OPENING/2, STAIR_RUN_OPENING/2, 0.1)
+        bpy.ops.object.transform_apply(scale=True)
+        
+        # Boolean difference to cut hole in floor
+        bool_mod = upper_floor.modifiers.new(name="StairwellCut", type='BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.object = stairwell_cutter
+        bpy.context.view_layer.objects.active = upper_floor
+        bpy.ops.object.modifier_apply(modifier="StairwellCut")
+        bpy.data.objects.remove(stairwell_cutter, do_unlink=True)
+    
+    # Stairwell partition wall - on west side of stairwell, extending from lower to upper floor
+    INTERNAL_WALL_THICKNESS = 0.1  # 100mm internal wall
+    stairwell_partition_x = ox + 1.2  # West edge of stairwell (matches partition_x in upper level)
+    stairwell_partition_y = stair_start_y + STAIR_RUN/2  # Centered along stairwell length
+    white_wall_mat = create_material("WhiteWall", (0.95, 0.95, 0.95, 1))
+    
+    bpy.ops.mesh.primitive_cube_add(location=(stairwell_partition_x, stairwell_partition_y, oz + STAIR_HEIGHT/2))
+    stairwell_partition = bpy.context.active_object
+    stairwell_partition.name = "UnderExt_StairwellPartition"
+    stairwell_partition.scale = (INTERNAL_WALL_THICKNESS/2, STAIR_RUN/2, STAIR_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    stairwell_partition.data.materials.append(white_wall_mat)
     
     # Add door on south wall to connect to upper level (at top of stairs)
     #add_door("UnderExt_SouthWall", position=(ox + W/2 - STAIR_WIDTH - 0.5, oy + D/2, oz + STAIR_HEIGHT), width=0.9, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
