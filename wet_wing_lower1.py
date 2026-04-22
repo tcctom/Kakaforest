@@ -108,8 +108,8 @@ def build(origin=(0,0,0)):
     add_window("UnderExt_NorthWall", position=(ox+3.3, oy - D/2, oz+1.1), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
     
     # Add windows on West and East walls - 4m deep walls
-    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 1.0, oz + 1.5), width=1.2, height=2.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.9, oz + 1.5), width=1.5, height=1.8, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 1.0, oz + 1.5), width=1.2, height=1.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.4, oz + 1.5), width=1.5, height=1.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     add_window("UnderExt_EastWall", position=(ox - W/2, oy + D/2 - 1.0, oz + 1.2), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
@@ -163,23 +163,36 @@ def build(origin=(0,0,0)):
     entrance_y_position = oy - D/2 + 0.8  # 0.8m from north wall
     add_door("UnderExt_EastWall", position=(ox - W/2, entrance_y_position, oz), width=1.1, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X')
     
-    # Staircase going up from lower to upper level - along west wall, going south
-    # Staircase starts near north wall and runs south (towards +Y)
+    # Staircase going up from lower to upper level - L-shaped with landing
+    # First run: starts near north wall and runs south (towards +Y) for 6 steps
+    # Landing at step 6, then turns 90 degrees
+    # Second run: turns east (towards -X) for remaining 6 steps
     STAIR_WIDTH = 1.2  # meters wide
-    STAIR_RUN = 3.0  # meters long (going south)
     STAIR_HEIGHT = 2.4  # rises to upper level
     NUM_STEPS = 12  # number of individual steps
     STEP_HEIGHT = STAIR_HEIGHT / NUM_STEPS  # 0.2m per step
-    STEP_DEPTH = STAIR_RUN / NUM_STEPS  # 0.25m per step
+    STEP_DEPTH = 0.25  # 0.25m per step
     
-    #stair_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - STAIR_WIDTH/2  # Just inside west wall
-    stair_x = ox + 0.6
-    stair_start_y = oy - D/2 + 1.4  # Starting 1.5m from north wall
+    # First run configuration (steps 1-6, going south)
+    FIRST_RUN_STEPS = 6
+    stair_x = ox + 0.6  # X position for first run
+    stair_start_y = oy - D/2 + 1.4  # Starting 1.4m from north wall
+    
+    # Landing configuration
+    LANDING_SIZE = 1.2  # 1.2m × 1.2m landing
+    landing_height = FIRST_RUN_STEPS * STEP_HEIGHT  # 1.2m high
+    landing_y = stair_start_y + (FIRST_RUN_STEPS * STEP_DEPTH) + 0.4  # After 6 steps, plus 0.4m clearance
+    landing_x = stair_x  # Same X as first run
+    
+    # Second run configuration (steps 7-12, going east/-X)
+    SECOND_RUN_STEPS = NUM_STEPS - FIRST_RUN_STEPS  # 6 steps
+    second_run_start_x = landing_x  # Start from landing position
+    second_run_y = landing_y  # Y position for second run
     
     stair_mat = create_material("StairOak", (0.6, 0.45, 0.3, 1))
     
-    # Create individual steps
-    for step_num in range(NUM_STEPS):
+    # Create first run of steps (1-8, going south/+Y)
+    for step_num in range(FIRST_RUN_STEPS):
         step_y = stair_start_y + (step_num * STEP_DEPTH) + STEP_DEPTH/2
         step_z = oz + (step_num * STEP_HEIGHT) + STEP_HEIGHT/2
         
@@ -190,41 +203,87 @@ def build(origin=(0,0,0)):
         bpy.ops.object.transform_apply(scale=True)
         step.data.materials.append(stair_mat)
     
-    # === CREATE STAIRWELL OPENING IN UPPER FLOOR ===
-    # This cuts a hole in the floor above to allow the stairs to pass through
-    upper_floor_z = oz + STAIR_HEIGHT  # Upper floor is at this height
-    STAIR_WIDTH_OPENING = 1.3  # slightly larger than stair width for clearance
-    STAIR_RUN_OPENING = 3.1  # slightly larger than stair run
-    stairwell_x = stair_x  # Same X as stairs
-    stairwell_y = stair_start_y + STAIR_RUN_OPENING/2  # Aligned with stairs
+    # Create landing platform at step 8
+    landing_z = oz + landing_height
+    bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
+    landing = bpy.context.active_object
+    landing.name = "UnderExt_Landing"
+    landing.scale = (LANDING_SIZE/2, LANDING_SIZE/2, STEP_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    landing.data.materials.append(stair_mat)
     
-    # Get the upper floor object and cut the opening
+    # Create second run of steps (9-12, going east/-X)
+    for step_num in range(SECOND_RUN_STEPS):
+        step_x = second_run_start_x - (step_num * STEP_DEPTH) - STEP_DEPTH/2 - LANDING_SIZE/2
+        step_z = oz + (FIRST_RUN_STEPS + step_num) * STEP_HEIGHT + STEP_HEIGHT/2
+        
+        bpy.ops.mesh.primitive_cube_add(location=(step_x, second_run_y, step_z))
+        step = bpy.context.active_object
+        step.name = f"UnderExt_Step_{FIRST_RUN_STEPS + step_num + 1}"
+        step.scale = (STEP_DEPTH/2, STAIR_WIDTH/2, STEP_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stair_mat)
+    
+    # === CREATE STAIRWELL OPENING IN UPPER FLOOR ===
+    # This cuts an L-shaped hole in the floor above to allow the stairs to pass through
+    upper_floor_z = oz + STAIR_HEIGHT  # Upper floor is at this height
+    OPENING_CLEARANCE = 0.1  # Extra clearance around stairs
+    
+    # Get the upper floor object
     upper_floor = bpy.data.objects.get("WetWing2_Floor")
     if upper_floor:
-        bpy.ops.mesh.primitive_cube_add(location=(stairwell_x, stairwell_y, upper_floor_z + 0.05))
-        stairwell_cutter = bpy.context.active_object
-        stairwell_cutter.name = "StairwellCutter"
-        stairwell_cutter.scale = (STAIR_WIDTH_OPENING/2, STAIR_RUN_OPENING/2, 0.1)
+        # First opening: for the first run (going south/+Y)
+        first_run_opening_width = STAIR_WIDTH + OPENING_CLEARANCE
+        first_run_opening_length = (FIRST_RUN_STEPS * STEP_DEPTH) + OPENING_CLEARANCE
+        first_opening_x = stair_x
+        first_opening_y = stair_start_y + first_run_opening_length/2
+        
+        bpy.ops.mesh.primitive_cube_add(location=(first_opening_x, first_opening_y, upper_floor_z + 0.05))
+        first_cutter = bpy.context.active_object
+        first_cutter.name = "StairwellCutter1"
+        first_cutter.scale = (first_run_opening_width/2, first_run_opening_length/2, 0.1)
         bpy.ops.object.transform_apply(scale=True)
         
-        # Boolean difference to cut hole in floor
-        bool_mod = upper_floor.modifiers.new(name="StairwellCut", type='BOOLEAN')
-        bool_mod.operation = 'DIFFERENCE'
-        bool_mod.object = stairwell_cutter
+        # Boolean difference to cut first opening
+        bool_mod1 = upper_floor.modifiers.new(name="StairwellCut1", type='BOOLEAN')
+        bool_mod1.operation = 'DIFFERENCE'
+        bool_mod1.object = first_cutter
         bpy.context.view_layer.objects.active = upper_floor
-        bpy.ops.object.modifier_apply(modifier="StairwellCut")
-        bpy.data.objects.remove(stairwell_cutter, do_unlink=True)
+        bpy.ops.object.modifier_apply(modifier="StairwellCut1")
+        bpy.data.objects.remove(first_cutter, do_unlink=True)
+        
+        # Second opening: for the landing and second run (going east/-X)
+        second_run_opening_width = (SECOND_RUN_STEPS * STEP_DEPTH) + LANDING_SIZE + OPENING_CLEARANCE
+        second_run_opening_length = STAIR_WIDTH + OPENING_CLEARANCE
+        second_opening_x = landing_x - second_run_opening_width/2 + LANDING_SIZE/2
+        second_opening_y = landing_y
+        
+        bpy.ops.mesh.primitive_cube_add(location=(second_opening_x, second_opening_y, upper_floor_z + 0.05))
+        second_cutter = bpy.context.active_object
+        second_cutter.name = "StairwellCutter2"
+        second_cutter.scale = (second_run_opening_width/2, second_run_opening_length/2, 0.1)
+        bpy.ops.object.transform_apply(scale=True)
+        
+        # Boolean difference to cut second opening
+        bool_mod2 = upper_floor.modifiers.new(name="StairwellCut2", type='BOOLEAN')
+        bool_mod2.operation = 'DIFFERENCE'
+        bool_mod2.object = second_cutter
+        bpy.context.view_layer.objects.active = upper_floor
+        bpy.ops.object.modifier_apply(modifier="StairwellCut2")
+        bpy.data.objects.remove(second_cutter, do_unlink=True)
     
     # Stairwell partition wall - on west side of stairwell, extending from lower to upper floor
+    # This wall follows the first run of stairs (going south)
     INTERNAL_WALL_THICKNESS = 0.1  # 100mm internal wall
     stairwell_partition_x = ox + 1.2  # West edge of stairwell (matches partition_x in upper level)
-    stairwell_partition_y = stair_start_y + STAIR_RUN/2  # Centered along stairwell length
+    first_run_length = FIRST_RUN_STEPS * STEP_DEPTH  # Length of first stair run
+    stairwell_partition_y = stair_start_y + first_run_length/2  # Centered along first run
     white_wall_mat = create_material("WhiteWall", (0.95, 0.95, 0.95, 1))
     
     bpy.ops.mesh.primitive_cube_add(location=(stairwell_partition_x, stairwell_partition_y, oz + STAIR_HEIGHT/2))
     stairwell_partition = bpy.context.active_object
     stairwell_partition.name = "UnderExt_StairwellPartition"
-    stairwell_partition.scale = (INTERNAL_WALL_THICKNESS/2, STAIR_RUN/2, STAIR_HEIGHT/2)
+    stairwell_partition.scale = (INTERNAL_WALL_THICKNESS/2, first_run_length/2, STAIR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     stairwell_partition.data.materials.append(white_wall_mat)
     
@@ -250,12 +309,12 @@ def furniture(origin=(0,0,0), building_width=10.0, building_depth=4.0, exterior_
     
     # === KITCHEN (South Wall) ===
     # Kitchen counter along south wall
-    KITCHEN_LENGTH = 4.0  # meters along south wall
+    KITCHEN_LENGTH = 3.0  # meters along south wall
     KITCHEN_DEPTH = 0.65  # meters extending into room (northward)
     KITCHEN_HEIGHT = 0.9
     KITCHEN_TOP_THICKNESS = 0.04
     
-    kitchen_x = ox  # Centered along south wall
+    kitchen_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - KITCHEN_LENGTH/2  
     kitchen_y = oy + D/2 - EXTERIOR_WALL_THICKNESS - KITCHEN_DEPTH/2
     kitchen_z = oz + KITCHEN_HEIGHT/2
     
@@ -294,34 +353,4 @@ def furniture(origin=(0,0,0), building_width=10.0, building_depth=4.0, exterior_
     bpy.ops.object.transform_apply(scale=True)
     guest_bed.data.materials.append(create_material("GuestBedding", (0.85, 0.85, 0.95, 1)))
     
-    # === BATHROOM/LAUNDRY (South End, East Side) ===
-    # Washing machine on east side, south of staircase
-    WASHER_SIZE = 0.6
-    WASHER_HEIGHT = 0.85
     
-    washer_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + 1.5  # East side, clear of stairs
-    washer_y = oy + D/2 - EXTERIOR_WALL_THICKNESS - 0.5
-    washer_z = oz + WASHER_HEIGHT/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(washer_x, washer_y, washer_z))
-    washer = bpy.context.active_object
-    washer.name = "UnderExt_WashingMachine"
-    washer.scale = (WASHER_SIZE/2, WASHER_SIZE/2, WASHER_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    washer.data.materials.append(create_material("WhiteAppliance", (0.95, 0.95, 0.95, 1)))
-    
-    # Bathroom sink/vanity next to washer
-    SINK_WIDTH = 2.8
-    SINK_DEPTH = 0.5
-    SINK_HEIGHT = 0.85
-    
-    sink_x = washer_x + WASHER_SIZE/2 + SINK_WIDTH/2 + 0.1  # Next to washer
-    sink_y = washer_y
-    sink_z = oz + SINK_HEIGHT/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(sink_x, sink_y, sink_z))
-    sink = bpy.context.active_object
-    sink.name = "UnderExt_BathroomSink"
-    sink.scale = (SINK_WIDTH/2, SINK_DEPTH/2, SINK_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    sink.data.materials.append(create_material("BathroomVanity", (0.7, 0.65, 0.6, 1)))
