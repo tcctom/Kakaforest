@@ -11,8 +11,8 @@ if dir not in sys.path:
 import björken_module
 import wet_wing_module
 import wet_wing_furniture
-import wet_wing_option2_module
-import wet_wing_option2_furniture
+import wet_wing_lower1
+import wet_wing_upper1
 import ground_module
 import utils
 
@@ -21,8 +21,8 @@ reload(utils)
 reload(björken_module)
 reload(wet_wing_module)
 reload(wet_wing_furniture)
-reload(wet_wing_option2_module)
-reload(wet_wing_option2_furniture)
+reload(wet_wing_lower1)
+reload(wet_wing_upper1)
 reload(ground_module)
 
 def cleanup():
@@ -113,12 +113,12 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
-wet_wing_option2_module.build_potius_wet_wing_option2(origin=(13.0, 6.0, 2.4), show_roof=False)
-wet_wing_option2_furniture.build_wet_wing_option2_furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
+wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=False)
+wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
-wet_wing_option2_module.build_under_extension(origin=(13.0, 5.0, 0))
-wet_wing_option2_furniture.build_under_extension_furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
+wet_wing_lower1.build(origin=(13.0, 5.0, 0))
+wet_wing_lower1.furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
 
 
 
