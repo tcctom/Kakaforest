@@ -91,12 +91,16 @@ if SHOW_GROUND:
         point(11, -4.5, -1.2), # Eastern slope variation
     ]
     
+    # Water tank area - flat pad at (-3, 10, 2)
+    water_tank_pad = grid_points((-5, 6, 1.0), (-1, 16, 1.0), x_spacing=0.5)
+    by_water_tank_pad = grid_points((-0.5, 7, 1.5), (6, 16, 2.0), x_spacing=0.5)
+    
     # Combine all survey points
     survey_points = combine_points(
         badminton, under_björken, north_björken, south_björken, southwest_björken,
         drive_end_parking_west, drive_end_parking_east, drive_mid_area,
         slope_parking_to_cottage_west, slope_parking_to_cottage_mid, slope_parking_to_cottage_east,
-        photo_person_area, natural_bumps
+        photo_person_area, natural_bumps, water_tank_pad, by_water_tank_pad
     )
     
     ground_module.build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=survey_points,)
@@ -113,13 +117,37 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
-wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=False)
+wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=True)
 wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
 wet_wing_lower1.build(origin=(13.0, 5.0, 0))
 wet_wing_lower1.furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
 
+# 4. Water Tank - 25000 liter cylindrical tank
+# Diameter: 3.5m, Height: 2.5m, Bottom center at (-3, 10, 2)
+TANK_DIAMETER = 3.5
+TANK_HEIGHT = 2.5
+TANK_X = -3.0
+TANK_Y = 13.0
+TANK_Z_BASE = 1.0
+
+bpy.ops.mesh.primitive_cylinder_add(
+    radius=TANK_DIAMETER/2, 
+    depth=TANK_HEIGHT,
+    location=(TANK_X, TANK_Y, TANK_Z_BASE + TANK_HEIGHT/2)
+)
+water_tank = bpy.context.active_object
+water_tank.name = "WaterTank_25000L"
+
+# Create metal tank material
+tank_mat = bpy.data.materials.get("TankMetal") or bpy.data.materials.new(name="TankMetal")
+tank_mat.use_nodes = True
+principled = tank_mat.node_tree.nodes["Principled BSDF"]
+principled.inputs[0].default_value = (0.7, 0.7, 0.75, 1)  # Light gray metallic color
+principled.inputs[4].default_value = 0.8  # Metallic
+principled.inputs[7].default_value = 0.3  # Roughness
+water_tank.data.materials.append(tank_mat)
 
 
 
