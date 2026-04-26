@@ -14,6 +14,7 @@ import wet_wing_furniture
 import wet_wing_lower1
 import wet_wing_upper1
 import ground_module
+import outdoor_structures
 import utils
 
 # Reload modules to pick up any changes
@@ -24,6 +25,7 @@ reload(wet_wing_furniture)
 reload(wet_wing_lower1)
 reload(wet_wing_upper1)
 reload(ground_module)
+reload(outdoor_structures)
 
 def cleanup():
     bpy.ops.object.select_all(action='SELECT')
@@ -110,6 +112,9 @@ if SHOW_GROUND:
 # Set show_roof=False to hide roof for interior viewing
 björken_module.build_red_cottage(origin=(0, 0, 0))
 
+# 1b. Pavers extending east from cottage
+outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))
+
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y)
 # Set show_roof=False to hide roof for interior viewing
@@ -125,29 +130,8 @@ wet_wing_lower1.build(origin=(13.0, 5.0, 0))
 wet_wing_lower1.furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
 
 # 4. Water Tank - 25000 liter cylindrical tank
-# Diameter: 3.5m, Height: 2.5m, Bottom center at (-3, 10, 2)
-TANK_DIAMETER = 3.5
-TANK_HEIGHT = 2.5
-TANK_X = -3.0
-TANK_Y = 13.0
-TANK_Z_BASE = 1.0
-
-bpy.ops.mesh.primitive_cylinder_add(
-    radius=TANK_DIAMETER/2, 
-    depth=TANK_HEIGHT,
-    location=(TANK_X, TANK_Y, TANK_Z_BASE + TANK_HEIGHT/2)
-)
-water_tank = bpy.context.active_object
-water_tank.name = "WaterTank_25000L"
-
-# Create metal tank material
-tank_mat = bpy.data.materials.get("TankMetal") or bpy.data.materials.new(name="TankMetal")
-tank_mat.use_nodes = True
-principled = tank_mat.node_tree.nodes["Principled BSDF"]
-principled.inputs[0].default_value = (0.7, 0.7, 0.75, 1)  # Light gray metallic color
-principled.inputs[4].default_value = 0.8  # Metallic
-principled.inputs[7].default_value = 0.3  # Roughness
-water_tank.data.materials.append(tank_mat)
+# Diameter: 3.5m, Height: 2.5m, Bottom center at (-3, 13, 1)
+outdoor_structures.build_water_tank(origin=(-3.0, 13.0, 1.0))
 
 
 

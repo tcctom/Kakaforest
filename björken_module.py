@@ -61,10 +61,77 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     bpy.ops.object.transform_apply(scale=True)
     floor.data.materials.append(create_material("FloorWood", (0.5, 0.35, 0.2, 1)))
 
-    # Verandah dimensions (defined early for roof calculation)
+    # Verandah dimensions (defined early for use in foundations and roof)
     VERANDAH_LENGTH = 4.0  # meters (along north face, X-direction)
     VERANDAH_WIDTH = 1.5   # meters (depth from cottage, Y-direction)
     VERANDAH_HEIGHT = 0.1  # meters (thickness)
+
+    # FOUNDATIONS: Piles and Bearers
+    # Foundation material - treated timber
+    foundation_mat = create_material("FoundationTimber", (0.4, 0.35, 0.25, 1))
+    
+    # Pile specifications
+    PILE_SIZE = 0.15  # 150mm x 150mm square piles
+    PILE_DEPTH = 0.6  # 600mm into ground
+    PILE_HEIGHT_TOTAL = PILE_DEPTH + 0.1  # Extend 100mm above ground to bearer level
+    
+    # Bearer specifications
+    BEARER_WIDTH = 0.15  # 150mm wide
+    BEARER_HEIGHT = 0.2  # 200mm high
+    
+    # Create piles in a grid pattern
+    # Main building piles: every 1.5m along X, every 2.1m along Y
+    pile_x_positions = [-W/2 + 0.5, -W/2 + 2.0, -W/2 + 3.5, -W/2 + 5.0, -W/2 + 5.7]  # 5 rows
+    pile_y_positions = [-D/2 + 0.5, 0, D/2 - 0.5]  # 3 columns for main building
+    
+    # Main building piles
+    for px in pile_x_positions:
+        for py in pile_y_positions:
+            pile_z = oz - PILE_DEPTH + PILE_HEIGHT_TOTAL/2
+            bpy.ops.mesh.primitive_cube_add(location=(ox + px, oy + py, pile_z))
+            pile = bpy.context.active_object
+            pile.name = f"Foundation_Pile"
+            pile.scale = (PILE_SIZE/2, PILE_SIZE/2, PILE_HEIGHT_TOTAL/2)
+            bpy.ops.object.transform_apply(scale=True)
+            pile.data.materials.append(foundation_mat)
+    
+    # Verandah piles (north side, under 4.0m × 1.5m verandah)
+    # Verandah spans X: from -3.1 to +0.9, Y: from -3.6 to -2.1
+    verandah_pile_x_positions = [-2.8, -1.5, -0.2, 0.6]  # Along verandah length
+    verandah_pile_y_positions = [-D/2 - VERANDAH_WIDTH/2, -D/2 - VERANDAH_WIDTH + 0.3]  # Two rows under verandah
+    
+    for px in verandah_pile_x_positions:
+        for py in verandah_pile_y_positions:
+            pile_z = oz - PILE_DEPTH + PILE_HEIGHT_TOTAL/2
+            bpy.ops.mesh.primitive_cube_add(location=(ox + px, oy + py, pile_z))
+            pile = bpy.context.active_object
+            pile.name = f"Foundation_Pile_Verandah"
+            pile.scale = (PILE_SIZE/2, PILE_SIZE/2, PILE_HEIGHT_TOTAL/2)
+            bpy.ops.object.transform_apply(scale=True)
+            pile.data.materials.append(foundation_mat)
+    
+    # Create bearers running along X-axis (spanning the building width)
+    # Positioned on top of piles
+    bearer_z = oz - 0.05  # Just below floor level
+    
+    # Main building bearers
+    for py in pile_y_positions:
+        bpy.ops.mesh.primitive_cube_add(location=(ox, oy + py, bearer_z))
+        bearer = bpy.context.active_object
+        bearer.name = f"Foundation_Bearer"
+        bearer.scale = (W/2, BEARER_WIDTH/2, BEARER_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        bearer.data.materials.append(foundation_mat)
+    
+    # Verandah bearers (shorter bearers for 4.0m verandah)
+    verandah_center_x = ox - (W/2 - VERANDAH_LENGTH/2)  # ox - 1.1
+    for py in verandah_pile_y_positions:
+        bpy.ops.mesh.primitive_cube_add(location=(verandah_center_x, oy + py, bearer_z))
+        bearer = bpy.context.active_object
+        bearer.name = f"Foundation_Bearer_Verandah"
+        bearer.scale = (VERANDAH_LENGTH/2, BEARER_WIDTH/2, BEARER_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        bearer.data.materials.append(foundation_mat)
 
     # Gable Roof (covers cottage + verandah with overhang)
     if show_roof:  # Set show_roof=False in function call to hide roof
@@ -147,12 +214,37 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     bpy.ops.object.transform_apply(scale=True)
     verandah.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
 
+    # Verandah support posts - 3 white posts (90mm x 90mm)
+    POST_SIZE = 0.09  # 90mm square posts
+    POST_HEIGHT = H - VERANDAH_HEIGHT  # From deck to roof level
+    white_mat = create_material("WhitePost", (0.95, 0.95, 0.95, 1))
+    
+    # Position posts at outer edge of verandah (north edge)
+    post_y = oy - D/2 - VERANDAH_WIDTH + POST_SIZE/2  # At north edge of verandah
+    post_z = oz + VERANDAH_HEIGHT + POST_HEIGHT/2  # From deck level to roof
+    
+    # Three posts evenly spaced along verandah length
+    post_x_positions = [
+        verandah_x - VERANDAH_LENGTH/2 + 0.5,  # Near east end
+        verandah_x,                              # Center
+        verandah_x + VERANDAH_LENGTH/2 - 0.5    # Near west end
+    ]
+    
+    for post_x in post_x_positions:
+        bpy.ops.mesh.primitive_cube_add(location=(post_x, post_y, post_z))
+        post = bpy.context.active_object
+        post.name = "Verandah_Post"
+        post.scale = (POST_SIZE/2, POST_SIZE/2, POST_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        post.data.materials.append(white_mat)
+
     # Add windows on North wall
     add_window("Cottage_NorthWall", position=(ox-1.2, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS)
     add_window("Cottage_NorthWall", position=(ox+2, oy - D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS)
 
     # Add window on East wall (east = -X direction)
     add_window("Cottage_EastWall", position=(ox - W/2, oy - 0.8, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+
 
     # Add window on West wall (west = +X direction)
     add_window("Cottage_WestWall", position=(ox + W/2, oy - 0.8, oz + 1.6), width=0.8, height=1.125, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
