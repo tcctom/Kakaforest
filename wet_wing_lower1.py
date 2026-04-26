@@ -108,8 +108,8 @@ def build(origin=(0,0,0)):
     add_window("UnderExt_NorthWall", position=(ox+3.3, oy - D/2, oz+1.1), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS)
     
     # Add windows on West and East walls - 4m deep walls
-    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 1.0, oz + 1.5), width=1.2, height=1.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.4, oz + 1.5), width=1.5, height=1.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 1.0, oz + 1.5), width=1.8, height=1.4, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("UnderExt_WestWall", position=(ox + W/2, oy - D/2 + 2.4, oz + 1.5), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     add_window("UnderExt_EastWall", position=(ox - W/2, oy + D/2 - 1.0, oz + 1.2), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
@@ -287,6 +287,63 @@ def build(origin=(0,0,0)):
     bpy.ops.object.transform_apply(scale=True)
     stairwell_partition.data.materials.append(white_wall_mat)
     
+    # === LOG BURNER (Wood Stove) ===
+    # Positioned east of the stairs with opening facing east
+    LOG_BURNER_WIDTH = 0.6  # meters (Y-direction)
+    LOG_BURNER_DEPTH = 0.5  # meters (X-direction)
+    LOG_BURNER_HEIGHT = 0.8  # meters (main body height)
+    LOG_BURNER_LEG_HEIGHT = 0.15  # meters (legs below body)
+    FLUE_DIAMETER = 0.15  # meters
+    FLUE_HEIGHT = 2.2  # meters (goes up to near ceiling)
+    
+    # Position east of stairs
+    log_burner_x = ox - 0.3  # East of stairs (ox + 0.6 is stair position)
+    log_burner_y = oy - D/2 + 2.0  # Near middle of north section
+    
+    # Create materials
+    stove_mat = create_material("CastIronStove", (0.15, 0.15, 0.15, 1))  # Dark iron
+    flue_mat = create_material("StoveFlue", (0.2, 0.2, 0.2, 1))
+    
+    # Stove legs
+    bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, log_burner_y, oz + LOG_BURNER_LEG_HEIGHT/2))
+    stove_legs = bpy.context.active_object
+    stove_legs.name = "UnderExt_StoveLegs"
+    stove_legs.scale = (LOG_BURNER_DEPTH/2, LOG_BURNER_WIDTH/2, LOG_BURNER_LEG_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    stove_legs.data.materials.append(stove_mat)
+    
+    # Main stove body
+    stove_body_z = oz + LOG_BURNER_LEG_HEIGHT + LOG_BURNER_HEIGHT/2
+    bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, log_burner_y, stove_body_z))
+    stove_body = bpy.context.active_object
+    stove_body.name = "UnderExt_StoveBody"
+    stove_body.scale = (LOG_BURNER_DEPTH/2, LOG_BURNER_WIDTH/2, LOG_BURNER_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    stove_body.data.materials.append(stove_mat)
+    
+    # Stove door/opening indicator (small panel on east face)
+    door_thickness = 0.05
+    door_width = 0.35
+    door_height = 0.4
+    door_x = log_burner_x - LOG_BURNER_DEPTH/2 - door_thickness/2  # East face (-X)
+    door_z = stove_body_z
+    
+    bpy.ops.mesh.primitive_cube_add(location=(door_x, log_burner_y, door_z))
+    stove_door = bpy.context.active_object
+    stove_door.name = "UnderExt_StoveDoor"
+    stove_door.scale = (door_thickness/2, door_width/2, door_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    stove_door.data.materials.append(create_material("StoveDoorGlass", (0.1, 0.1, 0.1, 0.3)))
+    
+    # Flue pipe going up
+    flue_start_z = oz + LOG_BURNER_LEG_HEIGHT + LOG_BURNER_HEIGHT
+    flue_z = flue_start_z + FLUE_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cylinder_add(radius=FLUE_DIAMETER/2, depth=FLUE_HEIGHT, location=(log_burner_x, log_burner_y, flue_z))
+    flue_pipe = bpy.context.active_object
+    flue_pipe.name = "UnderExt_FluePipe"
+    flue_pipe.data.materials.append(flue_mat)
+    
     # Add door on south wall to connect to upper level (at top of stairs)
     #add_door("UnderExt_SouthWall", position=(ox + W/2 - STAIR_WIDTH - 0.5, oy + D/2, oz + STAIR_HEIGHT), width=0.9, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
 
@@ -309,7 +366,7 @@ def furniture(origin=(0,0,0), building_width=10.0, building_depth=4.0, exterior_
     
     # === KITCHEN (South Wall) ===
     # Kitchen counter along south wall
-    KITCHEN_LENGTH = 3.0  # meters along south wall
+    KITCHEN_LENGTH = 3.6  # meters along south wall
     KITCHEN_DEPTH = 0.65  # meters extending into room (northward)
     KITCHEN_HEIGHT = 0.9
     KITCHEN_TOP_THICKNESS = 0.04
@@ -336,21 +393,32 @@ def furniture(origin=(0,0,0), building_width=10.0, building_depth=4.0, exterior_
     bpy.ops.object.transform_apply(scale=True)
     kitchen_top.data.materials.append(create_material("WhiteCountertop", (0.88, 0.85, 0.8, 1)))
     
-    # === GUEST SUITE (West Side) ===
-    # Guest bed - Double bed against west wall (moved from east to avoid stairs)
-    GUEST_BED_WIDTH = 1.4  # meters (X-direction) - double bed
-    GUEST_BED_LENGTH = 2.0  # meters (Y-direction)
-    GUEST_BED_HEIGHT = 0.5  # meters
+    # === DINING AREA (West Side) ===
+    # Dining table - seats 8 comfortably
+    DINING_TABLE_LENGTH = 1.1  # meters (Y-direction) - seats 3 per side + 1 per end
+    DINING_TABLE_WIDTH = 2.2  # meters (X-direction)
+    DINING_TABLE_HEIGHT = 0.75  # meters - standard dining height
+    TABLE_TOP_THICKNESS = 0.05  # meters
     
-    guest_bed_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - GUEST_BED_WIDTH/2
-    guest_bed_y = oy - D/2 + GUEST_BED_LENGTH/2 + 0.5  # Near north wall
-    guest_bed_z = oz + GUEST_BED_HEIGHT/2
+    dining_table_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - DINING_TABLE_WIDTH/2 - 0.2
+    dining_table_y = oy - D/2 + DINING_TABLE_LENGTH/2 + 0.9  # Centered in space
+    dining_table_z = oz + DINING_TABLE_HEIGHT/2
     
-    bpy.ops.mesh.primitive_cube_add(location=(guest_bed_x, guest_bed_y, guest_bed_z))
-    guest_bed = bpy.context.active_object
-    guest_bed.name = "UnderExt_GuestBed"
-    guest_bed.scale = (GUEST_BED_WIDTH/2, GUEST_BED_LENGTH/2, GUEST_BED_HEIGHT/2)
+    # Table base/legs
+    bpy.ops.mesh.primitive_cube_add(location=(dining_table_x, dining_table_y, dining_table_z))
+    table_base = bpy.context.active_object
+    table_base.name = "UnderExt_DiningTableBase"
+    table_base.scale = (DINING_TABLE_WIDTH/2, DINING_TABLE_LENGTH/2, DINING_TABLE_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
-    guest_bed.data.materials.append(create_material("GuestBedding", (0.85, 0.85, 0.95, 1)))
+    table_base.data.materials.append(create_material("TableWood", (0.4, 0.3, 0.2, 1)))
+    
+    # Table top
+    table_top_z = oz + DINING_TABLE_HEIGHT + TABLE_TOP_THICKNESS/2
+    bpy.ops.mesh.primitive_cube_add(location=(dining_table_x, dining_table_y, table_top_z))
+    table_top = bpy.context.active_object
+    table_top.name = "UnderExt_DiningTableTop"
+    table_top.scale = ((DINING_TABLE_WIDTH + 0.1)/2, (DINING_TABLE_LENGTH + 0.1)/2, TABLE_TOP_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    table_top.data.materials.append(create_material("TableTopOak", (0.55, 0.4, 0.25, 1)))
     
     

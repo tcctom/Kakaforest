@@ -2,7 +2,7 @@ import bpy  # type: ignore
 import math
 
 from utils import create_corrugated_iron_material, add_corner_trim, add_window, add_door
-import wet_wing_furniture
+import ww1_furniture
 
 def create_material(name, color):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name=name)
@@ -233,4 +233,4 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     verandah_east.data.materials.append(create_material("WoodenDecking", (0.55, 0.35, 0.18, 1)))
     
     # Add furniture
-    wet_wing_furniture.build_wet_wing_furniture(origin=(ox, oy, oz), building_width=W, building_depth=D, exterior_wall_thickness=EXTERIOR_WALL_THICKNESS)
+    ww1_furniture.build_wet_wing_furniture(origin=(ox, oy, oz), building_width=W, building_depth=D, exterior_wall_thickness=EXTERIOR_WALL_THICKNESS)

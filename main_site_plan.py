@@ -9,8 +9,8 @@ if dir not in sys.path:
     sys.path.append(dir)
 
 import björken_module
-import wet_wing_module
-import wet_wing_furniture
+import ww1_module
+import ww1_furniture
 import wet_wing_lower1
 import wet_wing_upper1
 import ground_module
@@ -20,8 +20,8 @@ import utils
 # Reload modules to pick up any changes
 reload(utils)
 reload(björken_module)
-reload(wet_wing_module)
-reload(wet_wing_furniture)
+reload(ww1_module)
+reload(ww1_furniture)
 reload(wet_wing_lower1)
 reload(wet_wing_upper1)
 reload(ground_module)
@@ -46,7 +46,7 @@ cleanup()
 setup_blue_sky()
 
 # Toggle features on/off
-SHOW_GROUND = True  # Set to False to hide ground terrain
+SHOW_GROUND = False  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
@@ -110,20 +110,20 @@ if SHOW_GROUND:
 
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(0, 0, 0))
+#björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 1b. Pavers extending east from cottage
-outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))
+#outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))
 
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y)
 # Set show_roof=False to hide roof for interior viewing
-#wet_wing_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
+#ww1_module.build_potius_wet_wing(origin=(11.0, 4.0, 1.2), show_roof=False)
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
-wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=True)
-wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
+#wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=True)
+#wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
 wet_wing_lower1.build(origin=(13.0, 5.0, 0))
