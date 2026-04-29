@@ -123,7 +123,7 @@ if SHOW_GROUND:
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
 wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=False)
-wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
+#wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
 wet_wing_lower1.build(origin=(13.0, 5.0, 0))

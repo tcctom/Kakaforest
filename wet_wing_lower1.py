@@ -40,16 +40,30 @@ def staircase_S(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
     
     # Create steps - straight run going south
     # Start from top of lower floor
+    # Last step is just a riser (front face) since its tread is the upper floor
     for step_num in range(num_steps):
         step_y = stair_start_y + (step_num * STEP_DEPTH) + STEP_DEPTH/2
         step_z = oz + floor_thickness + (step_num * STEP_HEIGHT) + STEP_HEIGHT/2
         
-        bpy.ops.mesh.primitive_cube_add(location=(stair_x, step_y, step_z))
-        step = bpy.context.active_object
-        step.name = f"{name_prefix}_Step_{step_num+1}"
-        step.scale = (stair_width/2, STEP_DEPTH/2, STEP_HEIGHT/2)
-        bpy.ops.object.transform_apply(scale=True)
-        step.data.materials.append(stair_mat)
+        if step_num == num_steps - 1:
+            # Final step: just create a riser (vertical face)
+            RISER_THICKNESS = 0.03  # 30mm thick riser panel
+            riser_y = stair_start_y + (step_num * STEP_DEPTH)  # At the front of where the step would be
+            
+            bpy.ops.mesh.primitive_cube_add(location=(stair_x, riser_y, step_z))
+            riser = bpy.context.active_object
+            riser.name = f"{name_prefix}_Step_{step_num+1}_Riser"
+            riser.scale = (stair_width/2, RISER_THICKNESS/2, STEP_HEIGHT/2)
+            bpy.ops.object.transform_apply(scale=True)
+            riser.data.materials.append(stair_mat)
+        else:
+            # Regular step with full depth
+            bpy.ops.mesh.primitive_cube_add(location=(stair_x, step_y, step_z))
+            step = bpy.context.active_object
+            step.name = f"{name_prefix}_Step_{step_num+1}"
+            step.scale = (stair_width/2, STEP_DEPTH/2, STEP_HEIGHT/2)
+            bpy.ops.object.transform_apply(scale=True)
+            step.data.materials.append(stair_mat)
     
     # Create stairwell opening in upper floor - simple rectangular opening
     if upper_floor_name:
@@ -61,7 +75,8 @@ def staircase_S(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
             EAST_EXTENSION = 0.5  # Extra width on east side for flue and open feel
             
             opening_width = stair_width + OPENING_CLEARANCE + EAST_EXTENSION
-            opening_length = (num_steps * STEP_DEPTH) + OPENING_CLEARANCE
+            # Opening length: (num_steps - 1) full steps since last step is just a riser
+            opening_length = ((num_steps - 1) * STEP_DEPTH) + OPENING_CLEARANCE
             opening_x = stair_x - EAST_EXTENSION/2  # Shift east to extend on east side
             opening_y = stair_start_y + opening_length/2
             
@@ -81,7 +96,8 @@ def staircase_S(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
     # Stairwell partition wall - on west side of stairwell
     if stairwell_partition_x is not None:
         INTERNAL_WALL_THICKNESS = 0.1
-        stair_run_length = num_steps * STEP_DEPTH
+        # Partition follows the actual stair run (excluding last riser)
+        stair_run_length = (num_steps - 1) * STEP_DEPTH
         stairwell_partition_y = stair_start_y + stair_run_length/2
         white_wall_mat = create_material("WhiteWall", (0.95, 0.95, 0.95, 1))
         
@@ -95,7 +111,7 @@ def staircase_S(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
         stairwell_partition.data.materials.append(white_wall_mat)
 
 def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stair_height=2.4, 
-                num_steps=12, first_run_steps=6, stairwell_partition_x=1.2, 
+                num_steps=12, first_run_steps=6, stairwell_partition_x=1.2, floor_thickness=0.1,
                 upper_floor_name="WetWing2_Floor", name_prefix="UnderExt"):
     """
     Create an L-shaped staircase with landing.
@@ -104,10 +120,11 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
         origin: (x, y, z) tuple for base origin
         start_position: (x_offset, y_offset) relative to origin for stair start
         stair_width: Width of stairs in meters
-        stair_height: Total rise in meters
+        stair_height: Total rise in meters (from top of lower floor to top of upper floor)
         num_steps: Total number of steps
         first_run_steps: Number of steps in first run before landing
         stairwell_partition_x: X offset for partition wall (None to skip)
+        floor_thickness: Thickness of floor (default 0.1m)
         upper_floor_name: Name of upper floor object to cut opening (None to skip)
         name_prefix: Prefix for object names
     """
@@ -135,9 +152,10 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
     stair_mat = create_material("StairOak", (0.6, 0.45, 0.3, 1))
     
     # Create first run of steps (going south/+Y)
+    # Start from top of lower floor
     for step_num in range(first_run_steps):
         step_y = stair_start_y + (step_num * STEP_DEPTH) + STEP_DEPTH/2
-        step_z = oz + (step_num * STEP_HEIGHT) + STEP_HEIGHT/2
+        step_z = oz + floor_thickness + (step_num * STEP_HEIGHT) + STEP_HEIGHT/2
         
         bpy.ops.mesh.primitive_cube_add(location=(stair_x, step_y, step_z))
         step = bpy.context.active_object
@@ -147,7 +165,7 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
         step.data.materials.append(stair_mat)
     
     # Create landing platform
-    landing_z = oz + landing_height
+    landing_z = oz + floor_thickness + landing_height
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
     landing.name = f"{name_prefix}_Landing"
@@ -156,20 +174,34 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
     landing.data.materials.append(stair_mat)
     
     # Create second run of steps (going east/-X)
+    # Last step is just a riser since its tread is the upper floor
     for step_num in range(SECOND_RUN_STEPS):
         step_x = second_run_start_x - (step_num * STEP_DEPTH) - STEP_DEPTH/2 - LANDING_SIZE/2
-        step_z = oz + (first_run_steps + step_num) * STEP_HEIGHT + STEP_HEIGHT/2
+        step_z = oz + floor_thickness + (first_run_steps + step_num) * STEP_HEIGHT + STEP_HEIGHT/2
         
-        bpy.ops.mesh.primitive_cube_add(location=(step_x, second_run_y, step_z))
-        step = bpy.context.active_object
-        step.name = f"{name_prefix}_Step_{first_run_steps + step_num + 1}"
-        step.scale = (STEP_DEPTH/2, stair_width/2, STEP_HEIGHT/2)
-        bpy.ops.object.transform_apply(scale=True)
-        step.data.materials.append(stair_mat)
+        if step_num == SECOND_RUN_STEPS - 1:
+            # Final step: just create a riser (vertical face)
+            RISER_THICKNESS = 0.03  # 30mm thick riser panel
+            riser_x = second_run_start_x - (step_num * STEP_DEPTH) - LANDING_SIZE/2
+            
+            bpy.ops.mesh.primitive_cube_add(location=(riser_x, second_run_y, step_z))
+            riser = bpy.context.active_object
+            riser.name = f"{name_prefix}_Step_{first_run_steps + step_num + 1}_Riser"
+            riser.scale = (RISER_THICKNESS/2, stair_width/2, STEP_HEIGHT/2)
+            bpy.ops.object.transform_apply(scale=True)
+            riser.data.materials.append(stair_mat)
+        else:
+            # Regular step with full depth
+            bpy.ops.mesh.primitive_cube_add(location=(step_x, second_run_y, step_z))
+            step = bpy.context.active_object
+            step.name = f"{name_prefix}_Step_{first_run_steps + step_num + 1}"
+            step.scale = (STEP_DEPTH/2, stair_width/2, STEP_HEIGHT/2)
+            bpy.ops.object.transform_apply(scale=True)
+            step.data.materials.append(stair_mat)
     
     # Create stairwell opening in upper floor
     if upper_floor_name:
-        upper_floor_z = oz + stair_height
+        upper_floor_z = oz + floor_thickness + stair_height - floor_thickness/2
         OPENING_CLEARANCE = 0.1
         
         upper_floor = bpy.data.objects.get(upper_floor_name)
@@ -180,7 +212,7 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
             first_opening_x = stair_x
             first_opening_y = stair_start_y + first_run_opening_length/2
             
-            bpy.ops.mesh.primitive_cube_add(location=(first_opening_x, first_opening_y, upper_floor_z + 0.05))
+            bpy.ops.mesh.primitive_cube_add(location=(first_opening_x, first_opening_y, upper_floor_z))
             first_cutter = bpy.context.active_object
             first_cutter.name = "StairwellCutter1"
             first_cutter.scale = (first_run_opening_width/2, first_run_opening_length/2, 0.1)
@@ -194,12 +226,13 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
             bpy.data.objects.remove(first_cutter, do_unlink=True)
             
             # Second opening: for the landing and second run (going east/-X)
-            second_run_opening_width = (SECOND_RUN_STEPS * STEP_DEPTH) + LANDING_SIZE + OPENING_CLEARANCE
+            # Exclude final riser from opening length
+            second_run_opening_width = ((SECOND_RUN_STEPS - 1) * STEP_DEPTH) + LANDING_SIZE + OPENING_CLEARANCE
             second_run_opening_length = stair_width + OPENING_CLEARANCE
             second_opening_x = landing_x - second_run_opening_width/2 + LANDING_SIZE/2
             second_opening_y = landing_y
             
-            bpy.ops.mesh.primitive_cube_add(location=(second_opening_x, second_opening_y, upper_floor_z + 0.05))
+            bpy.ops.mesh.primitive_cube_add(location=(second_opening_x, second_opening_y, upper_floor_z))
             second_cutter = bpy.context.active_object
             second_cutter.name = "StairwellCutter2"
             second_cutter.scale = (second_run_opening_width/2, second_run_opening_length/2, 0.1)
@@ -219,10 +252,12 @@ def staircase_L(origin=(0,0,0), start_position=(0.6, 1.4), stair_width=1.2, stai
         stairwell_partition_y = stair_start_y + first_run_length/2
         white_wall_mat = create_material("WhiteWall", (0.95, 0.95, 0.95, 1))
         
-        bpy.ops.mesh.primitive_cube_add(location=(ox + stairwell_partition_x, stairwell_partition_y, oz + stair_height/2))
+        partition_height = stair_height
+        partition_z = oz + floor_thickness + partition_height/2
+        bpy.ops.mesh.primitive_cube_add(location=(ox + stairwell_partition_x, stairwell_partition_y, partition_z))
         stairwell_partition = bpy.context.active_object
         stairwell_partition.name = f"{name_prefix}_StairwellPartition"
-        stairwell_partition.scale = (INTERNAL_WALL_THICKNESS/2, first_run_length/2, stair_height/2)
+        stairwell_partition.scale = (INTERNAL_WALL_THICKNESS/2, first_run_length/2, partition_height/2)
         bpy.ops.object.transform_apply(scale=True)
         stairwell_partition.data.materials.append(white_wall_mat)
 
@@ -380,13 +415,25 @@ def build(origin=(0,0,0)):
     entrance_y_position = oy - D/2 + 0.8  # 0.8m from north wall
     add_door("UnderExt_EastWall", position=(ox - W/2, entrance_y_position, oz), width=1.1, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X')
     
-    # Simple straight staircase going up from lower to upper level
-    staircase_S(
+    # L-shaped staircase going up from lower to upper level
+    # staircase_S(
+    #     origin=(ox, oy, oz),
+    #     start_position=(0.6, -D/2 + 1.2),  # X offset, Y offset from origin
+    #     stair_width=1.2,
+    #     stair_height=2.4,
+    #     num_steps=12,
+    #     stairwell_partition_x=1.2,
+    #     upper_floor_name="WetWing2_Floor",
+    #     name_prefix="UnderExt"
+    # )
+    
+    staircase_L(
         origin=(ox, oy, oz),
-        start_position=(0.6, -D/2 + 1.2),  # X offset, Y offset from origin
+        start_position=(0.6, -D/2 + 1.4),  # X offset, Y offset from origin
         stair_width=1.2,
         stair_height=2.4,
         num_steps=12,
+        first_run_steps=6,
         stairwell_partition_x=1.2,
         upper_floor_name="WetWing2_Floor",
         name_prefix="UnderExt"
