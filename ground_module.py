@@ -535,3 +535,73 @@ def create_forest_material():
         bsdf.inputs['Specular IOR Level'].default_value = 0.2
     
     return mat
+
+# ============================================================================
+# CONVENIENCE FUNCTIONS - Simplified terrain builders with preset materials
+# ============================================================================
+
+def grass_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+    """
+    Create a grass terrain plane from contour points.
+    
+    Args:
+        contour_points: List of (x, y, z) tuples defining the terrain
+        cottage_origin: Origin point (default (0, 0, 0))
+        use_planar: Use planar interpolation for even slopes (default True)
+        extension: Extension beyond points in meters (default 0.0)
+    
+    Returns:
+        Ground object
+    """
+    return build_ground_terrain(
+        cottage_origin=cottage_origin,
+        contour_points=contour_points,
+        material_type='grass',
+        name_suffix='_Grass',
+        use_planar=use_planar,
+        extension=extension
+    )
+
+def gravel_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+    """
+    Create a gravel terrain plane from contour points.
+    
+    Args:
+        contour_points: List of (x, y, z) tuples defining the terrain
+        cottage_origin: Origin point (default (0, 0, 0))
+        use_planar: Use planar interpolation for even slopes (default True)
+        extension: Extension beyond points in meters (default 0.0)
+    
+    Returns:
+        Ground object
+    """
+    return build_ground_terrain(
+        cottage_origin=cottage_origin,
+        contour_points=contour_points,
+        material_type='gravel',
+        name_suffix='_Gravel',
+        use_planar=use_planar,
+        extension=extension
+    )
+
+def forest_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+    """
+    Create a forest floor terrain plane from contour points.
+    
+    Args:
+        contour_points: List of (x, y, z) tuples defining the terrain
+        cottage_origin: Origin point (default (0, 0, 0))
+        use_planar: Use planar interpolation for even slopes (default True)
+        extension: Extension beyond points in meters (default 0.0)
+    
+    Returns:
+        Ground object
+    """
+    return build_ground_terrain(
+        cottage_origin=cottage_origin,
+        contour_points=contour_points,
+        material_type='forest',
+        name_suffix='_Forest',
+        use_planar=use_planar,
+        extension=extension
+    )

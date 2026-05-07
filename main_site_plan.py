@@ -53,27 +53,12 @@ if SHOW_GROUND:
     # Import helper functions for easier point generation
     from ground_module import line_points, grid_points, combine_points, point
     
-    # Define survey points using helper functions
-    # Photo reference: taken from ~(8,-6,-2) looking south, person at ~(9,0,0.2) is 1.75m tall
-    
-    # Court area - relatively flat
-    badminton = grid_points((-10, -10, -3), (8, -18, -3.2), x_spacing=0.5, slope_direction='y')
-    
-    # Under and around Björken cottage - relatively flat platform
-    under_björken = grid_points((-10, -2.5, -0.5), (8, 3.1, -0.5), x_spacing=0.4)
     north_björken = grid_points((-6, -2.5, -0.5), (3, -8, -0.5), x_spacing=0.4)
     
     # South of cottage - upward slope
     south_björken = grid_points((-5, 3.1, -0.5), (5, 6, 1.8), x_spacing=0.4, slope_direction='y')
     southwest_björken = grid_points((4, 4.1, -0.5), (22, 14, 1.8), x_spacing=0.4, slope_direction='y')
     
-    # PARKING & DRIVE AREAS - with natural variation (not perfectly flat)
-    # Main parking area - slight undulation
-    drive_end_parking_west = grid_points((4, -10, -2.0), (12, -6, -1.9), x_spacing=0.3)
-    drive_end_parking_east = grid_points((10.5, -10, -2.1), (18, -6, -2.0), x_spacing=0.3)
-    
-    # Parking area closer to cottage - slightly higher with variation
-    drive_mid_area = grid_points((5, -5.5, -1.7), (15, -4, -1.5), x_spacing=0.3)
     
     # TRANSITION SLOPES - from parking up to cottage level
     # Gradual slope from parking (-2m) up to cottage area (-0.5m) 
@@ -97,17 +82,6 @@ if SHOW_GROUND:
     water_tank_pad = grid_points((-5, 6, 1.0), (-1, 16, 1.0), x_spacing=0.5)
     by_water_tank_pad = grid_points((-0.5, 7, 1.5), (6, 16, 2.0), x_spacing=0.5)
     
-    # Combine areas - comment out any line to exclude that area from terrain
-    # GRASS areas
-    grass_areas = []
-    grass_areas.append(badminton)
-    grass_areas.append(north_björken)
-    
-    # GRAVEL areas
-    gravel_areas = []
-    gravel_areas.append(under_björken)
-    #gravel_areas.append(drive_end_parking_west)
-    #gravel_areas.append(water_tank_pad)
     
     # FOREST areas (default for everything else)
     forest_areas = []
@@ -122,45 +96,29 @@ if SHOW_GROUND:
     #forest_areas.append(natural_bumps)
     #forest_areas.append(by_water_tank_pad)
     
-    ground_module.build_ground_terrain(
-            cottage_origin=(0, 0, 0), 
-            contour_points=north_björken,
-            material_type='grass',
-            name_suffix='_Grass',
-            use_planar=True,  # Use planar interpolation for even slopes
-            extension=0.0  # Stop exactly at defined boundaries (no overhang)
-        )
+    # Build terrain layers for each material type
+    ground_module.grass_plane(north_björken)
 
-    ground_module.build_ground_terrain(
-            cottage_origin=(0, 0, 0), 
-            contour_points=badminton,
-            material_type='grass',
-            name_suffix='_Grass',
-            use_planar=True,  # Use planar interpolation for even slopes
-            extension=0.0  # Stop exactly at defined boundaries (no overhang)
-        )
+    #badminton and surrounding area is mostly grass, but with some natural undulation and patches of moss/gravel
+    ground_module.grass_plane(grid_points((-10, -10, -3), (8, -18, -3.2), x_spacing=0.5, slope_direction='y'))
         
-    if gravel_areas:
-        gravel_points = combine_points(*gravel_areas)
-        ground_module.build_ground_terrain(
-            cottage_origin=(0, 0, 0), 
-            contour_points=gravel_points,
-            material_type='gravel',
-            name_suffix='_Gravel',
-            use_planar=True,  # Use planar interpolation for even slopes
-            extension=0.0  # Stop exactly at defined boundaries (no overhang)
-        )
+    #under and around Björken is mostly gravel with some patches of grass 
+    ground_module.gravel_plane(grid_points((-10, -2.5, -0.5), (8, 3.1, -0.5), x_spacing=0.4))
+
+    drive_end_parking_west = grid_points((4, -10, -2.0), (12, -6, -1.9), x_spacing=0.3)
+    drive_mid_area = grid_points((5, -5.5, -1.7), (15, -4, -1.5), x_spacing=0.3)
+    drive_end_parking_east = grid_points((12, -10, -2.1), (18, -6, -2.0), x_spacing=0.3)
+
+    ground_module.gravel_plane(drive_end_parking_west)
+    ground_module.gravel_plane(drive_mid_area)
+    ground_module.gravel_plane(drive_end_parking_east)
     
-    if forest_areas:
-        forest_points = combine_points(*forest_areas)
-        ground_module.build_ground_terrain(
-            cottage_origin=(0, 0, 0), 
-            contour_points=forest_points,
-            material_type='forest',
-            name_suffix='_Forest',
-            use_planar=True,  # Use planar interpolation for even slopes
-            extension=0.0  # Stop exactly at defined boundaries (no overhang)
-        )
+    ground_module.gravel_plane(water_tank_pad)
+    
+    ground_module.forest_plane(south_björken)
+    ground_module.forest_plane(southwest_björken)
+
+    ground_module.forest_plane(slope_parking_to_cottage_west)
 
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing
