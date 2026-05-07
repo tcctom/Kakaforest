@@ -46,7 +46,7 @@ cleanup()
 setup_blue_sky()
 
 # Toggle features on/off
-SHOW_GROUND = False  # Set to False to hide ground terrain
+SHOW_GROUND = True  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
@@ -97,20 +97,74 @@ if SHOW_GROUND:
     water_tank_pad = grid_points((-5, 6, 1.0), (-1, 16, 1.0), x_spacing=0.5)
     by_water_tank_pad = grid_points((-0.5, 7, 1.5), (6, 16, 2.0), x_spacing=0.5)
     
-    # Combine all survey points
-    survey_points = combine_points(
-        badminton, under_björken, north_björken, south_björken, southwest_björken,
-        drive_end_parking_west, drive_end_parking_east, drive_mid_area,
-        slope_parking_to_cottage_west, slope_parking_to_cottage_mid, slope_parking_to_cottage_east,
-        photo_person_area, natural_bumps, water_tank_pad, by_water_tank_pad
-    )
+    # Combine areas - comment out any line to exclude that area from terrain
+    # GRASS areas
+    grass_areas = []
+    grass_areas.append(badminton)
+    grass_areas.append(north_björken)
     
-    ground_module.build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=survey_points,)
-        #ground_module.build_ground_terrain(cottage_origin=(0, 0, 0))
+    # GRAVEL areas
+    gravel_areas = []
+    gravel_areas.append(under_björken)
+    #gravel_areas.append(drive_end_parking_west)
+    #gravel_areas.append(water_tank_pad)
+    
+    # FOREST areas (default for everything else)
+    forest_areas = []
+    forest_areas.append(south_björken)
+    #forest_areas.append(southwest_björken)
+    #forest_areas.append(drive_end_parking_east)
+    #forest_areas.append(drive_mid_area)
+    #forest_areas.append(slope_parking_to_cottage_west)
+    #forest_areas.append(slope_parking_to_cottage_mid)
+    #forest_areas.append(slope_parking_to_cottage_east)
+    #forest_areas.append(photo_person_area)
+    #forest_areas.append(natural_bumps)
+    #forest_areas.append(by_water_tank_pad)
+    
+    ground_module.build_ground_terrain(
+            cottage_origin=(0, 0, 0), 
+            contour_points=north_björken,
+            material_type='grass',
+            name_suffix='_Grass',
+            use_planar=True,  # Use planar interpolation for even slopes
+            extension=0.0  # Stop exactly at defined boundaries (no overhang)
+        )
+
+    ground_module.build_ground_terrain(
+            cottage_origin=(0, 0, 0), 
+            contour_points=badminton,
+            material_type='grass',
+            name_suffix='_Grass',
+            use_planar=True,  # Use planar interpolation for even slopes
+            extension=0.0  # Stop exactly at defined boundaries (no overhang)
+        )
+        
+    if gravel_areas:
+        gravel_points = combine_points(*gravel_areas)
+        ground_module.build_ground_terrain(
+            cottage_origin=(0, 0, 0), 
+            contour_points=gravel_points,
+            material_type='gravel',
+            name_suffix='_Gravel',
+            use_planar=True,  # Use planar interpolation for even slopes
+            extension=0.0  # Stop exactly at defined boundaries (no overhang)
+        )
+    
+    if forest_areas:
+        forest_points = combine_points(*forest_areas)
+        ground_module.build_ground_terrain(
+            cottage_origin=(0, 0, 0), 
+            contour_points=forest_points,
+            material_type='forest',
+            name_suffix='_Forest',
+            use_planar=True,  # Use planar interpolation for even slopes
+            extension=0.0  # Stop exactly at defined boundaries (no overhang)
+        )
 
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing
-#björken_module.build_red_cottage(origin=(0, 0, 0))
+björken_module.build_red_cottage(origin=(0, 0, 0))
 
 # 1b. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))
@@ -122,12 +176,12 @@ if SHOW_GROUND:
 
 # 3. Build Wet Wing - OPTION 2 (10m × 6m + 10m × 4m extension)
 # Upper level: 10m wide (X) × 6m deep (Y) - positioned at z=2.4
-wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=False)
+#wet_wing_upper1.build(origin=(13.0, 6.0, 2.4), show_roof=False)
 #wet_wing_upper1.furniture(origin=(13.0, 6.0, 2.4), building_width=10.0, building_depth=6.0)
 
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned at z=0
-wet_wing_lower1.build(origin=(13.0, 5.0, 0))
-wet_wing_lower1.furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
+#wet_wing_lower1.build(origin=(13.0, 5.0, 0))
+#wet_wing_lower1.furniture(origin=(13.0, 5.0, 0), building_width=10.0, building_depth=4.0)
 
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center at (-3, 13, 1)

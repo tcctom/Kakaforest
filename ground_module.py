@@ -172,6 +172,67 @@ def combine_points(*point_lists):
 # TERRAIN INTERPOLATION
 # ============================================================================
 
+def fit_plane_to_points(points):
+    """
+    Fit a plane (z = ax + by + c) to a set of 3D points using least squares.
+    
+    Args:
+        points: List of (x, y, z) tuples
+    
+    Returns:
+        (a, b, c) coefficients where z = ax + by + c
+    """
+    if len(points) < 3:
+        # Not enough points for a plane, return horizontal plane at average z
+        avg_z = sum(p[2] for p in points) / len(points) if points else 0.0
+        return (0.0, 0.0, avg_z)
+    
+    # Build matrices for least squares: z = ax + by + c
+    # A * [a, b, c]^T = Z
+    n = len(points)
+    sum_x = sum(p[0] for p in points)
+    sum_y = sum(p[1] for p in points)
+    sum_z = sum(p[2] for p in points)
+    sum_xx = sum(p[0]**2 for p in points)
+    sum_yy = sum(p[1]**2 for p in points)
+    sum_xy = sum(p[0]*p[1] for p in points)
+    sum_xz = sum(p[0]*p[2] for p in points)
+    sum_yz = sum(p[1]*p[2] for p in points)
+    
+    # Solve using normal equations
+    # [sum_xx  sum_xy  sum_x ] [a]   [sum_xz]
+    # [sum_xy  sum_yy  sum_y ] [b] = [sum_yz]
+    # [sum_x   sum_y   n     ] [c]   [sum_z ]
+    
+    # Using Cramer's rule or simple matrix inversion for 3x3
+    det = (sum_xx * (sum_yy * n - sum_y * sum_y) - 
+           sum_xy * (sum_xy * n - sum_x * sum_y) + 
+           sum_x * (sum_xy * sum_y - sum_yy * sum_x))
+    
+    if abs(det) < 1e-10:
+        # Degenerate case - return horizontal plane at average
+        avg_z = sum_z / n
+        return (0.0, 0.0, avg_z)
+    
+    # Calculate a, b, c using Cramer's rule
+    det_a = (sum_xz * (sum_yy * n - sum_y * sum_y) - 
+             sum_xy * (sum_yz * n - sum_y * sum_z) + 
+             sum_x * (sum_yz * sum_y - sum_yy * sum_z))
+    
+    det_b = (sum_xx * (sum_yz * n - sum_y * sum_z) - 
+             sum_xz * (sum_xy * n - sum_x * sum_y) + 
+             sum_x * (sum_xy * sum_z - sum_yz * sum_x))
+    
+    det_c = (sum_xx * (sum_yy * sum_z - sum_y * sum_yz) - 
+             sum_xy * (sum_xy * sum_z - sum_x * sum_yz) + 
+             sum_xz * (sum_xy * sum_y - sum_yy * sum_x))
+    
+    a = det_a / det
+    b = det_b / det
+    c = det_c / det
+    
+    return (a, b, c)
+
 def interpolate_elevation(x, y, contour_points, power=2):
     """
     Interpolate elevation (z) at position (x,y) using Inverse Distance Weighting.
@@ -216,7 +277,7 @@ def create_material(name, color):
     mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = color
     return mat
 
-def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
+def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None, material_type='forest', name_suffix='', use_planar=False, extension=1.0):
     """
     Creates ground terrain for the Kaka Forest Retreat site.
     
@@ -259,6 +320,11 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
         cottage_origin: (x, y, z) tuple for red cottage position (default (0,0,0))
         contour_points: Optional list of (x, y, z) tuples for terrain contours
                        Example: [(0, 5.1, 2), (-3, 4, 1.5), (3, 4, 1.5)]
+        material_type: Type of ground material: 'grass', 'gravel', 'forest' (default)
+        name_suffix: Optional suffix for object name (e.g., '_Grass')
+        use_planar: If True, fit a plane to the points for even slopes (good for uniform slopes)
+        extension: How far (in meters) to extend mesh beyond defined points (default 1.0)
+                   Set to 0.0 to stop exactly at your defined boundaries
     """
     ox, oy, oz = cottage_origin
     
@@ -268,20 +334,19 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
     
     # Ground parameters
     GROUND_DEPTH = -0.5  # 500mm below cottage origin
-    EXTENSION = 1.0  # 1000mm extension on each side
     GRID_SPACING = 0.5  # 500mm grid resolution for terrain mesh
     
     # Create mesh for terrain
-    mesh = bpy.data.meshes.new("GroundMesh")
-    ground = bpy.data.objects.new("Ground_Terrain", mesh)
+    mesh = bpy.data.meshes.new(f"GroundMesh{name_suffix}")
+    ground = bpy.data.objects.new(f"Ground_Terrain{name_suffix}", mesh)
     bpy.context.collection.objects.link(ground)
     
     if contour_points is None or len(contour_points) == 0:
         # Simple flat plane fallback
-        x_min = ox - COTTAGE_W/2 - EXTENSION
-        x_max = ox + COTTAGE_W/2 + EXTENSION
-        y_min = oy - COTTAGE_D/2 - EXTENSION
-        y_max = oy + COTTAGE_D/2 + EXTENSION
+        x_min = ox - COTTAGE_W/2 - extension
+        x_max = ox + COTTAGE_W/2 + extension
+        y_min = oy - COTTAGE_D/2 - extension
+        y_max = oy + COTTAGE_D/2 + extension
         z_ground = oz + GROUND_DEPTH
         
         verts = [
@@ -297,10 +362,14 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
         xs = [p[0] for p in contour_points]
         ys = [p[1] for p in contour_points]
         
-        x_min = min(xs) - EXTENSION
-        x_max = max(xs) + EXTENSION
-        y_min = min(ys) - EXTENSION
-        y_max = max(ys) + EXTENSION
+        x_min = min(xs) - extension
+        x_max = max(xs) + extension
+        y_min = min(ys) - extension
+        y_max = max(ys) + extension
+        
+        # Fit plane if using planar interpolation
+        if use_planar:
+            plane_a, plane_b, plane_c = fit_plane_to_points(contour_points)
         
         # Create regular grid
         x_steps = int((x_max - x_min) / GRID_SPACING) + 1
@@ -315,8 +384,12 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
                 x = x_min + i * GRID_SPACING
                 y = y_min + j * GRID_SPACING
                 
-                # Inverse Distance Weighting (IDW) interpolation
-                z = interpolate_elevation(x, y, contour_points, power=2)
+                if use_planar:
+                    # Planar interpolation: z = ax + by + c
+                    z = plane_a * x + plane_b * y + plane_c
+                else:
+                    # Inverse Distance Weighting (IDW) interpolation
+                    z = interpolate_elevation(x, y, contour_points, power=2)
                 
                 verts.append((x, y, z))
                 vertex_index[(i, j)] = len(verts) - 1
@@ -364,15 +437,21 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None):
         for loop_idx in poly.loop_indices:
             color_layer.data[loop_idx].color = poly_color
     
-    # Apply ground material with vertex color support
-    ground_mat = create_slope_material()
+    # Apply ground material based on type
+    if material_type == 'grass':
+        ground_mat = create_grass_material()
+    elif material_type == 'gravel':
+        ground_mat = create_gravel_material()
+    else:  # 'forest' or default
+        ground_mat = create_forest_material()
+    
     ground.data.materials.append(ground_mat)
     
     return ground
 
-def create_slope_material():
-    """Create material that uses vertex colors for slope-based shading."""
-    mat_name = "GroundSlope"
+def create_grass_material():
+    """Create grass material - green with vertex color shading."""
+    mat_name = "Ground_Grass"
     mat = bpy.data.materials.get(mat_name)
     
     if mat is None:
@@ -380,18 +459,69 @@ def create_slope_material():
         mat.use_nodes = True
         nodes = mat.node_tree.nodes
         links = mat.node_tree.links
-        
-        # Clear default nodes
         nodes.clear()
         
-        # Create nodes
         output = nodes.new('ShaderNodeOutputMaterial')
         output.location = (400, 0)
         
         bsdf = nodes.new('ShaderNodeBsdfPrincipled')
         bsdf.location = (0, 0)
         
-        # Vertex color input
+        # Base grass color (bright green)
+        bsdf.inputs['Base Color'].default_value = (0.2, 0.5, 0.15, 1.0)
+        bsdf.inputs['Roughness'].default_value = 0.95
+        bsdf.inputs['Specular IOR Level'].default_value = 0.1
+        
+        links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+    
+    return mat
+
+def create_gravel_material():
+    """Create gravel material - light gray/tan."""
+    mat_name = "Ground_Gravel"
+    mat = bpy.data.materials.get(mat_name)
+    
+    if mat is None:
+        mat = bpy.data.materials.new(name=mat_name)
+        mat.use_nodes = True
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        nodes.clear()
+        
+        output = nodes.new('ShaderNodeOutputMaterial')
+        output.location = (400, 0)
+        
+        bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+        bsdf.location = (0, 0)
+        
+        # Gravel color (light gray/tan)
+        bsdf.inputs['Base Color'].default_value = (0.6, 0.55, 0.5, 1.0)
+        bsdf.inputs['Roughness'].default_value = 0.85
+        bsdf.inputs['Specular IOR Level'].default_value = 0.15
+        
+        links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+    
+    return mat
+
+def create_forest_material():
+    """Create forest floor material - dark brown/green with vertex color shading."""
+    mat_name = "Ground_Forest"
+    mat = bpy.data.materials.get(mat_name)
+    
+    if mat is None:
+        mat = bpy.data.materials.new(name=mat_name)
+        mat.use_nodes = True
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        nodes.clear()
+        
+        output = nodes.new('ShaderNodeOutputMaterial')
+        output.location = (400, 0)
+        
+        bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+        bsdf.location = (0, 0)
+        
+        # Vertex color input for slope shading
         vcol = nodes.new('ShaderNodeVertexColor')
         vcol.layer_name = "SlopeShading"
         vcol.location = (-300, 0)
