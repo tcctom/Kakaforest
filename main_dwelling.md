@@ -21,5 +21,11 @@ A full two storey rectangular box, 6 meters by 8 meters. The 8 meter length runs
 - Ridge line running east to west the 8 meter length 
 - Industry standard overhangs on all sides
 
+**Technical Note for Blender Implementation:**
+When creating the gable roof in Blender, use a custom mesh with vertices positioned at exact locations (eaves and ridge), rather than rotating flat panels. This is the same approach used in the Björken module. Create vertices at:
+- North and south eave edges (at `eave_height = top of walls`)
+- Ridge line at center (at `ridge_height = eave_height + (WIDTH/2) * tan(pitch)`)
+Then define two faces for the north and south slopes. This avoids complex rotation math and positioning errors.
+
 ## Interior
 - Internal wall thickness 110mm. 
