@@ -15,6 +15,7 @@ import wet_wing_lower1
 import wet_wing_upper1
 import ground_module
 import outdoor_structures
+import main_dwelling_module
 import utils
 
 # Reload modules to pick up any changes
@@ -26,6 +27,7 @@ reload(wet_wing_lower1)
 reload(wet_wing_upper1)
 reload(ground_module)
 reload(outdoor_structures)
+reload(main_dwelling_module)
 
 def cleanup():
     bpy.ops.object.select_all(action='SELECT')
@@ -123,6 +125,11 @@ if SHOW_GROUND:
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing
 björken_module.build_red_cottage(origin=(0, 0, 0))
+
+# 1a. Build Main Dwelling
+# Located 60m north (-Y direction) and 5m lower than Björken cottage
+# This is the new two-story 6m × 8m main dwelling structure
+main_dwelling_module.build_main_dwelling(origin=(0, -60, -5.0), show_roof=True)
 
 # 1b. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))
