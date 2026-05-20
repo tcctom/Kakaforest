@@ -41,8 +41,9 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
     ROOF_PITCH = 35  # degrees
     ROOF_OVERHANG = 0.6  # Standard overhang on all sides
     
-    # Materials
-    potius_mat = create_material("PotiusExterior", (0.85, 0.85, 0.82, 1))  # Light grey
+    # Materials - Dark tones to blend with forest setting
+    # Dark charcoal grey for cedar cladding
+    potius_mat = create_material("PotiusExterior", (0.22, 0.22, 0.24, 1))  # Dark charcoal grey
     floor_mat = create_material("FloorWood", (0.5, 0.35, 0.2, 1))
     
     # === GROUND FLOOR EXTERIOR WALLS ===
@@ -133,31 +134,194 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
     bpy.ops.object.transform_apply(scale=True)
     first_floor_slab.data.materials.append(floor_mat)
     
+    # === ENTRANCE PORCH (WEST SIDE) ===
+    
+    # Porch dimensions: 2.5m × 2.5m floor, walls wrap 2.5m width × 1.5m depth
+    # Remaining 1m is open but covered by porch roof
+    PORCH_WIDTH = 2.5   # North-south dimension
+    PORCH_TOTAL_DEPTH = 2.5   # Total east-west depth
+    PORCH_WALL_DEPTH = 1.5    # Depth covered by walls
+    PORCH_OPEN_DEPTH = 1.0    # Open covered area (2.5 - 1.5)
+    PORCH_HEIGHT = GROUND_FLOOR_HEIGHT  # Same height as ground floor
+    PORCH_WALL_THICKNESS = EXTERIOR_WALL_THICKNESS
+    
+    porch_mat = potius_mat  # Use same material as main building
+    
+    # Porch floor/deck - positioned west of west wall, centered
+    porch_center_x = ox + LENGTH/2 + PORCH_TOTAL_DEPTH/2
+    porch_center_y = oy  # Centered on building
+    
+    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz + 0.05))
+    porch_floor = bpy.context.active_object
+    porch_floor.name = "MainDwelling_PorchFloor"
+    porch_floor.scale = (PORCH_TOTAL_DEPTH/2, PORCH_WIDTH/2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+    porch_floor.data.materials.append(floor_mat)
+    
+    # Porch walls - wrap the 2.5m width and first 1.5m of depth
+    
+    # North porch wall (runs E-W for 1.5m)
+    porch_wall_x = ox + LENGTH/2 + PORCH_WALL_DEPTH/2
+    north_porch_wall_y = oy - PORCH_WIDTH/2 + PORCH_WALL_THICKNESS/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(porch_wall_x, north_porch_wall_y, oz + PORCH_HEIGHT/2))
+    north_porch_wall = bpy.context.active_object
+    north_porch_wall.name = "MainDwelling_PorchWall_North"
+    north_porch_wall.scale = (PORCH_WALL_DEPTH/2, PORCH_WALL_THICKNESS/2, PORCH_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    north_porch_wall.data.materials.append(porch_mat)
+    
+    # South porch wall (runs E-W for 1.5m)
+    south_porch_wall_y = oy + PORCH_WIDTH/2 - PORCH_WALL_THICKNESS/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(porch_wall_x, south_porch_wall_y, oz + PORCH_HEIGHT/2))
+    south_porch_wall = bpy.context.active_object
+    south_porch_wall.name = "MainDwelling_PorchWall_South"
+    south_porch_wall.scale = (PORCH_WALL_DEPTH/2, PORCH_WALL_THICKNESS/2, PORCH_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    south_porch_wall.data.materials.append(porch_mat)
+    
+    # West porch wall (partial - connects north and south walls at 1.5m mark)
+    west_porch_wall_x = ox + LENGTH/2 + PORCH_WALL_DEPTH - PORCH_WALL_THICKNESS/2
+    porch_wall_span = PORCH_WIDTH - 2*PORCH_WALL_THICKNESS  # Between north and south walls
+    
+    bpy.ops.mesh.primitive_cube_add(location=(west_porch_wall_x, oy, oz + PORCH_HEIGHT/2))
+    west_porch_wall = bpy.context.active_object
+    west_porch_wall.name = "MainDwelling_PorchWall_West"
+    west_porch_wall.scale = (PORCH_WALL_THICKNESS/2, porch_wall_span/2, PORCH_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    west_porch_wall.data.materials.append(porch_mat)
+    
+    # Porch entrance door on west wall
+    # Position needs to be on OUTER face of wall (west side)
+    porch_door_x = ox + LENGTH/2 + PORCH_WALL_DEPTH  # Outer face, not center
+    print(f"Adding porch door at x={porch_door_x}, y={oy}, z={oz + 1.0}")
+    add_window("MainDwelling_PorchWall_West", (porch_door_x, oy, oz + 1.0), 
+               width=0.9, height=2.0, depth=PORCH_WALL_THICKNESS, axis='X', inward_offset='-X')
+    print("Porch door window call completed")
+    
+    # Porch gable roof - 35° pitch, ridge running E-W like main roof
+    PORCH_ROOF_PITCH = 35
+    PORCH_ROOF_OVERHANG = 0.3  # Small overhang
+    
+    porch_roof_height_from_eaves = (PORCH_WIDTH / 2) * math.tan(math.radians(PORCH_ROOF_PITCH))
+    porch_eave_height = oz + PORCH_HEIGHT
+    porch_ridge_height = porch_eave_height + porch_roof_height_from_eaves
+    
+    # Create porch roof mesh
+    porch_roof_mesh = bpy.data.meshes.new("MainDwelling_PorchRoofMesh")
+    porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof", porch_roof_mesh)
+    bpy.context.collection.objects.link(porch_roof_obj)
+    
+    # Porch roof vertices with overhang
+    porch_roof_length = PORCH_TOTAL_DEPTH + 2 * PORCH_ROOF_OVERHANG
+    porch_roof_west = ox + LENGTH/2 + PORCH_TOTAL_DEPTH + PORCH_ROOF_OVERHANG
+    porch_roof_east = ox + LENGTH/2 - PORCH_ROOF_OVERHANG
+    porch_roof_north = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
+    porch_roof_south = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
+    
+    porch_verts = [
+        # North eave edge
+        (porch_roof_east, porch_roof_north, porch_eave_height),
+        (porch_roof_west, porch_roof_north, porch_eave_height),
+        # Ridge line (center)
+        (porch_roof_east, oy, porch_ridge_height),
+        (porch_roof_west, oy, porch_ridge_height),
+        # South eave edge
+        (porch_roof_east, porch_roof_south, porch_eave_height),
+        (porch_roof_west, porch_roof_south, porch_eave_height),
+    ]
+    
+    porch_faces = [
+        (0, 1, 3, 2),  # North roof slope
+        (2, 3, 5, 4),  # South roof slope
+    ]
+    
+    porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
+    porch_roof_mesh.update()
+    porch_roof_obj.data.materials.append(create_corrugated_iron_material())
+    
+    # Large opening in main building's west wall connecting to porch
+    # Opening should be wide enough for comfortable access (2m wide, 2.2m high)
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy, oz + 1.1), 
+               width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    
     # === WINDOWS AND DOORS ===
     
-    # Ground floor north wall - Large windows and patio doors
-    # Add three large window sections
-    window_height = 2.0  # Tall windows for ground floor
-    window_z = oz + 1.0  # 1m from ground
+    # GROUND FLOOR - NORTH WALL
+    # 3 large windows/patio doors: 2m height, widths 1.5m, 2.0m, 1.5m, evenly spaced
+    window_z_ground = oz + 1.0  # 1m from ground
+    spacing = LENGTH / 4  # Evenly space 3 windows across 8m length
     
-    # Window positions along north wall (spread along 8m length)
-    add_window("MainDwelling_NorthWall_Ground", (ox - 2.5, oy - WIDTH/2, window_z), 
-               width=1.5, height=window_height, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
-    add_window("MainDwelling_NorthWall_Ground", (ox, oy - WIDTH/2, window_z), 
-               width=2.0, height=window_height, depth=EXTERIOR_WALL_THICKNESS, axis='Y')  # Center patio door
-    add_window("MainDwelling_NorthWall_Ground", (ox + 2.5, oy - WIDTH/2, window_z), 
-               width=1.5, height=window_height, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, oy - WIDTH/2, window_z_ground), 
+               width=1.5, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox, oy - WIDTH/2, window_z_ground), 
+               width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')  # Center
+    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, oy - WIDTH/2, window_z_ground), 
+               width=1.5, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
     
-    # Ground floor east wall - Entrance
-    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy, oz + 1.0), 
-               width=1.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X')  # Door
+    # FIRST FLOOR - NORTH WALL
+    # 3 windows matching ground floor placement, 1.2m height
+    window_z_first = first_floor_z + 1.2
     
-    # First floor windows - smaller standard windows
-    first_window_z = first_floor_z + 1.2
-    add_window("MainDwelling_NorthWall_First", (ox - 2.0, oy - WIDTH/2, first_window_z), 
-               width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
-    add_window("MainDwelling_NorthWall_First", (ox + 2.0, oy - WIDTH/2, first_window_z), 
-               width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_First", (ox - spacing, oy - WIDTH/2, window_z_first), 
+               width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_First", (ox, oy - WIDTH/2, window_z_first), 
+               width=2.0, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')  # Center
+    add_window("MainDwelling_NorthWall_First", (ox + spacing, oy - WIDTH/2, window_z_first), 
+               width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    
+    # GROUND FLOOR - EAST WALL
+    # 2 small windows (0.8m wide, 1.0m high)
+    east_window_spacing = WIDTH / 3
+    
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - east_window_spacing/2, oz + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + east_window_spacing/2, oz + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    
+    # FIRST FLOOR - EAST WALL
+    # 2 small windows (0.8m wide, 1.0m high)
+    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - east_window_spacing/2, first_floor_z + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + east_window_spacing/2, first_floor_z + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    
+    # GROUND FLOOR - WEST WALL
+    # 2 very small windows (0.5m wide, 0.6m high) - accounting for porch
+    west_window_spacing = WIDTH / 3
+    
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - west_window_spacing, oz + 1.8), 
+               width=0.5, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + west_window_spacing, oz + 1.8), 
+               width=0.5, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    
+    # FIRST FLOOR - WEST WALL
+    # 2 small windows (0.8m wide, 1.0m high)
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - west_window_spacing, first_floor_z + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + west_window_spacing, first_floor_z + 1.2), 
+               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    
+    # GROUND FLOOR - SOUTH WALL
+    # 3 medium windows (1.2m wide, 1.4m high), evenly spaced
+    south_spacing = LENGTH / 4
+    
+    add_window("MainDwelling_SouthWall_Ground", (ox - south_spacing, oy + WIDTH/2, oz + 1.0), 
+               width=1.2, height=1.4, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox, oy + WIDTH/2, oz + 1.0), 
+               width=1.2, height=1.4, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')  # Center
+    add_window("MainDwelling_SouthWall_Ground", (ox + south_spacing, oy + WIDTH/2, oz + 1.0), 
+               width=1.2, height=1.4, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    
+    # FIRST FLOOR - SOUTH WALL
+    # 3 medium windows (1.2m wide, 1.2m high), evenly spaced
+    add_window("MainDwelling_SouthWall_First", (ox - south_spacing, oy + WIDTH/2, first_floor_z + 1.2), 
+               width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')  # Left
+    add_window("MainDwelling_SouthWall_First", (ox, oy + WIDTH/2, first_floor_z + 1.2), 
+               width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')  # Center
+    add_window("MainDwelling_SouthWall_First", (ox + south_spacing, oy + WIDTH/2, first_floor_z + 1.2), 
+               width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')  # Right
     
     # === GABLE ROOF ===
     if show_roof:
@@ -200,8 +364,8 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
         mesh.update()
         obj.data.materials.append(roof_mat)
         
-        # Gable end triangles (East and West)
-        gable_material = create_material("GableEnd", (0.85, 0.85, 0.82, 1))
+        # Gable end triangles (East and West) - dark charcoal to match walls
+        gable_material = create_material("GableEnd", (0.22, 0.22, 0.24, 1))
         
         # Create gable mesh manually for precise triangle shape
         for side, x_pos in [("East", ox - LENGTH/2), ("West", ox + LENGTH/2)]:

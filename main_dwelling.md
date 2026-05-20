@@ -11,9 +11,6 @@ A full two storey rectangular box, 6 meters by 8 meters. The 8 meter length runs
 - Exterior wall thinkness is 200mm or as per potius specs.
 - Ground floor ceiling height should be 2.5 meters
 - First floor ceiling height should be 2.4 meters
-- Ground floor windows & doors
-    - North wall - patio doors and big windows
-    - East wall - entrance
 
 ### Roof
 - A gable roof
@@ -26,6 +23,60 @@ When creating the gable roof in Blender, use a custom mesh with vertices positio
 - North and south eave edges (at `eave_height = top of walls`)
 - Ridge line at center (at `ridge_height = eave_height + (WIDTH/2) * tan(pitch)`)
 Then define two faces for the north and south slopes. This avoids complex rotation math and positioning errors.
+
+### Entrance / Porch
+Sticking out to the west of the west wall we have a small porch. 
+- floor area 2.5 meters wide by 2.5 meters deep 
+- should be covered by a 35 degree gable roof with the ridge line running east to west like the main roof.
+- aligned centrally on the west wall
+- external wall should wrap the 2.5 meter width and 1.5 meters of the depth
+- remaining 1 meter is outside but still covered by the porch roof.
+- An entrance door will be on the west side of the porch.
+
+### Windows 
+
+- Ground floor north wall - 3 large windows / patio doors. 2 meters height. 1.5, 2.0, 1.5 meter widths respectively, evenly spaced aling the wall.
+- First floor north wall - 3 windows. width and placement matching ground floor but height only 1.2 meters.
+- Ground floor east wall - 2 small windows
+- First floor east wall - 2 small windows
+- Ground floor west wall - 2 very small windows taking into account of porch
+- First floor west wall - 2 small windows
+- Ground floor south wall - 3 medium windows evenly spaced
+- First floor south wall - 3 medium windows evenly spaced
+
+### Exterior cladding
+For our location on a mountain spur at 800m elevation surrounded by native beech forest, we want cladding that is durable in exposed conditions and blends harmoniously with the forest setting.
+
+**Recommended Options:**
+
+1. **Vertical Cedar Weatherboards** (Primary recommendation)
+   - Natural Western Red Cedar or NZ-grown Macrocarpa
+   - Vertical orientation with 150mm spacing shadowclad grooves
+   - Oiled or stained in dark natural tones (charcoal grey, dark brown, or black stain)
+   - Allows building to recede visually into forest backdrop
+   - Excellent weather resistance for mountain conditions
+   - Natural oils provide protection against moisture and UV
+
+2. **Dark Stained Timber (Alternative)**
+   - Treated pine or cedar horizontal weatherboards
+   - Dark stain colors: Resene "Ironsand", "Bokara Grey", or similar
+   - Creates shadow effect that minimizes building presence in clearing
+   - Cost-effective if cedar is unavailable
+
+3. **Mixed Cladding (Feature option)**
+   - Vertical dark-stained cedar on main walls
+   - Natural unstained cedar or lighter tone on gable ends for accent
+   - Creates subtle architectural interest while maintaining forest harmony
+
+**Color Palette:**
+- Walls: Dark charcoal, graphite grey, or deep brown (to blend with tree trunks and shadows)
+- Window frames: Off-white or soft cream (contrast for definition)
+- Roof: Dark grey or black corrugated iron (recessive, traditional NZ rural)
+
+**Weather Considerations:**
+- All cladding must handle high moisture, wind exposure, and potential snow load
+- Minimum 150mm ground clearance for splash protection
+- Proper flashing and drip edges critical at 800m elevation
 
 ## Interior
 - Internal wall thickness 110mm. 

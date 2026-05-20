@@ -48,7 +48,7 @@ cleanup()
 setup_blue_sky()
 
 # Toggle features on/off
-SHOW_GROUND = True  # Set to False to hide ground terrain
+SHOW_GROUND = False  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
