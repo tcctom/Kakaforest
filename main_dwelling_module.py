@@ -272,20 +272,20 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
                width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
     
     # GROUND FLOOR - EAST WALL
-    # 2 small windows (0.8m wide, 1.0m high)
+    # 2 small windows (1.2m wide, 1.0m high)
     east_window_spacing = WIDTH / 3
     
     add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - east_window_spacing/2, oz + 1.2), 
-               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+               width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + east_window_spacing/2, oz + 1.2), 
-               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+               width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # FIRST FLOOR - EAST WALL
-    # 2 small windows (0.8m wide, 1.0m high)
+    # 2 small windows (1.2m wide, 1.0m high)
     add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - east_window_spacing/2, first_floor_z + 1.2), 
-               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+               width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + east_window_spacing/2, first_floor_z + 1.2), 
-               width=0.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+               width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # GROUND FLOOR - WEST WALL
     # 2 very small windows (0.5m wide, 0.6m high) - accounting for porch

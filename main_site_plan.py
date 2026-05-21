@@ -48,7 +48,7 @@ cleanup()
 setup_blue_sky()
 
 # Toggle features on/off
-SHOW_GROUND = False  # Set to False to hide ground terrain
+SHOW_GROUND = True  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
@@ -121,6 +121,22 @@ if SHOW_GROUND:
     ground_module.forest_plane(southwest_björken)
 
     ground_module.forest_plane(slope_parking_to_cottage_west)
+    
+    # Main Dwelling area (60m north of Björken, 5m lower elevation)
+    # Ground level at -5.0, building sits on slight clearing
+    main_dwelling_clearing = grid_points((-6, -68, -5.0), (6, -52, -5.0), x_spacing=0.4)
+    ground_module.grass_plane(main_dwelling_clearing)
+    
+    # Forest surrounds on all sides of main dwelling
+    main_dwelling_forest_north = grid_points((-8, -72, -5.2), (8, -68, -5.1), x_spacing=0.5)
+    main_dwelling_forest_south = grid_points((-8, -52, -5.1), (8, -48, -4.8), x_spacing=0.5)
+    main_dwelling_forest_east = grid_points((-10, -68, -5.2), (-6, -52, -5.1), x_spacing=0.5)
+    main_dwelling_forest_west = grid_points((6, -68, -5.1), (10, -52, -5.0), x_spacing=0.5)
+    
+    ground_module.forest_plane(main_dwelling_forest_north)
+    ground_module.forest_plane(main_dwelling_forest_south)
+    ground_module.forest_plane(main_dwelling_forest_east)
+    ground_module.forest_plane(main_dwelling_forest_west)
 
 # 1. Build existing cottage
 # Set show_roof=False to hide roof for interior viewing
