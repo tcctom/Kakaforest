@@ -145,7 +145,10 @@ björken_module.build_red_cottage(origin=(0, 0, 0))
 # 1a. Build Main Dwelling
 # Located 60m north (-Y direction) and 5m lower than Björken cottage
 # This is the new two-story 6m × 8m main dwelling structure
-main_dwelling_module.build_main_dwelling(origin=(0, -60, -5.0), show_roof=True)
+# Roof options: 
+#   - "traditional": Overhang on all sides, separate gable end triangles
+#   - "flush": Flush with all walls, north side extends 1m down for balcony shading
+main_dwelling_module.build_main_dwelling(origin=(0, -60, -5.0), show_roof=True, roof_style="flush")
 
 # 1b. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))

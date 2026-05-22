@@ -16,7 +16,10 @@ A full two storey rectangular box, 6 meters by 8 meters. The 8 meter length runs
 - A gable roof
 - 35 degree pitch
 - Ridge line running east to west the 8 meter length 
-- Industry standard overhangs on all sides
+- Want to be able to explore 2 different roof option. Flush Gable and Traditional Gable 
+- Industry standard overhangs on all sides for the Traditional Gable
+- on the north side we want the roof to continue down for another meter to proved some shading for a north facing balcony across the full length
+
 
 **Technical Note for Blender Implementation:**
 When creating the gable roof in Blender, use a custom mesh with vertices positioned at exact locations (eaves and ridge), rather than rotating flat panels. This is the same approach used in the Björken module. Create vertices at:
@@ -45,7 +48,7 @@ Sticking out to the west of the west wall we have a small porch.
 - First floor south wall - 3 medium windows evenly spaced
 
 ### Exterior cladding
-For our location on a mountain spur at 800m elevation surrounded by native beech forest, we want cladding that is durable in exposed conditions and blends harmoniously with the forest setting.
+For our location on a mountain spur at 800m elevation surrounded by native beech forest, we want cladding that is durable in exposed conditions and blends harmoniously with the beech forest setting.
 
 **Recommended Options:**
 

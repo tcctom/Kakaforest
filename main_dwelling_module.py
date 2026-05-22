@@ -10,7 +10,7 @@ def create_material(name, color):
     mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = color
     return mat
 
-def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
+def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditional"):
     """
     Build the main dwelling structure based on specifications:
     - 6m × 8m rectangular base (8m runs east-west)
@@ -23,6 +23,8 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
     Args:
         origin: (x, y, z) tuple for building location
         show_roof: Boolean to show/hide roof for interior viewing
+        roof_style: "traditional" (overhang on all sides, separate gable ends) or 
+                    "flush" (flush with walls, north side extends 1m down for balcony shading)
     """
     ox, oy, oz = origin
     
@@ -332,57 +334,108 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True):
         
         # Create corrugated iron material
         roof_mat = create_corrugated_iron_material()
-        
-        # Create roof as custom mesh (like Björken does)
-        mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
-        obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
-        bpy.context.collection.objects.link(obj)
-        
-        # Define vertices for roof with overhang
-        half_length = (LENGTH + 2 * ROOF_OVERHANG) / 2
-        north_eave_y = oy - WIDTH/2 - ROOF_OVERHANG
-        south_eave_y = oy + WIDTH/2 + ROOF_OVERHANG
-        
-        verts = [
-            # North eave edge (4 corners)
-            (ox - half_length, north_eave_y, eave_height),  # 0: NW corner
-            (ox + half_length, north_eave_y, eave_height),  # 1: NE corner
-            # Ridge (2 points)
-            (ox - half_length, oy, ridge_height),            # 2: W ridge
-            (ox + half_length, oy, ridge_height),            # 3: E ridge
-            # South eave edge (2 corners)
-            (ox - half_length, south_eave_y, eave_height),  # 4: SW corner
-            (ox + half_length, south_eave_y, eave_height),  # 5: SE corner
-        ]
-        
-        faces = [
-            (0, 1, 3, 2),  # North roof plane
-            (2, 3, 5, 4),  # South roof plane
-        ]
-        
-        mesh.from_pydata(verts, [], faces)
-        mesh.update()
-        obj.data.materials.append(roof_mat)
-        
-        # Gable end triangles (East and West) - dark charcoal to match walls
         gable_material = create_material("GableEnd", (0.22, 0.22, 0.24, 1))
         
-        # Create gable mesh manually for precise triangle shape
-        for side, x_pos in [("East", ox - LENGTH/2), ("West", ox + LENGTH/2)]:
-            verts = [
-                (x_pos, oy - WIDTH/2, eave_height),     # Bottom left (north eave)
-                (x_pos, oy + WIDTH/2, eave_height),     # Bottom right (south eave)
-                (x_pos, oy, ridge_height)                # Top center (ridge)
-            ]
-            edges = []
-            faces = [(0, 1, 2)]
+        if roof_style == "flush":
+            # FLUSH GABLE: Roof is flush with all wall planes (no overhang)
+            # North side extends down 1m for balcony shading
+            mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
+            obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
+            bpy.context.collection.objects.link(obj)
             
-            mesh = bpy.data.meshes.new(f"MainDwelling_Gable_{side}")
-            mesh.from_pydata(verts, edges, faces)
+            # Flush with wall faces (no overhang on any side)
+            east_edge = ox - LENGTH/2
+            west_edge = ox + LENGTH/2
+            south_eave_y = oy + WIDTH/2  # Flush with south wall
+            
+            # North side: extends down 1m below eave for balcony shading
+            # Calculate how far north to extend to drop 1m at 35° pitch
+            BALCONY_SHADE_DROP = 1.0  # meters
+            north_extension = BALCONY_SHADE_DROP / math.tan(math.radians(ROOF_PITCH))
+            north_eave_y = oy - WIDTH/2 - north_extension  # Extended north for shading
+            north_eave_z = eave_height - BALCONY_SHADE_DROP  # Dropped 1m
+            
+            verts = [
+                # North eave edge (extended for balcony shading)
+                (east_edge, north_eave_y, north_eave_z),    # 0: NE corner
+                (west_edge, north_eave_y, north_eave_z),    # 1: NW corner
+                # Ridge points
+                (east_edge, oy, ridge_height),              # 2: E ridge
+                (west_edge, oy, ridge_height),              # 3: W ridge
+                # South eave edge (flush with wall)
+                (east_edge, south_eave_y, eave_height),     # 4: SE corner
+                (west_edge, south_eave_y, eave_height),     # 5: SW corner
+            ]
+            
+            faces = [
+                (0, 1, 3, 2),  # North roof slope (extended for balcony)
+                (2, 3, 5, 4),  # South roof slope
+                (0, 2, 4),     # East gable triangle
+                (1, 5, 3),     # West gable triangle
+            ]
+            
+            mesh.from_pydata(verts, [], faces)
             mesh.update()
             
-            gable = bpy.data.objects.new(f"MainDwelling_Gable_{side}", mesh)
-            bpy.context.collection.objects.link(gable)
-            gable.data.materials.append(gable_material)
+            # Apply materials - roof slopes get corrugated iron, gables get wall material
+            obj.data.materials.append(roof_mat)
+            obj.data.materials.append(gable_material)
+            
+            # Assign materials to faces
+            for i, face in enumerate(mesh.polygons):
+                if i < 2:  # First two faces are roof slopes
+                    face.material_index = 0
+                else:  # Last two faces are gable ends
+                    face.material_index = 1
+            
+        else:  # roof_style == "traditional"
+            # TRADITIONAL GABLE: Separate gable end triangles with overhang on all sides
+            mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
+            obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
+            bpy.context.collection.objects.link(obj)
+            
+            # Define vertices for roof with overhang on all sides
+            half_length = (LENGTH + 2 * ROOF_OVERHANG) / 2
+            north_eave_y = oy - WIDTH/2 - ROOF_OVERHANG
+            south_eave_y = oy + WIDTH/2 + ROOF_OVERHANG
+            
+            verts = [
+                # North eave edge
+                (ox - half_length, north_eave_y, eave_height),  # 0: NW corner
+                (ox + half_length, north_eave_y, eave_height),  # 1: NE corner
+                # Ridge
+                (ox - half_length, oy, ridge_height),            # 2: W ridge
+                (ox + half_length, oy, ridge_height),            # 3: E ridge
+                # South eave edge
+                (ox - half_length, south_eave_y, eave_height),  # 4: SW corner
+                (ox + half_length, south_eave_y, eave_height),  # 5: SE corner
+            ]
+            
+            faces = [
+                (0, 1, 3, 2),  # North roof plane
+                (2, 3, 5, 4),  # South roof plane
+            ]
+            
+            mesh.from_pydata(verts, [], faces)
+            mesh.update()
+            obj.data.materials.append(roof_mat)
+            
+            # Create separate gable end triangles
+            for side, x_pos in [("East", ox - LENGTH/2), ("West", ox + LENGTH/2)]:
+                verts = [
+                    (x_pos, oy - WIDTH/2, eave_height),     # Bottom left (north eave)
+                    (x_pos, oy + WIDTH/2, eave_height),     # Bottom right (south eave)
+                    (x_pos, oy, ridge_height)                # Top center (ridge)
+                ]
+                edges = []
+                faces = [(0, 1, 2)]
+                
+                gable_mesh = bpy.data.meshes.new(f"MainDwelling_Gable_{side}")
+                gable_mesh.from_pydata(verts, edges, faces)
+                gable_mesh.update()
+                
+                gable = bpy.data.objects.new(f"MainDwelling_Gable_{side}", gable_mesh)
+                bpy.context.collection.objects.link(gable)
+                gable.data.materials.append(gable_material)
     
     print(f"Main Dwelling built at origin {origin}")
