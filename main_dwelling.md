@@ -1,4 +1,5 @@
 # Kaka forest main dwelling
+Simple, modern, fitting, strong, eco, 
 
 ## Location
 60 meters north of Björken (red cottage), elevation 5 meters lower.
@@ -35,6 +36,9 @@ Sticking out to the west of the west wall we have a small porch.
 - external wall should wrap the 2.5 meter width and 1.5 meters of the depth
 - remaining 1 meter is outside but still covered by the porch roof.
 - An entrance door will be on the west side of the porch.
+
+Option 2
+can you also create another entrance porch option for me? same witdth along the west face as existing but only coming our 1.5 meters and not enclosed, i.e. just a roof and a deck. roof would be simple monopitch rather than gable. main entrance door would be on the main structure west  wall. 
 
 ### Windows 
 
@@ -83,3 +87,5 @@ For our location on a mountain spur at 800m elevation surrounded by native beech
 
 ## Interior
 - Internal wall thickness 110mm. 
+### Master bedroom
+This will be on the east side of the first floor. east west width 4 meters. north south length the full 6 meters. ensuit in south east corner, walk in wardrobe to the west of that.
