@@ -87,5 +87,6 @@ For our location on a mountain spur at 800m elevation surrounded by native beech
 
 ## Interior
 - Internal wall thickness 110mm. 
+- Interior walls that connect with an exterior wall should sit flush with the inside face of the exterior wall.
 ### Master bedroom
 This will be on the east side of the first floor. east west width 4 meters. north south length the full 6 meters. ensuit in south east corner, walk in wardrobe to the west of that.

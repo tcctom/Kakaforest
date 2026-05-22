@@ -261,13 +261,14 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     # - Walk-in wardrobe west of ensuite (2m × 2m)
     
     # Main partition wall - divides building E-W (master bedroom on east, other space on west)
-    # Runs N-S along centerline at x = ox
+    # Runs N-S along centerline at x = ox, flush with interior faces of north/south walls
     main_partition_x = ox  # Centerline of building
+    interior_depth = WIDTH - 2 * EXTERIOR_WALL_THICKNESS  # Interior N-S dimension
     
     bpy.ops.mesh.primitive_cube_add(location=(main_partition_x, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     main_partition = bpy.context.active_object
     main_partition.name = "MainDwelling_FirstFloor_MainPartition"
-    main_partition.scale = (INTERIOR_WALL_THICKNESS/2, WIDTH/2, FIRST_FLOOR_HEIGHT/2)
+    main_partition.scale = (INTERIOR_WALL_THICKNESS/2, interior_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     main_partition.data.materials.append(interior_wall_mat)
     
@@ -276,12 +277,18 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     ENSUITE_WIDTH = 2.0  # East-west dimension
     WARDROBE_WIDTH = 2.0  # East-west dimension
     
-    # Partition wall separating bedroom from ensuite/wardrobe area
-    # Runs E-W in south part of bedroom
-    bedroom_partition_y = oy + WIDTH/2 - ENSUITE_DEPTH  # 2m north of south wall
-    bedroom_partition_length = LENGTH/2  # 4m (full width of master bedroom)
+    # Interior dimensions of master bedroom
+    bedroom_interior_width = LENGTH/2 - EXTERIOR_WALL_THICKNESS  # E-W interior width
+    south_interior_face = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS  # Inner face of south wall
+    east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS  # Inner face of east wall
     
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/4, bedroom_partition_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    # Partition wall separating bedroom from ensuite/wardrobe area
+    # Runs E-W in south part of bedroom, 2m north of south interior face
+    bedroom_partition_y = south_interior_face - ENSUITE_DEPTH  
+    bedroom_partition_length = bedroom_interior_width  # Flush with east wall to main partition
+    bedroom_partition_center_x = east_interior_face + bedroom_interior_width/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     bedroom_south_partition = bpy.context.active_object
     bedroom_south_partition.name = "MainDwelling_FirstFloor_BedroomSouthPartition"
     bedroom_south_partition.scale = (bedroom_partition_length/2, INTERIOR_WALL_THICKNESS/2, FIRST_FLOOR_HEIGHT/2)
@@ -289,11 +296,12 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     bedroom_south_partition.data.materials.append(interior_wall_mat)
     
     # Wall dividing ensuite (east) from walk-in wardrobe (west)
-    # Runs N-S between the two spaces
-    ensuite_wardrobe_wall_x = ox - LENGTH/4  # Midpoint of bedroom (2m from each side)
+    # Runs N-S between the two spaces, 2m from east interior face
+    ensuite_wardrobe_wall_x = east_interior_face + ENSUITE_WIDTH
     ensuite_wardrobe_wall_length = ENSUITE_DEPTH  # 2m N-S
+    ensuite_wardrobe_wall_center_y = south_interior_face - ENSUITE_DEPTH/2
     
-    bpy.ops.mesh.primitive_cube_add(location=(ensuite_wardrobe_wall_x, oy + WIDTH/2 - ENSUITE_DEPTH/2, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     ensuite_wardrobe_wall = bpy.context.active_object
     ensuite_wardrobe_wall.name = "MainDwelling_FirstFloor_EnsuiteWardrobeWall"
     ensuite_wardrobe_wall.scale = (INTERIOR_WALL_THICKNESS/2, ensuite_wardrobe_wall_length/2, FIRST_FLOOR_HEIGHT/2)
@@ -307,11 +315,11 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # Door from bedroom to ensuite (in bedroom south partition, east side)
-    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ox - LENGTH/2 + 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
+    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (east_interior_face + 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
                width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
-    # Door from bedroom to walk-in wardrobe (in bedroom south partition, west side)
-    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ox - 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
+    # Door from bedroom to walk-in wardrobe (in bedroom south partition, between wardrobe and bedroom)
+    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ensuite_wardrobe_wall_x + 0.5, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # === WINDOWS AND DOORS ===
@@ -702,13 +710,14 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     # - Walk-in wardrobe west of ensuite (2m × 2m)
     
     # Main partition wall - divides building E-W (master bedroom on east, other space on west)
-    # Runs N-S along centerline at x = ox
+    # Runs N-S along centerline at x = ox, flush with interior faces of north/south walls
     main_partition_x = ox  # Centerline of building
+    interior_depth = WIDTH - 2 * EXTERIOR_WALL_THICKNESS  # Interior N-S dimension
     
     bpy.ops.mesh.primitive_cube_add(location=(main_partition_x, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     main_partition = bpy.context.active_object
     main_partition.name = "MainDwelling_FirstFloor_MainPartition"
-    main_partition.scale = (INTERIOR_WALL_THICKNESS/2, WIDTH/2, FIRST_FLOOR_HEIGHT/2)
+    main_partition.scale = (INTERIOR_WALL_THICKNESS/2, interior_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     main_partition.data.materials.append(interior_wall_mat)
     
@@ -717,12 +726,18 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     ENSUITE_WIDTH = 2.0  # East-west dimension
     WARDROBE_WIDTH = 2.0  # East-west dimension
     
-    # Partition wall separating bedroom from ensuite/wardrobe area
-    # Runs E-W in south part of bedroom
-    bedroom_partition_y = oy + WIDTH/2 - ENSUITE_DEPTH  # 2m north of south wall
-    bedroom_partition_length = LENGTH/2  # 4m (full width of master bedroom)
+    # Interior dimensions of master bedroom
+    bedroom_interior_width = LENGTH/2 - EXTERIOR_WALL_THICKNESS  # E-W interior width
+    south_interior_face = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS  # Inner face of south wall
+    east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS  # Inner face of east wall
     
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/4, bedroom_partition_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    # Partition wall separating bedroom from ensuite/wardrobe area
+    # Runs E-W in south part of bedroom, 2m north of south interior face
+    bedroom_partition_y = south_interior_face - ENSUITE_DEPTH  
+    bedroom_partition_length = bedroom_interior_width  # Flush with east wall to main partition
+    bedroom_partition_center_x = east_interior_face + bedroom_interior_width/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     bedroom_south_partition = bpy.context.active_object
     bedroom_south_partition.name = "MainDwelling_FirstFloor_BedroomSouthPartition"
     bedroom_south_partition.scale = (bedroom_partition_length/2, INTERIOR_WALL_THICKNESS/2, FIRST_FLOOR_HEIGHT/2)
@@ -730,11 +745,12 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bedroom_south_partition.data.materials.append(interior_wall_mat)
     
     # Wall dividing ensuite (east) from walk-in wardrobe (west)
-    # Runs N-S between the two spaces
-    ensuite_wardrobe_wall_x = ox - LENGTH/4  # Midpoint of bedroom (2m from each side)
+    # Runs N-S between the two spaces, 2m from east interior face
+    ensuite_wardrobe_wall_x = east_interior_face + ENSUITE_WIDTH
     ensuite_wardrobe_wall_length = ENSUITE_DEPTH  # 2m N-S
+    ensuite_wardrobe_wall_center_y = south_interior_face - ENSUITE_DEPTH/2
     
-    bpy.ops.mesh.primitive_cube_add(location=(ensuite_wardrobe_wall_x, oy + WIDTH/2 - ENSUITE_DEPTH/2, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     ensuite_wardrobe_wall = bpy.context.active_object
     ensuite_wardrobe_wall.name = "MainDwelling_FirstFloor_EnsuiteWardrobeWall"
     ensuite_wardrobe_wall.scale = (INTERIOR_WALL_THICKNESS/2, ensuite_wardrobe_wall_length/2, FIRST_FLOOR_HEIGHT/2)
@@ -748,11 +764,11 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # Door from bedroom to ensuite (in bedroom south partition, east side)
-    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ox - LENGTH/2 + 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
+    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (east_interior_face + 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
                width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
-    # Door from bedroom to walk-in wardrobe (in bedroom south partition, west side)
-    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ox - 1.0, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
+    # Door from bedroom to walk-in wardrobe (in bedroom south partition, between wardrobe and bedroom)
+    add_window("MainDwelling_FirstFloor_BedroomSouthPartition", (ensuite_wardrobe_wall_x + 0.5, bedroom_partition_y + INTERIOR_WALL_THICKNESS/2, first_floor_z + 1.0), 
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # === WINDOWS AND DOORS ===
