@@ -38,21 +38,20 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     bpy.ops.object.transform_apply(scale=True)
     south_wall_ground.data.materials.append(potius_mat)
     
-    # East Wall (spans from recessed north wall to south wall)
-    east_wall_center_y = (north_wall_y + south_wall_y) / 2
-    east_wall_depth = south_wall_y - north_wall_y - EXTERIOR_WALL_THICKNESS
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, east_wall_center_y, oz + GROUND_FLOOR_HEIGHT/2))
+    # East Wall (spans FULL 7m north-south, independent of recessed north wall)
+    east_west_wall_depth = WIDTH - EXTERIOR_WALL_THICKNESS  # Full 7m span minus wall thickness
+    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
     east_wall_ground = bpy.context.active_object
     east_wall_ground.name = "MainDwelling_EastWall_Ground"
-    east_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
+    east_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     east_wall_ground.data.materials.append(potius_mat)
     
-    # West Wall (spans from recessed north wall to south wall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, east_wall_center_y, oz + GROUND_FLOOR_HEIGHT/2))
+    # West Wall (spans FULL 7m north-south, independent of recessed north wall)
+    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
     west_wall_ground = bpy.context.active_object
     west_wall_ground.name = "MainDwelling_WestWall_Ground"
-    west_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
+    west_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     west_wall_ground.data.materials.append(potius_mat)
     
@@ -73,19 +72,19 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     bpy.ops.object.transform_apply(scale=True)
     south_wall_first.data.materials.append(potius_mat)
     
-    # East Wall (spans from recessed north wall to south wall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, east_wall_center_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    # East Wall (spans FULL 7m north-south, independent of recessed north wall)
+    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     east_wall_first = bpy.context.active_object
     east_wall_first.name = "MainDwelling_EastWall_First"
-    east_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
+    east_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     east_wall_first.data.materials.append(potius_mat)
     
-    # West Wall (spans from recessed north wall to south wall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, east_wall_center_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    # West Wall (spans FULL 7m north-south, independent of recessed north wall)
+    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     west_wall_first = bpy.context.active_object
     west_wall_first.name = "MainDwelling_WestWall_First"
-    west_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
+    west_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     west_wall_first.data.materials.append(potius_mat)
 
@@ -152,17 +151,22 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
         step.data.materials.append(stairs_mat)
 
 
-def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
-    """Create ground floor interior partitions for guest bedroom with built-in wardrobe"""
+def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    """Create ground floor interior partitions for guest bedroom with built-in wardrobe
+    
+    Args:
+        WIDTH: Total building width (7m - full roof span)
+        ENCLOSED_WIDTH: Enclosed building width (6m - north wall recessed)
+    """
     interior_wall_mat = create_material("InteriorWall", (0.9, 0.9, 0.85, 1))
     
     # Guest bedroom in NE corner: 4m (E-W) × 3m (N-S)
     GUEST_BEDROOM_WIDTH = 4.0   # E-W dimension
     GUEST_BEDROOM_DEPTH = 3.0   # N-S dimension
     
-    # Interior reference points
+    # Interior reference points (north wall recessed, south wall at full width)
     east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
-    north_interior_face = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS
+    north_interior_face = oy - ENCLOSED_WIDTH/2 + EXTERIOR_WALL_THICKNESS
     
     # Ground floor wall height (slightly shorter to avoid poking through first floor slab)
     FLOOR_SLAB_THICKNESS = 0.1
@@ -198,8 +202,13 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, LENGTH, GROUND_F
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
 
-def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
-    """Create first floor interior partitions for master bedroom, ensuite, and wardrobe"""
+def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    """Create first floor interior partitions for master bedroom, ensuite, and wardrobe
+    
+    Args:
+        WIDTH: Total building width (7m - full roof span)
+        ENCLOSED_WIDTH: Enclosed building width (6m - north wall recessed)
+    """
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     interior_wall_mat = create_material("InteriorWall", (0.9, 0.9, 0.85, 1))
     
@@ -208,15 +217,17 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, LENGTH, GROUND_FL
     ENSUITE_DEPTH = 2.0
     ENSUITE_WIDTH = 2.0
     
-    # Interior dimensions
-    interior_depth = WIDTH - 2 * EXTERIOR_WALL_THICKNESS
-    bedroom_interior_width = MASTER_BEDROOM_WIDTH  # Full 4m interior space
+    # Interior dimensions (north wall recessed, south wall at full width)
+    north_interior_face = oy - ENCLOSED_WIDTH/2 + EXTERIOR_WALL_THICKNESS
     south_interior_face = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    interior_depth = south_interior_face - north_interior_face
+    bedroom_interior_width = MASTER_BEDROOM_WIDTH  # Full 4m interior space
     east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
     
     # Main partition wall (N-S) - aligned with bedroom partitions at MASTER_BEDROOM_WIDTH from east wall
     main_partition_x = east_interior_face + MASTER_BEDROOM_WIDTH + INTERIOR_WALL_THICKNESS/2
-    bpy.ops.mesh.primitive_cube_add(location=(main_partition_x, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    main_partition_center_y = (north_interior_face + south_interior_face) / 2  # Center between recessed north and full-width south
+    bpy.ops.mesh.primitive_cube_add(location=(main_partition_x, main_partition_center_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     main_partition = bpy.context.active_object
     main_partition.name = "MainDwelling_FirstFloor_MainPartition"
     main_partition.scale = (INTERIOR_WALL_THICKNESS/2, interior_depth/2, FIRST_FLOOR_HEIGHT/2)
@@ -278,50 +289,60 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, LENGTH, GROUND_FL
     bed.data.materials.append(bed_mat)
 
 
-def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS):
-    """Add all windows and doors to exterior walls"""
+def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS):
+    """Add all windows and doors to exterior walls
+    
+    Args:
+        WIDTH: Total building width (7m - full roof span, south wall position)
+        ENCLOSED_WIDTH: Enclosed building width (6m - north wall recessed)
+    """
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     window_z_ground = oz + 1.0
     window_z_first = first_floor_z + 1.0
     spacing = LENGTH / 4
-    east_window_spacing = WIDTH / 3
-    west_window_spacing = WIDTH / 3
+    
+    # Calculate wall positions
+    north_wall_y = oy - ENCLOSED_WIDTH/2
+    south_wall_y = oy + WIDTH/2
+    
+    # East/West walls span full WIDTH, centered at oy
+    east_west_window_spacing = WIDTH / 3
     south_spacing = LENGTH / 4
     
-    # GROUND FLOOR - NORTH WALL
-    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, oy - WIDTH/2, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
-    #add_window("MainDwelling_NorthWall_Ground", (ox, oy - WIDTH/2, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
-    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, oy - WIDTH/2, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    # GROUND FLOOR - NORTH WALL (recessed)
+    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_y, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    #add_window("MainDwelling_NorthWall_Ground", (ox, north_wall_y, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_y, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
     
-    # FIRST FLOOR - NORTH WALL
-    add_window("MainDwelling_NorthWall_First", (ox - spacing, oy - WIDTH/2, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
-    add_window("MainDwelling_NorthWall_First", (ox + spacing, oy - WIDTH/2, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    # FIRST FLOOR - NORTH WALL (recessed)
+    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_y, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
+    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_y, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y')
     
-    # GROUND FLOOR - EAST WALL
-    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - east_window_spacing/2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
-    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + east_window_spacing/2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    # GROUND FLOOR - EAST WALL (spans full 7m)
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - 2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + 2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
-    # FIRST FLOOR - EAST WALL
-    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - east_window_spacing/2, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    # FIRST FLOOR - EAST WALL (spans full 7m)
+    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - 2, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + 2, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
-    # GROUND FLOOR - WEST WALL
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - west_window_spacing, oz + 1.8), width=0.5, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + west_window_spacing, oz + 1.8), width=0.5, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    # GROUND FLOOR - WEST WALL (spans full 7m)
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - 1.5, oz + 1.4), width=0.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.4), width=0.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
-    # FIRST FLOOR - WEST WALL
-    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - west_window_spacing, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + west_window_spacing, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    # FIRST FLOOR - WEST WALL (spans full 7m)
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
-    # GROUND FLOOR - SOUTH WALL
-    add_window("MainDwelling_SouthWall_Ground", (ox - south_spacing, oy + WIDTH/2, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox, oy + WIDTH/2, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox + south_spacing, oy + WIDTH/2, oz + 1.4), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # GROUND FLOOR - SOUTH WALL (full width)
+    add_window("MainDwelling_SouthWall_Ground", (ox - south_spacing, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox + south_spacing, south_wall_y, oz + 1.4), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
-    # FIRST FLOOR - SOUTH WALL
-    add_window("MainDwelling_SouthWall_First", (ox - 3.2, oy + WIDTH/2, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_First", (ox - 1.0, oy + WIDTH/2, first_floor_z + 1.2), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_First", (ox + south_spacing, oy + WIDTH/2, first_floor_z + 1.2), width=2.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # FIRST FLOOR - SOUTH WALL (full width)
+    add_window("MainDwelling_SouthWall_First", (ox - 3.2, south_wall_y, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_First", (ox - 1.0, south_wall_y, first_floor_z + 1.2), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_First", (ox + south_spacing, south_wall_y, first_floor_z + 1.2), width=2.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
 
 def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style):
@@ -572,11 +593,11 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
                width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # === INTERIOR PARTITIONS ===
-    _create_interior_partitions_ground_floor(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
-    _create_interior_partitions_first_floor(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
     
     # === WINDOWS AND DOORS ===
-    _add_exterior_windows_and_doors(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
+    _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
     
     # === GABLE ROOF ===
     if show_roof:
@@ -681,11 +702,11 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     porch_roof_obj.data.materials.append(create_corrugated_iron_material())
     
     # === INTERIOR PARTITIONS ===
-    _create_interior_partitions_ground_floor(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
-    _create_interior_partitions_first_floor(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
     
     # === WINDOWS AND DOORS ===
-    _add_exterior_windows_and_doors(ox, oy, oz, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
+    _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
     
     # === GABLE ROOF ===
     if show_roof:
