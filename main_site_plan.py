@@ -107,20 +107,20 @@ if SHOW_GROUND:
     #under and around Björken is mostly gravel with some patches of grass 
     ground_module.gravel_plane(grid_points((-10, -2.5, -0.5), (8, 3.1, -0.5), x_spacing=0.4))
 
-    drive_end_parking_west = grid_points((4, -10, -2.0), (12, -6, -1.9), x_spacing=0.3)
-    drive_mid_area = grid_points((5, -5.5, -1.7), (15, -4, -1.5), x_spacing=0.3)
-    drive_end_parking_east = grid_points((12, -10, -2.1), (18, -6, -2.0), x_spacing=0.3)
+    #drive_end_parking_west = grid_points((4, -10, -2.0), (12, -6, -1.9), x_spacing=0.3)
+    #drive_mid_area = grid_points((5, -5.5, -1.7), (15, -4, -1.5), x_spacing=0.3)
+    #drive_end_parking_east = grid_points((12, -10, -2.1), (18, -6, -2.0), x_spacing=0.3)
 
-    ground_module.gravel_plane(drive_end_parking_west)
-    ground_module.gravel_plane(drive_mid_area)
-    ground_module.gravel_plane(drive_end_parking_east)
+    #ground_module.gravel_plane(drive_end_parking_west)
+    #ground_module.gravel_plane(drive_mid_area)
+    #ground_module.gravel_plane(drive_end_parking_east)
     
-    ground_module.gravel_plane(water_tank_pad)
+    #ground_module.gravel_plane(water_tank_pad)
     
-    ground_module.forest_plane(south_björken)
-    ground_module.forest_plane(southwest_björken)
+    #ground_module.forest_plane(south_björken)
+    #ground_module.forest_plane(southwest_björken)
 
-    ground_module.forest_plane(slope_parking_to_cottage_west)
+    #ground_module.forest_plane(slope_parking_to_cottage_west)
     
     # Main Dwelling area (60m north of Björken, 5m lower elevation)
     # Ground level at -5.0, building sits on slight clearing
@@ -128,10 +128,10 @@ if SHOW_GROUND:
     ground_module.grass_plane(main_dwelling_clearing)
     
     # Forest surrounds on all sides of main dwelling
-    main_dwelling_forest_north = grid_points((-8, -72, -5.2), (8, -68, -5.1), x_spacing=0.5)
-    main_dwelling_forest_south = grid_points((-8, -52, -5.1), (8, -48, -4.8), x_spacing=0.5)
-    main_dwelling_forest_east = grid_points((-10, -68, -5.2), (-6, -52, -5.1), x_spacing=0.5)
-    main_dwelling_forest_west = grid_points((6, -68, -5.1), (10, -52, -5.0), x_spacing=0.5)
+    main_dwelling_forest_north = grid_points((-18, -92, -5.2), (8, -68, -5.1), x_spacing=0.5)
+    main_dwelling_forest_south = grid_points((-18, -32, -5.1), (8, -52, -4.8), x_spacing=0.5)
+    main_dwelling_forest_east = grid_points((-30, -68, -5.2), (-6, -52, -5.1), x_spacing=0.5)
+    main_dwelling_forest_west = grid_points((6, -78, -5.1), (30, -32, -5.0), x_spacing=0.5)
     
     ground_module.forest_plane(main_dwelling_forest_north)
     ground_module.forest_plane(main_dwelling_forest_south)
@@ -149,7 +149,7 @@ if SHOW_GROUND:
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
 #main_dwelling_module.build_main_dwelling(origin=(0, -60, -5.0), show_roof=True, roof_style="flush")
-main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -60, -5.0), show_roof=False, roof_style="flush")
+main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -60, -5.0), show_roof=True, roof_style="flush")
 
 # 1b. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 0, -0.45))

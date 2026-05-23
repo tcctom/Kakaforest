@@ -13,6 +13,8 @@ A full two storey rectangular box, 6 meters by 8 meters. The 8 meter length runs
 - Ground floor ceiling height should be 2.5 meters
 - First floor ceiling height should be 2.4 meters
 
+i want to focus on the exterior now and particulary the flush gable roof with shading on the north side. I would prefer to do this by making the the north south length 7 meters rather than 6 and the roof perfectly flush with that. we would then resess the noth facing external wall so it comes back to wher it is now but we have a n extended ground floor going outside (patio), extended first floor going outside (balcony) and a roof covering the balcony.
+
 ### Roof
 - A gable roof
 - 35 degree pitch
