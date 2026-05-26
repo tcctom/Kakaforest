@@ -202,9 +202,58 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # Door on south wall, positioned clear of wardrobe (wardrobe is on west side)
     # Place door about 1.5m from east wall
-    door_x = east_interior_face + 2.5
+    door_x = east_interior_face + 2.9
     add_window("MainDwelling_GroundFloor_GuestBedroomSouthWall", (door_x, south_partition_y + INTERIOR_WALL_THICKNESS/2, oz + 1.0), 
                width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+
+
+def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
+    """Create kitchen bench against the ground floor south wall
+    
+    Args:
+        WIDTH: Total building width (7m - full roof span)
+        LENGTH: Building length (9m - east-west)
+        EXTERIOR_WALL_THICKNESS: Thickness of exterior walls (0.2m)
+    """
+    # Kitchen bench specifications
+    BENCH_LENGTH = 3.6  # E-W dimension
+    BENCH_DEPTH = 0.6   # N-S dimension
+    BENCH_HEIGHT = 0.9  # Standard counter height
+    BENCH_THICKNESS = 0.05  # Benchtop thickness
+    
+    # Calculate positions
+    # South wall interior face
+    south_interior_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    # West wall interior face
+    west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
+    
+    # Bench center position (starts from west wall, extends 3.6m east)
+    bench_center_x = west_interior_x - BENCH_LENGTH/2
+    bench_center_y = south_interior_y - BENCH_DEPTH/2
+    bench_top_z = oz + BENCH_HEIGHT
+    
+    # Create materials
+    bench_mat = create_material("KitchenBench", (0.85, 0.82, 0.75, 1))  # Light wood/laminate color
+    cabinet_mat = create_material("KitchenCabinet", (0.4, 0.35, 0.3, 1))  # Darker cabinet color
+    
+    # Base cabinets
+    cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
+    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, oz + cabinet_height/2))
+    cabinets = bpy.context.active_object
+    cabinets.name = "MainDwelling_KitchenBench_Cabinets"
+    cabinets.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, cabinet_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    cabinets.data.materials.append(cabinet_mat)
+    
+    # Benchtop
+    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, bench_top_z - BENCH_THICKNESS/2))
+    benchtop = bpy.context.active_object
+    benchtop.name = "MainDwelling_KitchenBench_Top"
+    benchtop.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, BENCH_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    benchtop.data.materials.append(bench_mat)
+    
+    print(f"Kitchen bench created: {BENCH_LENGTH}m long, starting from west wall at x={west_interior_x} extending east")
 
 
 def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -264,7 +313,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     
     # Add doorways
     # Door from hallway to master bedroom
-    add_window("MainDwelling_FirstFloor_MainPartition", (main_partition_x - INTERIOR_WALL_THICKNESS/2, oy - 2.3, first_floor_z + 1.0), 
+    add_window("MainDwelling_FirstFloor_MainPartition", (main_partition_x - INTERIOR_WALL_THICKNESS/2, oy - 2.0, first_floor_z + 1.0), 
                width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # Door from bedroom to ensuite
@@ -318,34 +367,34 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     south_spacing = LENGTH / 4
     
     # GROUND FLOOR - NORTH WALL (recessed) - position at interior face
-    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_interior_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_interior_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     #add_window("MainDwelling_NorthWall_Ground", (ox, north_wall_interior_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_interior_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_interior_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # FIRST FLOOR - NORTH WALL (recessed) - position at interior face
-    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_interior_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_interior_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_interior_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_interior_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # GROUND FLOOR - EAST WALL (spans full 7m)
-    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - 2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
-    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + 2, oz + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy - 1.5, oz + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_Ground", (ox - LENGTH/2, oy + 2, oz + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # FIRST FLOOR - EAST WALL (spans full 7m)
-    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - 2, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
-    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + 2, first_floor_z + 1.2), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + 2, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # GROUND FLOOR - WEST WALL (spans full 7m)
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - 1.5, oz + 1.4), width=0.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.4), width=0.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - 1.5, oz + 1.4), width=0.9, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.4), width=0.9, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # FIRST FLOOR - WEST WALL (spans full 7m)
     add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # GROUND FLOOR - SOUTH WALL (full width)
-    add_window("MainDwelling_SouthWall_Ground", (ox - south_spacing, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox + south_spacing, south_wall_y, oz + 1.4), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox - 3, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox - 1.5, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox + 2.5, south_wall_y, oz + 1.4), width=2.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # FIRST FLOOR - SOUTH WALL (full width)
     add_window("MainDwelling_SouthWall_First", (ox - 3.2, south_wall_y, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
@@ -604,6 +653,9 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     
+    # === KITCHEN BENCH ===
+    _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+    
     # === WINDOWS AND DOORS ===
     _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)
     
@@ -712,6 +764,9 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     # === INTERIOR PARTITIONS ===
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
+    
+    # === KITCHEN BENCH ===
+    _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
     
     # === WINDOWS AND DOORS ===
     _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)
