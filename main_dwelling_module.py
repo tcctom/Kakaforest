@@ -220,12 +220,15 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     """Create ground floor and first floor slabs (no stairs - to be added later)"""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     
-    # Floor dimensions: fit within exterior walls
+    # Floor dimensions: fit within exterior walls (between interior faces)
     floor_length = LENGTH - 2 * EXTERIOR_WALL_THICKNESS  # East-west, inside walls
-    floor_width = WIDTH  # North-south, full width to match roof
+    # North-south: fit between south interior face and north interior face
+    floor_width = WIDTH - EXTERIOR_WALL_THICKNESS  # Account for south wall thickness
+    # Center the floor slightly north since south wall reduces the width
+    floor_center_y = oy - EXTERIOR_WALL_THICKNESS/2
     
     # Ground Floor
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + 0.05))
+    bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, oz + 0.05))
     ground_floor = bpy.context.active_object
     ground_floor.name = "MainDwelling_GroundFloor"
     ground_floor.scale = (floor_length/2, floor_width/2, 0.05)
@@ -234,7 +237,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     
     # First Floor - 200mm thick with stairwell opening
     # Located so bottom is at first_floor_z and top is at first_floor_z + 0.2
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, first_floor_z + 0.1))
+    bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, first_floor_z + 0.1))
     first_floor_slab = bpy.context.active_object
     first_floor_slab.name = "MainDwelling_FirstFloor"
     first_floor_slab.scale = (floor_length/2, floor_width/2, 0.1)
@@ -485,12 +488,40 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     # GROUND FLOOR - SOUTH WALL (full width)
     add_window("MainDwelling_SouthWall_Ground", (ox - 3, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MainDwelling_SouthWall_Ground", (ox - 1.5, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox + 2.5, south_wall_y, oz + 1.4), width=2.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox + 0.8, south_wall_y, oz + 1.4), width=2.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # Double-height window at stair landing - ground floor portion
+    add_window("MainDwelling_SouthWall_Ground", (ox + 3.3, south_wall_y, oz + 2.15), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # FIRST FLOOR - SOUTH WALL (full width)
     add_window("MainDwelling_SouthWall_First", (ox - 3.2, south_wall_y, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MainDwelling_SouthWall_First", (ox - 1.0, south_wall_y, first_floor_z + 1.2), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_First", (ox + south_spacing, south_wall_y, first_floor_z + 1.2), width=2.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_First", (ox + 0.8, south_wall_y, first_floor_z + 1.2), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # Double-height window at stair landing - first floor portion
+    add_window("MainDwelling_SouthWall_First", (ox + 3.3, south_wall_y, first_floor_z + 0.4), width=1.2, height=2.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    
+    # Cut opening in first floor slab for double-height window
+    first_floor_slab = bpy.data.objects.get("MainDwelling_FirstFloor")
+    if first_floor_slab:
+        # Position cutter to cut floor flush with interior face of south wall
+        interior_face_y = south_wall_y - EXTERIOR_WALL_THICKNESS/2
+        window_slab_opening_depth = 0.4  # Extend north into room
+        cutter_center_y = interior_face_y - window_slab_opening_depth/2
+        
+        bpy.ops.mesh.primitive_cube_add(location=(ox + 3.2, cutter_center_y, first_floor_z + 0.1))
+        window_cutter = bpy.context.active_object
+        window_cutter.name = "MainDwelling_WindowSlabCutter_StairLanding"
+        window_cutter.scale = (1.0/2, window_slab_opening_depth/2, 0.2/2)
+        bpy.ops.object.transform_apply(scale=True)
+        
+        # Boolean modifier to cut opening
+        bool_mod = first_floor_slab.modifiers.new(name="StairWindow_Cut", type='BOOLEAN')
+        bool_mod.object = window_cutter
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.solver = 'EXACT'
+        
+        # Hide cutter
+        window_cutter.hide_viewport = True
+        window_cutter.hide_render = True
 
 
 def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style):
