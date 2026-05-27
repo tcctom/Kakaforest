@@ -89,8 +89,135 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_first.data.materials.append(potius_mat)
 
 
+def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat):
+    """Create 180-degree dog-legged staircase in southwest corner with clockwise turn
+    
+    Spatial Configuration:
+    - Location: Southwest corner of floor plan
+    - Type: 180-degree half-turn (dog-leg) with clockwise ascent
+    - Stairwell footprint: ~2000mm (E-W) × 3000mm (N-S)
+    - Flight 1: Starts at NORTH edge, travels SOUTH along EAST edge → Landing
+    - Landing: 2000mm wide × 1000mm deep at SOUTH edge, spans East-West
+    - Flight 2: Starts at landing, turns 180° clockwise, travels NORTH along WEST edge → Upper floor
+    
+    Args:
+        ox, oy, oz: Origin coordinates (building center)
+        WIDTH: Total building width (7m N-S)
+        LENGTH: Total building length (9m E-W)
+        GROUND_FLOOR_HEIGHT: Ground floor height (2.5m)
+        EXTERIOR_WALL_THICKNESS: Wall thickness (0.2m)
+        first_floor_slab: First floor slab object for boolean cut
+        floor_mat: Material for landing
+    """
+    # Constants
+    TOTAL_RISE = 2.7  # 2700mm (ground floor height + first floor thickness)
+    STAIRWELL_WIDTH = 2.0  # 2000mm E-W
+    STAIRWELL_LENGTH = 3.0  # 3000mm N-S
+    FLIGHT_WIDTH = 0.9  # 900mm per flight
+    CENTRAL_GAP = 0.2  # 200mm between flights
+    LANDING_DEPTH = 1.0  # 1000mm N-S
+    
+    # Step dimensions
+    STEPS_PER_FLIGHT = 7
+    STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)  # 192.86mm
+    STEP_TREAD = 0.285  # 285mm (code compliant: 250-300mm range)
+    
+    # Landing height (mid-point)
+    LANDING_HEIGHT = TOTAL_RISE / 2  # 1.35m
+    
+    # Southwest corner interior reference (oz is ground level)
+    west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    
+    # Stairwell boundaries in SW corner
+    stairwell_west_x = west_interior_x
+    stairwell_east_x = west_interior_x - STAIRWELL_WIDTH
+    stairwell_south_y = south_interior_y
+    stairwell_north_y = south_interior_y - STAIRWELL_LENGTH
+    
+    # Materials
+    stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
+    landing_mat = floor_mat
+    
+    # === FLIGHT 1: Ground to Landing (SOUTH along EAST edge) ===
+    # Starts at NORTH edge, travels SOUTH
+    flight1_x = stairwell_east_x + FLIGHT_WIDTH/2 + 0.05  # East edge, 50mm from edge
+    flight1_start_y = stairwell_north_y + STEP_TREAD/2 + 0.05  # Start from north
+    
+    for i in range(STEPS_PER_FLIGHT):
+        step_height = oz + STEP_RISE * (i + 1)
+        step_y = flight1_start_y + (i * STEP_TREAD)  # Move south (positive Y)
+        
+        bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight1_Step_{i+1:02d}"
+        step.scale = (FLIGHT_WIDTH/2, STEP_TREAD/2, STEP_RISE/2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+    
+    # === LANDING: At SOUTH edge, spans East-West ===
+    landing_x = (stairwell_west_x + stairwell_east_x) / 2
+    landing_y = stairwell_south_y - LANDING_DEPTH/2  # South edge
+    landing_z = oz + LANDING_HEIGHT
+    
+    bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
+    landing = bpy.context.active_object
+    landing.name = "MainDwelling_Stairs_Landing"
+    landing.scale = (STAIRWELL_WIDTH/2, LANDING_DEPTH/2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+    landing.data.materials.append(landing_mat)
+    
+    # === FLIGHT 2: Landing to Upper Floor (NORTH along WEST edge, clockwise turn) ===
+    # Starts at landing (south), travels NORTH
+    flight2_x = stairwell_west_x - FLIGHT_WIDTH/2 - 0.05  # West edge, 50mm from wall
+    flight2_start_y = stairwell_south_y - LANDING_DEPTH - STEP_TREAD/2  # Start from south end
+    
+    for i in range(STEPS_PER_FLIGHT):
+        step_height = landing_z + STEP_RISE * (i + 1)
+        step_y = flight2_start_y - (i * STEP_TREAD)  # Move north (negative Y)
+        
+        bpy.ops.mesh.primitive_cube_add(location=(flight2_x, step_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight2_Step_{i+1:02d}"
+        step.scale = (FLIGHT_WIDTH/2, STEP_TREAD/2, STEP_RISE/2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+    
+    # === STAIRWELL OPENING in First Floor Slab ===
+    # Opening encompasses Flight 2 and Landing
+    opening_x = (stairwell_west_x + stairwell_east_x) / 2
+    opening_y = stairwell_south_y - LANDING_DEPTH/2 - (STEPS_PER_FLIGHT * STEP_TREAD)/2
+    opening_width = STAIRWELL_WIDTH + 0.1  # Add small margin
+    opening_length = LANDING_DEPTH + (STEPS_PER_FLIGHT * STEP_TREAD) + 0.1
+    
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    
+    bpy.ops.mesh.primitive_cube_add(location=(opening_x, opening_y, first_floor_z + 0.1))
+    stairwell_cutter = bpy.context.active_object
+    stairwell_cutter.name = "MainDwelling_StairwellCutter_180deg"
+    stairwell_cutter.scale = (opening_width/2, opening_length/2, 0.1)
+    bpy.ops.object.transform_apply(scale=True)
+    
+    # Boolean modifier to cut opening
+    bool_mod = first_floor_slab.modifiers.new(name="Stairwell_Cut", type='BOOLEAN')
+    bool_mod.object = stairwell_cutter
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.solver = 'EXACT'
+    
+    # Hide cutter
+    stairwell_cutter.hide_viewport = True
+    stairwell_cutter.hide_render = True
+    
+    print(f"180-degree staircase created in southwest corner")
+    print(f"  Flight 1 (EAST edge): {STEPS_PER_FLIGHT} steps, North→South")
+    print(f"  Landing (SOUTH edge): {LANDING_HEIGHT}m height, spans East-West")
+    print(f"  Flight 2 (WEST edge): {STEPS_PER_FLIGHT} steps, South→North (clockwise)")
+    print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
+    print(f"  Step rise: {STEP_RISE*1000:.1f}mm, tread: {STEP_TREAD*1000:.0f}mm")
+
+
 def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
-    """Create ground floor and first floor slabs"""
+    """Create ground floor and first floor slabs (no stairs - to be added later)"""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     
     # Floor dimensions: fit within exterior walls
@@ -105,54 +232,18 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     bpy.ops.object.transform_apply(scale=True)
     ground_floor.data.materials.append(floor_mat)
     
-    # First Floor with stairs opening
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, first_floor_z - 0.05))
+    # First Floor - 200mm thick with stairwell opening
+    # Located so bottom is at first_floor_z and top is at first_floor_z + 0.2
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, first_floor_z + 0.1))
     first_floor_slab = bpy.context.active_object
     first_floor_slab.name = "MainDwelling_FirstFloor"
-    first_floor_slab.scale = (floor_length/2, floor_width/2, 0.05)
+    first_floor_slab.scale = (floor_length/2, floor_width/2, 0.1)
     bpy.ops.object.transform_apply(scale=True)
     first_floor_slab.data.materials.append(floor_mat)
     
-    # Stairs opening in first floor slab (just west of 4m bedroom partition line for alignment verification)
-    stairs_opening_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS + 4.7  # 0.5m west of bedroom partition
-    stairs_opening_y = oy - 0.5  # Slightly north of center
-    
-    # Create stairs cutter manually (2.2m N-S × 1.2m E-W)
-    bpy.ops.mesh.primitive_cube_add(location=(stairs_opening_x, stairs_opening_y, first_floor_z - 0.05))
-    stairs_cutter = bpy.context.active_object
-    stairs_cutter.name = "MainDwelling_StairsCutter"
-    stairs_cutter.scale = (1.2/2, 2.2/2, 0.05)  # E-W width, N-S length, floor thickness
-    bpy.ops.object.transform_apply(scale=True)
-    
-    # Boolean modifier to cut opening in floor
-    bool_mod = first_floor_slab.modifiers.new(name="Stairs_Cut", type='BOOLEAN')
-    bool_mod.object = stairs_cutter
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.solver = 'EXACT'
-    
-    # Hide the cutter
-    stairs_cutter.hide_viewport = True
-    stairs_cutter.hide_render = True
-    
-    # Create stairs to match the opening
-    STAIR_WIDTH = 1.0  # E-W width (fits within 1.2m opening)
-    NUM_STEPS = 12  # 12 steps (13th step is the first floor itself)
-    STAIR_RISE = GROUND_FLOOR_HEIGHT / (NUM_STEPS+1)  # ~208mm rise per step
-    STAIR_TREAD = 2.2 / NUM_STEPS  # Tread depth spanning 2.2m N-S
-    
-    stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
-    
-    # Create individual steps (starting from north, going south)
-    for i in range(NUM_STEPS):
-        step_height = oz + STAIR_RISE * (i + 1)  # Full rise for each step
-        step_y = stairs_opening_y + 2.2/2 - STAIR_TREAD * (i + 0.5)  # Start from north, move south
-        
-        bpy.ops.mesh.primitive_cube_add(location=(stairs_opening_x, step_y, step_height))
-        step = bpy.context.active_object
-        step.name = f"MainDwelling_Stairs_Step_{i+1:02d}"
-        step.scale = (STAIR_WIDTH/2, STAIR_TREAD/2, STAIR_RISE/2)
-        bpy.ops.object.transform_apply(scale=True)
-        step.data.materials.append(stairs_mat)
+    # Create 180-degree staircase in southwest corner
+    _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, 
+                                            EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat)
 
 
 def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):

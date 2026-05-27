@@ -90,6 +90,34 @@ For our location on a mountain spur at 800m elevation surrounded by native beech
 ## Interior
 - Internal wall thickness 110mm. 
 - Interior walls that connect with an exterior wall should sit flush with the inside face of the exterior wall.
+### Stairs
+Located in the southwest corner; dog-legged staircase with an intermediate landing, configured to provide dedicated enclosure for solar battery storage within the under-stair void.
+#### AI Agent instructions
+Act as an expert Python developer scripting 3D geometry in Blender. 
+Generate a script to model a staircase according to the following strict spatial constraints:
+
+1. GLOBAL POSITIONING:
+- Locate the entire staircase assembly strictly in the SOUTHWEST corner of the floor plan.
+
+2. STAIRCASE TYPE & DIRECTION:
+- The staircase must be a 180-degree half-turn (dog-legged) staircase. 
+- It consists of two parallel flights traveling in opposite directions, separated by a mid-landing.
+- When ascending from the ground floor, the user must turn CLOCKWISE at the landing to reach the upper floor.
+
+3. DIMENSIONS & STAIRWELL OPENING:
+- Total floor-to-floor height: 2700mm
+- Target a rectangular ceiling opening (stairwell footprint) of roughly 2000mm (width) x 3000mm (length).
+- Individual flight width: 900mm (Leaving a 200mm central well gap between flights).
+- Mid-Landing geometry: A flat, rectangular platform spanning the full 2000mm width and 1000mm deep at the turning point.
+
+4. LOGICAL FLOW FOR THE SCRIPT:
+By "edge" we mean edge if the stairwell footprint.
+- Flight 1: Starts at north edge, travels North along the east edge, and meets the Landing.
+- Landing: Spans East-West along the south edge.
+- Flight 2: Starts at the Landing, turns 180-degrees (clockwise loop), and travels South alson the west edge to meet the upper floor.
+
+Ensure all mesh generation, vertices, and object transformations strictly adhere to this clockwise, 180-degree, Southwest-corner logic.
+
 ### Master bedroom
 This will be on the east side of the first floor. east west width 4 meters. north south length the full 6 meters. ensuite in south east corner, walk in wardrobe to the west of that.
 ### Guest bedroom
