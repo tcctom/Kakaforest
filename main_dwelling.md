@@ -92,6 +92,9 @@ For our location on a mountain spur at 800m elevation surrounded by native beech
 - Interior walls that connect with an exterior wall should sit flush with the inside face of the exterior wall.
 ### Stairs
 Located in the southwest corner; dog-legged staircase with an intermediate landing, configured to provide dedicated enclosure for solar battery storage within the under-stair void.
+
+add a north south internal partition 2.5m long to the ground floor. this should be immediately west if the staircase footprint and starting from the south wall going 2.5 meters north.
+
 #### AI Agent instructions
 Act as an expert Python developer scripting 3D geometry in Blender. 
 Generate a script to model a staircase according to the following strict spatial constraints:
