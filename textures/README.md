@@ -21,11 +21,30 @@ To use the laminate floor texture from PolyHaven:
    
    Note: The roughness and normal maps are .exr format, not .jpg
 
+## Setting up Roof Textures
+
+To use the box profile metal sheet texture from PolyHaven:
+
+1. **Download** the texture from https://polyhaven.com/a/box_profile_metal_sheet
+   - Choose the 1K or 4K resolution
+   - Download the JPG format for diffuse, EXR for roughness
+
+2. **Create folder structure:**
+   ```
+   c:\KakaForestRetreat\textures\box_profile_metal_sheet\
+   ```
+
+3. **Place the files** in the folder:
+   - `*_diff_*.jpg` (Color/Diffuse map) - **Required**
+   - `*_rough_*.exr` (Roughness map) - **Required**
+   - Any other maps (normal, displacement) - Optional
+
 ## Current Setup
 
-- If textures are found, the floor will use realistic laminate texture with proper UV mapping
-- If textures are not found, it will fall back to a simple brown color
-- The texture scale is set to 4.0 - adjust in `materials.py` if needed
+- **Floors**: If textures are found, realistic laminate texture with UV mapping (scale 4.0)
+- **Roof**: If textures are found, realistic corrugated metal texture with UV mapping (scale 2.0)
+- If textures are not found, both will fall back to simple colors
+- Texture scales can be adjusted in `materials.py` if needed
 
 ## Other Textures
 

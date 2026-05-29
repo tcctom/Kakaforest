@@ -2,6 +2,7 @@ import bpy  # type: ignore
 import math
 
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
+from materials import get_metal_roof_material
 
 def create_material(name, color):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name=name)
@@ -193,15 +194,24 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
         mesh.from_pydata(verts, [], faces)
         obj.location = (ox, oy + ridge_y_offset, oz + H)
         
-        # Add both materials: [0] = Corrugated Iron (roof), [1] = Red Cottage (gables)
-        obj.data.materials.append(create_corrugated_iron_material())
+        # Add both materials: [0] = Metal Roof (textured), [1] = Red Cottage (gables)
+        obj.data.materials.append(get_metal_roof_material())
         obj.data.materials.append(create_material("RedCottage", (0.7, 0.05, 0.05, 1)))
         
         # Assign materials to specific faces
         # Gable triangles (West and East) use Red Cottage material
         obj.data.polygons[2].material_index = 1  # West gable triangle
         obj.data.polygons[3].material_index = 1  # East gable triangle
-        # All other faces default to material index 0 (Corrugated Iron)
+        # All other faces default to material index 0 (Metal Roof)
+        
+        # UV unwrap for texture display
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        obj.select_set(False)
     # Position: east edge at ox-W/2, extends 4m along north face toward west
     verandah_x = ox - (W/2 - VERANDAH_LENGTH/2)  # Center: ox - 3.1 + 2.0 = ox - 1.1
     verandah_y = oy - D/2 - VERANDAH_WIDTH/2     # North of cottage: oy - 2.1 - 0.75

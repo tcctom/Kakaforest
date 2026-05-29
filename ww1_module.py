@@ -2,6 +2,7 @@ import bpy  # type: ignore
 import math
 
 from utils import create_corrugated_iron_material, add_corner_trim, add_window, add_door
+from materials import get_metal_roof_material
 import ww1_furniture
 
 def create_material(name, color):
@@ -147,7 +148,13 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
         roof.name = "WetWing_Roof"
         roof.scale = (W/2 + 0.3, D/2 + 0.3, roof_thickness/2)
         roof.rotation_euler = (math.radians(-ROOF_PITCH), 0, 0)
-        roof.data.materials.append(create_corrugated_iron_material())
+        roof.data.materials.append(get_metal_roof_material())
+        
+        # UV unwrap for texture display
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
     
     # Add white corner trim to all 4 corners (north corners are taller)
     # North corners use H_NORTH, south corners use H_SOUTH

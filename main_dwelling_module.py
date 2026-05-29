@@ -2,7 +2,7 @@
 import math
 
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
-from materials import get_interior_wall_material, get_floor_wood_material
+from materials import get_interior_wall_material, get_floor_wood_material, get_metal_roof_material
 
 def create_material(name, color):
     """Create or get a material with the given name and color"""
@@ -853,7 +853,7 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
     eave_height = oz + TOTAL_HEIGHT
     ridge_height = eave_height + roof_height_from_eaves
     
-    roof_mat = create_corrugated_iron_material()
+    roof_mat = get_metal_roof_material()
     gable_material = create_material("GableEnd", (0.22, 0.22, 0.24, 1))
     
     if roof_style == "flush":
@@ -894,6 +894,15 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
                 face.material_index = 0
             else:
                 face.material_index = 1
+        
+        # UV unwrap for texture display
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        obj.select_set(False)
     else:  # traditional
         mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
         obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
@@ -920,6 +929,15 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         mesh.from_pydata(verts, [], faces)
         mesh.update()
         obj.data.materials.append(roof_mat)
+        
+        # UV unwrap for texture display
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        obj.select_set(False)
         
         # Create separate gable end triangles
         for side, x_pos in [("East", ox - LENGTH/2), ("West", ox + LENGTH/2)]:
@@ -1088,7 +1106,16 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     
     porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
     porch_roof_mesh.update()
-    porch_roof_obj.data.materials.append(create_corrugated_iron_material())
+    porch_roof_obj.data.materials.append(get_metal_roof_material())
+    
+    # UV unwrap for texture display
+    bpy.context.view_layer.objects.active = porch_roof_obj
+    porch_roof_obj.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    porch_roof_obj.select_set(False)
     
     # Large opening in main building's west wall connecting to porch
     add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy, oz + 1.1), 
@@ -1207,7 +1234,16 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
     porch_roof_mesh.update()
-    porch_roof_obj.data.materials.append(create_corrugated_iron_material())
+    porch_roof_obj.data.materials.append(get_metal_roof_material())
+    
+    # UV unwrap for texture display
+    bpy.context.view_layer.objects.active = porch_roof_obj
+    porch_roof_obj.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    porch_roof_obj.select_set(False)
     
     # === INTERIOR PARTITIONS ===
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
