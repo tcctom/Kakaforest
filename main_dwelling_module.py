@@ -2,6 +2,7 @@
 import math
 
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
+from materials import get_interior_wall_material, get_floor_wood_material
 
 def create_material(name, color):
     """Create or get a material with the given name and color"""
@@ -18,6 +19,9 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     wall_depth_ground = ENCLOSED_WIDTH - 2*EXTERIOR_WALL_THICKNESS
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     
+    # Interior wall material for interior faces
+    interior_wall_mat = get_interior_wall_material()
+    
     # === GROUND FLOOR EXTERIOR WALLS ===
     # North Wall (recessed NORTH_RECESS inward from north edge)
     # North edge is at oy - WIDTH/2, recess by NORTH_RECESS, position at outer face minus half thickness
@@ -27,7 +31,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     north_wall_ground.name = "MainDwelling_NorthWall_Ground"
     north_wall_ground.scale = (LENGTH/2, EXTERIOR_WALL_THICKNESS/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     north_wall_ground.data.materials.append(potius_mat)
+    north_wall_ground.data.materials.append(interior_wall_mat)
+    # Assign interior material to south face (index 1)
+    north_wall_ground.data.polygons[1].material_index = 1
     
     # South Wall (extends to full WIDTH)
     south_wall_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS/2
@@ -36,7 +44,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     south_wall_ground.name = "MainDwelling_SouthWall_Ground"
     south_wall_ground.scale = (LENGTH/2, EXTERIOR_WALL_THICKNESS/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     south_wall_ground.data.materials.append(potius_mat)
+    south_wall_ground.data.materials.append(interior_wall_mat)
+    # Assign interior material to north face (index 3)
+    south_wall_ground.data.polygons[3].material_index = 1
     
     # East Wall (spans FULL 7m north-south, flush with floors and roof)
     east_west_wall_depth = WIDTH  # Full 7m span to match floor/roof edges
@@ -45,7 +57,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     east_wall_ground.name = "MainDwelling_EastWall_Ground"
     east_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     east_wall_ground.data.materials.append(potius_mat)
+    east_wall_ground.data.materials.append(interior_wall_mat)
+    # Assign interior material to west face (index 2)
+    east_wall_ground.data.polygons[2].material_index = 1
     
     # West Wall (spans FULL 7m north-south, flush with floors and roof)
     bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
@@ -53,7 +69,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_ground.name = "MainDwelling_WestWall_Ground"
     west_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     west_wall_ground.data.materials.append(potius_mat)
+    west_wall_ground.data.materials.append(interior_wall_mat)
+    # Assign interior material to east face (index 0)
+    west_wall_ground.data.polygons[0].material_index = 1
     
     # === FIRST FLOOR EXTERIOR WALLS ===
     # North Wall (recessed, same as ground floor)
@@ -62,7 +82,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     north_wall_first.name = "MainDwelling_NorthWall_First"
     north_wall_first.scale = (LENGTH/2, EXTERIOR_WALL_THICKNESS/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     north_wall_first.data.materials.append(potius_mat)
+    north_wall_first.data.materials.append(interior_wall_mat)
+    # Assign interior material to south face (index 1)
+    north_wall_first.data.polygons[1].material_index = 1
     
     # South Wall (extends to full WIDTH)
     bpy.ops.mesh.primitive_cube_add(location=(ox, south_wall_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -70,7 +94,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     south_wall_first.name = "MainDwelling_SouthWall_First"
     south_wall_first.scale = (LENGTH/2, EXTERIOR_WALL_THICKNESS/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     south_wall_first.data.materials.append(potius_mat)
+    south_wall_first.data.materials.append(interior_wall_mat)
+    # Assign interior material to north face (index 3)
+    south_wall_first.data.polygons[3].material_index = 1
     
     # East Wall (spans FULL 7m north-south, independent of recessed north wall)
     bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -78,7 +106,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     east_wall_first.name = "MainDwelling_EastWall_First"
     east_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     east_wall_first.data.materials.append(potius_mat)
+    east_wall_first.data.materials.append(interior_wall_mat)
+    # Assign interior material to west face (index 2)
+    east_wall_first.data.polygons[2].material_index = 1
     
     # West Wall (spans FULL 7m north-south, independent of recessed north wall)
     bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -86,7 +118,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_first.name = "MainDwelling_WestWall_First"
     west_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
+    # Add both materials (exterior and interior)
     west_wall_first.data.materials.append(potius_mat)
+    west_wall_first.data.materials.append(interior_wall_mat)
+    # Assign interior material to east face (index 0)
+    west_wall_first.data.polygons[0].material_index = 1
 
 
 def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat):
@@ -167,6 +203,12 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     bpy.ops.object.transform_apply(scale=True)
     landing.data.materials.append(landing_mat)
     
+    # UV unwrap for texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
     # === FLIGHT 2: Landing to Upper Floor (NORTH along WEST edge, clockwise turn) ===
     # Starts at landing (south), travels NORTH
     flight2_x = stairwell_west_x - FLIGHT_WIDTH/2 - 0.05  # West edge, 50mm from wall
@@ -235,6 +277,12 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     bpy.ops.object.transform_apply(scale=True)
     ground_floor.data.materials.append(floor_mat)
     
+    # UV unwrap for texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
     # First Floor - 200mm thick with stairwell opening
     # Located so bottom is at first_floor_z and top is at first_floor_z + 0.2
     bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, first_floor_z + 0.1))
@@ -243,6 +291,12 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     first_floor_slab.scale = (floor_length/2, floor_width/2, 0.1)
     bpy.ops.object.transform_apply(scale=True)
     first_floor_slab.data.materials.append(floor_mat)
+    
+    # UV unwrap for texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
     
     # Create 180-degree staircase in southwest corner
     _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, 
@@ -257,7 +311,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         ENCLOSED_WIDTH: Enclosed building width (6m - north wall recessed)
         NORTH_RECESS: Distance north wall is recessed from north edge (1m)
     """
-    interior_wall_mat = create_material("InteriorWall", (0.9, 0.9, 0.85, 1))
+    interior_wall_mat = get_interior_wall_material()
     
     # Guest bedroom in NE corner: 3.4m (E-W) × 3m (N-S)
     GUEST_BEDROOM_WIDTH = 3.4   # E-W dimension
@@ -466,7 +520,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         NORTH_RECESS: Distance north wall is recessed from north edge (1m)
     """
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
-    interior_wall_mat = create_material("InteriorWall", (0.9, 0.9, 0.85, 1))
+    interior_wall_mat = get_interior_wall_material()
     
     # Master bedroom & ensuite dimensions
     MASTER_BEDROOM_WIDTH = 4.0  # E-W dimension (interior space from east wall)
@@ -543,6 +597,168 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     bed.scale = (BED_WIDTH/2, BED_LENGTH/2, BED_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     bed.data.materials.append(bed_mat)
+
+
+def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS):
+    """Furnish master bedroom ensuite with shower, toilet, and vanity
+    
+    Layout (2m × 2m ensuite in SE corner):
+    - Shower: NW corner, stepping in from east
+    - Toilet: SW corner, back against west wall
+    - Vanity: SE corner, back against east wall
+    - Entrance: East side of north wall
+    """
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    
+    # Ensuite dimensions
+    ENSUITE_WIDTH = 2.0   # E-W dimension
+    ENSUITE_DEPTH = 2.0   # N-S dimension
+    
+    # Calculate ensuite boundaries
+    east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
+    south_interior_face = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    
+    # Ensuite corners
+    ensuite_east = east_interior_face
+    ensuite_west = east_interior_face + ENSUITE_WIDTH
+    ensuite_south = south_interior_face
+    ensuite_north = south_interior_face - ENSUITE_DEPTH
+    
+    # Materials
+    white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
+    chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
+    glass_mat = create_material("ShowerGlass", (0.7, 0.85, 0.9, 0.3))
+    
+    # === SHOWER IN NW CORNER (stepping in from east) ===
+    SHOWER_SIZE = 0.9  # 900mm square shower
+    SHOWER_TRAY_HEIGHT = 0.15  # 150mm high tray
+    WALL_THICKNESS = 0.1  # 100mm thick walls
+    WALL_HEIGHT = 2.0
+    
+    # Position shower in NW corner - back walls align with room walls
+    # West wall of shower aligns with west wall of ensuite
+    # North wall of shower aligns with north wall of ensuite
+    shower_west_edge = ensuite_west
+    shower_east_edge = ensuite_west - SHOWER_SIZE
+    shower_north_edge = ensuite_north
+    shower_south_edge = ensuite_north + SHOWER_SIZE
+    shower_x_center = (shower_west_edge + shower_east_edge) / 2
+    shower_y_center = (shower_north_edge + shower_south_edge) / 2
+    
+    # Shower tray (raised platform)
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, shower_y_center, first_floor_z + SHOWER_TRAY_HEIGHT/2))
+    shower_tray = bpy.context.active_object
+    shower_tray.name = "MainDwelling_Ensuite_ShowerTray"
+    shower_tray.scale = (SHOWER_SIZE/2, SHOWER_SIZE/2, SHOWER_TRAY_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    shower_tray.data.materials.append(white_mat)
+    
+    # Shower walls (tile/panel material)
+    tile_mat = create_material("ShowerTile", (0.9, 0.9, 0.88, 1))
+    
+    # West wall (back wall against ensuite west wall)
+    west_wall_x = shower_west_edge - WALL_THICKNESS/2
+    bpy.ops.mesh.primitive_cube_add(location=(west_wall_x, shower_y_center, 
+                                               first_floor_z + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
+    west_wall = bpy.context.active_object
+    west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
+    west_wall.scale = (WALL_THICKNESS/2, SHOWER_SIZE/2, WALL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    west_wall.data.materials.append(tile_mat)
+    
+    # North wall (side wall against ensuite north wall)
+    north_wall_y = shower_north_edge - WALL_THICKNESS/2
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, north_wall_y, 
+                                               first_floor_z + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
+    north_wall = bpy.context.active_object
+    north_wall.name = "MainDwelling_Ensuite_ShowerWallNorth"
+    north_wall.scale = (SHOWER_SIZE/2, WALL_THICKNESS/2, WALL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    north_wall.data.materials.append(tile_mat)
+    
+    # Shower glass screen (east side - entrance, shorter than walls)
+    glass_thickness = 0.01
+    glass_height = 1.8
+    glass_x = shower_east_edge + glass_thickness/2
+    bpy.ops.mesh.primitive_cube_add(location=(glass_x, shower_y_center, 
+                                               first_floor_z + SHOWER_TRAY_HEIGHT + glass_height/2))
+    shower_screen = bpy.context.active_object
+    shower_screen.name = "MainDwelling_Ensuite_ShowerScreen"
+    shower_screen.scale = (glass_thickness/2, SHOWER_SIZE/2, glass_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    shower_screen.data.materials.append(glass_mat)
+    
+    # Shower head (mounted on west wall)
+    bpy.ops.mesh.primitive_uv_sphere_add(location=(west_wall_x + 0.15, shower_y_center, 
+                                                    first_floor_z + SHOWER_TRAY_HEIGHT + 1.8), radius=0.05)
+    shower_head = bpy.context.active_object
+    shower_head.name = "MainDwelling_Ensuite_ShowerHead"
+    shower_head.data.materials.append(chrome_mat)
+    
+    # === TOILET IN SW CORNER (back against west wall) ===
+    TOILET_WIDTH = 0.4  # N-S dimension
+    TOILET_DEPTH = 0.6  # E-W dimension (depth from wall)
+    TOILET_HEIGHT = 0.4
+    TOILET_TANK_HEIGHT = 0.8
+    
+    # Position in SW corner, tank against west wall, bowl facing east
+    toilet_east_edge = ensuite_west - TOILET_DEPTH
+    toilet_center_x = (ensuite_west + toilet_east_edge) / 2
+    toilet_center_y = ensuite_south - TOILET_WIDTH/2 - 0.15  # 150mm from south wall
+    
+    # Toilet bowl (combined bowl and tank as one unit for simplicity)
+    bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, first_floor_z + TOILET_HEIGHT/2))
+    toilet_bowl = bpy.context.active_object
+    toilet_bowl.name = "MainDwelling_Ensuite_ToiletBowl"
+    toilet_bowl.scale = (TOILET_DEPTH/2, TOILET_WIDTH/2, TOILET_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    toilet_bowl.data.materials.append(white_mat)
+    
+    # Toilet tank (against west wall)
+    tank_width = 0.15
+    bpy.ops.mesh.primitive_cube_add(location=(ensuite_west - tank_width/2, toilet_center_y, 
+                                               first_floor_z + TOILET_TANK_HEIGHT/2))
+    toilet_tank = bpy.context.active_object
+    toilet_tank.name = "MainDwelling_Ensuite_ToiletTank"
+    toilet_tank.scale = (tank_width/2, TOILET_WIDTH/2, TOILET_TANK_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    toilet_tank.data.materials.append(white_mat)
+    
+    # === VANITY IN SE CORNER (back against east wall, facing west) ===
+    VANITY_WIDTH = 0.6  # N-S dimension
+    VANITY_DEPTH = 0.5  # E-W dimension (depth from wall)
+    VANITY_HEIGHT = 0.85
+    BASIN_HEIGHT = 0.15
+    
+    # Position in SE corner, back against east wall, facing west
+    vanity_west_edge = ensuite_east + VANITY_DEPTH
+    vanity_center_x = (ensuite_east + vanity_west_edge) / 2
+    vanity_center_y = ensuite_south - VANITY_WIDTH/2
+    
+    # Vanity cabinet
+    cabinet_mat = create_material("VanityCabinet", (0.4, 0.3, 0.2, 1))
+    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, first_floor_z + VANITY_HEIGHT/2))
+    vanity_cabinet = bpy.context.active_object
+    vanity_cabinet.name = "MainDwelling_Ensuite_VanityCabinet"
+    vanity_cabinet.scale = (VANITY_DEPTH/2, VANITY_WIDTH/2, VANITY_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    vanity_cabinet.data.materials.append(cabinet_mat)
+    
+    # Basin
+    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, 
+                                               first_floor_z + VANITY_HEIGHT + BASIN_HEIGHT/2))
+    basin = bpy.context.active_object
+    basin.name = "MainDwelling_Ensuite_Basin"
+    basin.scale = ((VANITY_DEPTH - 0.1)/2, (VANITY_WIDTH - 0.1)/2, BASIN_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    basin.data.materials.append(white_mat)
+    
+    # Tap (positioned toward front/west of basin)
+    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x + 0.15, vanity_center_y, 
+                                                   first_floor_z + VANITY_HEIGHT + 0.15), radius=0.02, depth=0.2)
+    tap = bpy.context.active_object
+    tap.name = "MainDwelling_Ensuite_Tap"
+    tap.data.materials.append(chrome_mat)
 
 
 def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -761,7 +977,7 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     
     # Materials
     potius_mat = create_material("PotiusExterior", (0.22, 0.22, 0.24, 1))
-    floor_mat = create_material("FloorWood", (0.5, 0.35, 0.2, 1))
+    floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
@@ -882,6 +1098,9 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     
+    # === ENSUITE FURNITURE ===
+    _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
+    
     # === KITCHEN BENCH ===
     _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
     
@@ -925,7 +1144,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # Materials
     potius_mat = create_material("PotiusExterior", (0.22, 0.22, 0.24, 1))
-    floor_mat = create_material("FloorWood", (0.5, 0.35, 0.2, 1))
+    floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
@@ -993,6 +1212,9 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     # === INTERIOR PARTITIONS ===
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
+    
+    # === ENSUITE FURNITURE ===
+    _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
     
     # === KITCHEN BENCH ===
     _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)

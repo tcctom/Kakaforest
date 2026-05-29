@@ -123,5 +123,9 @@ Ensure all mesh generation, vertices, and object transformations strictly adhere
 
 ### Master bedroom
 This will be on the east side of the first floor. east west width 4 meters. north south length the full 6 meters. ensuite in south east corner, walk in wardrobe to the west of that.
+
+#### ensuite
+Shower in north west corner and stepping in from east. toilet in south west corner with back up against west wall. single vanity in south east corner back up against east wall. entrance is the east side of the north wall.
+
 ### Guest bedroom
 This will be in the north east corner of the ground floor. east west width 4 meters. north south length 3 meters. built in wardrobe the full 3 meter length on the west side. internal door on the south wall just clear of the wardrobe.
