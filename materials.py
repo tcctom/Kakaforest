@@ -239,7 +239,9 @@ def get_metal_roof_material():
             # Mapping node for scale control (roof may need different scale)
             mapping = nodes.new(type='ShaderNodeMapping')
             mapping.location = (-800, 0)
-            mapping.inputs['Scale'].default_value = (2.0, 2.0, 2.0)  # Adjust scale as needed
+            # Scale texture so grooves are ~150mm apart (26.66x scale: 2.0 base * 13.33 for proper spacing)
+            mapping.inputs['Scale'].default_value = (26.66, 26.66, 26.66)
+            mapping.inputs['Rotation'].default_value[2] = 1.5708  # Rotate 90° (π/2 radians) on Z-axis
             
             # Texture coordinate
             tex_coord = nodes.new(type='ShaderNodeTexCoord')

@@ -12,6 +12,57 @@ def create_material(name, color):
     return mat
 
 
+def create_textured_material(name, texture_path):
+    """Create or get a material with an image texture"""
+    mat = bpy.data.materials.get(name)
+    if mat:
+        print(f"DEBUG: Material '{name}' already exists, returning cached version")
+        return mat
+    
+    print(f"DEBUG: Creating new material '{name}' with texture: {texture_path}")
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    
+    # Get the Principled BSDF node
+    principled = nodes.get("Principled BSDF")
+    
+    # Create Image Texture node
+    tex_image = nodes.new(type='ShaderNodeTexImage')
+    tex_image.location = (-300, 300)
+    
+    # Load the image
+    try:
+        img = bpy.data.images.load(texture_path)
+        tex_image.image = img
+        tex_image.image.colorspace_settings.name = 'sRGB'  # Ensure proper color space
+    except Exception as e:
+        print(f"WARNING: Could not load texture: {texture_path}, Error: {e}")
+    
+    # Add Mapping node for rotation control
+    mapping = nodes.new(type='ShaderNodeMapping')
+    mapping.location = (-600, 300)
+    mapping.inputs['Rotation'].default_value[2] = math.radians(90)  # Rotate 90° on Z-axis
+    # Scale for ~150mm grooves with Generated coordinates
+    mapping.inputs['Scale'].default_value = (3.2, 3.2, 3.2)
+    
+    # Add Texture Coordinate node
+    tex_coord = nodes.new(type='ShaderNodeTexCoord')
+    tex_coord.location = (-800, 300)
+    
+    # Connect nodes: TexCoord -> Mapping -> Image Texture -> Principled BSDF
+    # Use 'Generated' coordinates which work for both cubes and custom geometry
+    links.new(tex_coord.outputs['Generated'], mapping.inputs['Vector'])
+    links.new(mapping.outputs['Vector'], tex_image.inputs['Vector'])
+    links.new(tex_image.outputs['Color'], principled.inputs['Base Color'])
+    
+    # Adjust material properties for better wood appearance
+    principled.inputs['Roughness'].default_value = 0.7  # Natural wood finish
+    
+    return mat
+
+
 # === HELPER FUNCTIONS FOR MAIN DWELLING ===
 
 def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat):
@@ -801,12 +852,12 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_EastWall_First", (ox - LENGTH/2, oy + 2, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # GROUND FLOOR - WEST WALL (spans full 7m)
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - 1.5, oz + 1.4), width=0.9, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.4), width=0.9, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy - 1.5, oz + 1.45), width=1.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_Ground", (ox + LENGTH/2, oy + 0.65, oz + 1.1), width=0.5, height=1.8, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # FIRST FLOOR - WEST WALL (spans full 7m)
-    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # GROUND FLOOR - SOUTH WALL (full width)
     add_window("MainDwelling_SouthWall_Ground", (ox - 3, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
@@ -847,14 +898,19 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         window_cutter.hide_render = True
 
 
-def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style):
-    """Create the main gable roof with either traditional or flush style"""
+def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat):
+    """Create the main gable roof with either traditional or flush style
+    
+    Args:
+        potius_mat: Exterior cladding material for gable ends
+    """
     roof_height_from_eaves = (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH))
     eave_height = oz + TOTAL_HEIGHT
     ridge_height = eave_height + roof_height_from_eaves
     
     roof_mat = get_metal_roof_material()
-    gable_material = create_material("GableEnd", (0.22, 0.22, 0.24, 1))
+    # Use the same exterior cladding material for gable ends
+    gable_material = potius_mat
     
     if roof_style == "flush":
         mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
@@ -895,11 +951,31 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
             else:
                 face.material_index = 1
         
-        # UV unwrap for texture display
+        # Create UV layer and set UVs for gable faces
+        if not mesh.uv_layers:
+            mesh.uv_layers.new(name="UVMap")
+        
+        uv_layer = mesh.uv_layers.active.data
+        for poly_idx, poly in enumerate(mesh.polygons):
+            if poly_idx >= 2:  # Gable faces
+                for loop_idx in poly.loop_indices:
+                    loop = mesh.loops[loop_idx]
+                    vert = mesh.vertices[loop.vertex_index]
+                    # Scale UVs: world_dimension / 2.0 to match wall UV scale
+                    # This gives ~150mm grooves after material's 13.33x scaling
+                    u = (vert.co.y - (oy - WIDTH/2)) / 2.0
+                    v = (vert.co.z - eave_height) / 2.0
+                    uv_layer[loop_idx].uv = (u, v)
+        
+        # UV unwrap roof faces only
         bpy.context.view_layer.objects.active = obj
         obj.select_set(True)
         bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        for i in range(2):
+            mesh.polygons[i].select = True
+        bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
         bpy.ops.object.mode_set(mode='OBJECT')
         obj.select_set(False)
@@ -956,6 +1032,32 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
             gable = bpy.data.objects.new(f"MainDwelling_Gable_{side}", gable_mesh)
             bpy.context.collection.objects.link(gable)
             gable.data.materials.append(gable_material)
+            
+            # Create UV layer with normalized coordinates (0-1 range)
+            if not gable_mesh.uv_layers:
+                gable_mesh.uv_layers.new(name="UVMap")
+            uv_layer = gable_mesh.uv_layers.active.data
+            
+            # Calculate gable dimensions
+            gable_width = WIDTH
+            gable_height = roof_height_from_eaves
+            
+            for poly in gable_mesh.polygons:
+                for loop_idx in poly.loop_indices:
+                    loop = gable_mesh.loops[loop_idx]
+                    vert = gable_mesh.vertices[loop.vertex_index]
+                    # Scale UVs so that 150mm (0.15m) = 1 texture repeat BEFORE material scaling
+                    # We want: actual_dimension / 0.15m texture repeats
+                    # Then material's 13.33x brings it to correct scale
+                    # So: UV = world_dimension / (0.15m * 13.33) = world_dimension / 2.0
+                    u = (vert.co.y - (oy - WIDTH/2)) / 2.0  # 7m span / 2.0 = 3.5 UV units
+                    v = (vert.co.z - eave_height) / 2.0
+                    uv_layer[loop_idx].uv = (u, v)
+                    print(f"  Gable face {poly_idx}, vert: Y={vert.co.y:.2f}, Z={vert.co.z:.2f} -> UV=({u:.4f}, {v:.4f})")
+            
+            print(f"=== END GABLE UV DEBUG ===\n")
+            
+            print(f"DEBUG: Created gable {side} with material {gable_material.name}")
 
 
 # === MAIN BUILDING FUNCTIONS ===
@@ -994,7 +1096,9 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     NORTH_RECESS = 1.0  # North wall recessed to create patio/balcony
     
     # Materials
-    potius_mat = create_material("PotiusExterior", (0.22, 0.22, 0.24, 1))
+    import os
+    texture_path = os.path.join(os.path.dirname(__file__), "textures", "thermal-redwood--shou-sugi-ban--char--brushed--black-rainscreen-117-1235-mm-architextures.jpg")
+    potius_mat = create_textured_material("PotiusExterior", texture_path)
     floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
@@ -1136,7 +1240,7 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     
     # === GABLE ROOF ===
     if show_roof:
-        _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style)
+        _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat)
     
     print(f"Main Dwelling built at origin {origin}")
 
@@ -1170,7 +1274,9 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     ROOF_OVERHANG = 0.6
     
     # Materials
-    potius_mat = create_material("PotiusExterior", (0.22, 0.22, 0.24, 1))
+    import os
+    texture_path = os.path.join(os.path.dirname(__file__), "textures", "thermal-redwood--shou-sugi-ban--char--brushed--black-rainscreen-117-1235-mm-architextures.jpg")
+    potius_mat = create_textured_material("PotiusExterior", texture_path)
     floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
@@ -1260,6 +1366,6 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === GABLE ROOF ===
     if show_roof:
-        _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style)
+        _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat)
     
     print(f"Main Dwelling with simple open porch built at origin {origin}") 
