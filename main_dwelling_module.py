@@ -245,8 +245,10 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     # === LANDING: At SOUTH edge, spans East-West ===
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
     landing_y = stairwell_south_y - LANDING_DEPTH/2  # South edge
-    # Raise landing so its top surface aligns with step tops (center + half step rise)
-    landing_z = oz + LANDING_HEIGHT + STEP_RISE/2
+    # Landing top surface must align with top of step 7
+    # Step 7 top = oz + 7*STEP_RISE + STEP_RISE/2 = oz + LANDING_HEIGHT + STEP_RISE/2
+    # Landing thickness = 0.1m (scale 0.05 on 2m cube), so center = top - 0.05
+    landing_z = oz + LANDING_HEIGHT + STEP_RISE/2 - 0.05
     
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object

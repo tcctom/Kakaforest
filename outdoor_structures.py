@@ -120,7 +120,7 @@ def create_boulder_material():
     return mat
 
 
-def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.3):
+def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.2):
     """
     Build a row of boulders between two points with natural variation.
     
@@ -158,7 +158,7 @@ def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.3):
             y += (dy / length) * offset
         
         # Random boulder size (base size ~0.6m with variation)
-        base_size = 0.6
+        base_size = 0.8
         size_factor = 1.0 + random.uniform(-size_variation, size_variation)
         # More extreme variation in dimensions for irregular, jagged boulders
         scale_x = base_size * size_factor * random.uniform(0.6, 1.5)

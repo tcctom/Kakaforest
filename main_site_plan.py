@@ -165,8 +165,8 @@ main_dwelling_module.build_north_deck(origin=(0, 0, 0))
 # 1b. Build boulder row along south edge of clearing
 outdoor_structures.build_boulder_row(start_pos=(-5, 7.8, 0), end_pos=(5, 7.8, 0), spacing=0.4)
 # and north and south of porch
-outdoor_structures.build_boulder_row(start_pos=(6, -3.5, -0.75), end_pos=(6.5, -1.4, -0.4), spacing=0.4)
-outdoor_structures.build_boulder_row(start_pos=(6, 1.5, -0.3), end_pos=(6, 2.5, -0.1), spacing=0.5)
+outdoor_structures.build_boulder_row(start_pos=(6, -3.5, -0.75), end_pos=(6.5, -1.4, -0.4), spacing=0.4, size_variation=0.1)
+outdoor_structures.build_boulder_row(start_pos=(6, 1.5, -0.3), end_pos=(6, 2.5, -0.1), spacing=0.5, size_variation=0.1)
 
 # 1c. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 60, 4.55))
