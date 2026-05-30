@@ -2,7 +2,7 @@
 import math
 
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
-from materials import get_interior_wall_material, get_floor_wood_material, get_metal_roof_material
+from materials import get_interior_wall_material, get_floor_wood_material, get_metal_roof_material, get_kitchen_bench_material, get_kitchen_cabinet_material
 
 def create_material(name, color):
     """Create or get a material with the given name and color"""
@@ -245,7 +245,8 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     # === LANDING: At SOUTH edge, spans East-West ===
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
     landing_y = stairwell_south_y - LANDING_DEPTH/2  # South edge
-    landing_z = oz + LANDING_HEIGHT
+    # Raise landing so its top surface aligns with step tops (center + half step rise)
+    landing_z = oz + LANDING_HEIGHT + STEP_RISE/2
     
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
@@ -539,8 +540,8 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bench_top_z = oz + BENCH_HEIGHT
     
     # Create materials
-    bench_mat = create_material("KitchenBench", (0.85, 0.82, 0.75, 1))  # Light wood/laminate color
-    cabinet_mat = create_material("KitchenCabinet", (0.4, 0.35, 0.3, 1))  # Darker cabinet color
+    bench_mat = get_kitchen_bench_material()  # Granite texture
+    cabinet_mat = get_kitchen_cabinet_material()  # Darker cabinet color
     
     # Base cabinets
     cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS

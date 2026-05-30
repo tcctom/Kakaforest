@@ -387,8 +387,91 @@ def get_shower_glass_material():
 
 
 def get_kitchen_bench_material():
-    """Kitchen benchtop - light laminate"""
-    return create_material("KitchenBench", (0.85, 0.82, 0.75, 1.0))
+    """Kitchen benchtop - granite with texture
+    
+    Uses granite-2000-mm-architextures.jpg texture if available.
+    Falls back to light laminate color if texture file not found.
+    """
+    mat = bpy.data.materials.get("KitchenBench")
+    if mat:
+        return mat
+    
+    mat = bpy.data.materials.new(name="KitchenBench")
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    
+    # Clear default nodes
+    nodes.clear()
+    
+    # Create nodes
+    output_node = nodes.new(type='ShaderNodeOutputMaterial')
+    output_node.location = (400, 0)
+    
+    bsdf_node = nodes.new(type='ShaderNodeBsdfPrincipled')
+    bsdf_node.location = (0, 0)
+    
+    # Try to load granite texture
+    import os
+    
+    # Get the project directory
+    if bpy.data.filepath:
+        blend_dir = os.path.dirname(os.path.abspath(bpy.data.filepath))
+    else:
+        blend_dir = r"c:\KakaForestRetreat"
+    
+    texture_path = os.path.join(blend_dir, "textures", "granite-2000-mm-architextures.jpg")
+    
+    if os.path.exists(texture_path):
+        try:
+            # Load granite texture
+            granite_img = bpy.data.images.get("granite-2000-mm-architextures.jpg")
+            if not granite_img:
+                granite_img = bpy.data.images.load(texture_path)
+                print("  ✓ Granite texture loaded")
+            else:
+                print("  ✓ Granite texture (cached)")
+            
+            color_tex = nodes.new(type='ShaderNodeTexImage')
+            color_tex.location = (-600, 200)
+            color_tex.image = granite_img
+            color_tex.image.colorspace_settings.name = 'sRGB'
+            
+            # Texture coordinate
+            tex_coord = nodes.new(type='ShaderNodeTexCoord')
+            tex_coord.location = (-1200, 0)
+            
+            # Mapping node for scale control
+            mapping = nodes.new(type='ShaderNodeMapping')
+            mapping.location = (-800, 0)
+            mapping.inputs['Scale'].default_value = (0.5, 0.5, 0.5)  # Scale to fit benchtop
+            
+            # Link texture
+            links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
+            links.new(mapping.outputs['Vector'], color_tex.inputs['Vector'])
+            links.new(color_tex.outputs['Color'], bsdf_node.inputs['Base Color'])
+            
+            # Granite is typically polished and slightly reflective
+            bsdf_node.inputs['Roughness'].default_value = 0.2
+            bsdf_node.inputs['Specular'].default_value = 0.5
+            
+            print(f"Kitchen bench material: Using granite texture from {texture_path}")
+            
+        except Exception as e:
+            print(f"  ✗ Error loading granite texture: {e}")
+            # Fallback to simple color
+            bsdf_node.inputs['Base Color'].default_value = (0.85, 0.82, 0.75, 1.0)
+            bsdf_node.inputs['Roughness'].default_value = 0.3
+    else:
+        print(f"  ! Granite texture not found at {texture_path}, using fallback color")
+        # Fallback to light laminate color
+        bsdf_node.inputs['Base Color'].default_value = (0.85, 0.82, 0.75, 1.0)
+        bsdf_node.inputs['Roughness'].default_value = 0.3
+    
+    # Connect BSDF to output
+    links.new(bsdf_node.outputs['BSDF'], output_node.inputs['Surface'])
+    
+    return mat
 
 
 def get_kitchen_cabinet_material():
