@@ -1062,6 +1062,147 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
 
 # === MAIN BUILDING FUNCTIONS ===
 
+def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, north_recess=1.0):
+    """
+    Build a timber deck extending 3 meters north from the recessed north wall of the main dwelling.
+    The deck is constructed with piles, bearers, joists, and 90mm x 25mm decking boards.
+    
+    Args:
+        origin: (x, y, z) tuple for building origin (same as main dwelling)
+        building_length: East-west dimension of building (9m default)
+        building_width: North-south dimension of building (7m default)
+        north_recess: How far north wall is recessed (1m default)
+    """
+    ox, oy, oz = origin
+    
+    # Deck dimensions
+    DECK_EXTENSION = 3.0  # 3 meters north
+    DECK_THICKNESS = 0.025  # 25mm decking board thickness
+    DECK_BOARD_WIDTH = 0.090  # 90mm board width
+    BOARD_GAP = 0.005  # 5mm gap between boards
+    
+    # Structural dimensions
+    PILE_SIZE = 0.15  # 150mm x 150mm H5 timber piles
+    PILE_HEIGHT_ABOVE_GROUND = 0.4  # 400mm above ground to deck surface
+    PILE_DEPTH_BELOW_GROUND = 0.6  # 600mm below ground
+    BEARER_SIZE = (0.150, 0.200)  # 150mm x 200mm bearers (W x H)
+    JOIST_SIZE = (0.090, 0.190)  # 90mm x 190mm joists (W x H)
+    JOIST_SPACING = 0.45  # 450mm centers
+    
+    # Calculate deck position (north of recessed wall)
+    # North edge of building is at oy - building_width/2
+    # Recessed north wall is at oy - building_width/2 + north_recess
+    north_wall_y = oy - building_width/2 + north_recess
+    deck_start_y = north_wall_y - 1.0  # Move 1 meter further north
+    deck_end_y = deck_start_y - DECK_EXTENSION
+    deck_center_y = (deck_start_y + deck_end_y) / 2
+    
+    # Deck height adjustment: lower by 520mm (raised 80mm from original)
+    DECK_HEIGHT_OFFSET = -0.52  # 520mm below ground level
+    
+    # Deck spans full building length east-west
+    deck_west_x = ox + building_length/2
+    deck_east_x = ox - building_length/2
+    deck_center_x = ox
+    
+    # Materials
+    import os
+    texture_path = os.path.join(os.path.dirname(__file__), "textures", "knotted-timber-staggered-1995-mm-architextures.jpg")
+    deck_mat = create_textured_material("TimberDecking", texture_path)
+    structure_mat = create_material("TreatedTimber", (0.55, 0.45, 0.35, 1))
+    
+    # === PILES (Foundation Posts) ===
+    # Arrange piles in 2 rows (middle and north) x 4 columns
+    # South row removed - joists use hangers to connect directly to building
+    pile_cols = 4
+    pile_spacing_ns = DECK_EXTENSION / 2  # Spacing for middle and north positions
+    pile_spacing_ew = building_length / (pile_cols + 1)  # E-W spacing between columns
+    NORTH_BEARER_INSET = 0.15  # 150mm inset from north edge for overhang
+    
+    # Calculate pile row positions to match bearer positions
+    pile_y_middle = deck_start_y - pile_spacing_ns
+    pile_y_north = deck_start_y - (2 * pile_spacing_ns) + NORTH_BEARER_INSET
+    
+    pile_positions = [
+        ("Middle", pile_y_middle),
+        ("North", pile_y_north)
+    ]
+    
+    pile_center_z = oz + DECK_HEIGHT_OFFSET - PILE_DEPTH_BELOW_GROUND + (PILE_DEPTH_BELOW_GROUND + PILE_HEIGHT_ABOVE_GROUND) / 2
+    
+    for row_name, pile_y in pile_positions:
+        for col in range(pile_cols):
+            pile_x = deck_east_x + (col + 1) * pile_spacing_ew
+            
+            bpy.ops.mesh.primitive_cube_add(location=(pile_x, pile_y, pile_center_z))
+            pile = bpy.context.active_object
+            pile.name = f"Deck_Pile_{row_name}_C{col+1}"
+            pile.scale = (PILE_SIZE/2, PILE_SIZE/2, (PILE_DEPTH_BELOW_GROUND + PILE_HEIGHT_ABOVE_GROUND)/2)
+            bpy.ops.object.transform_apply(scale=True)
+            pile.data.materials.append(structure_mat)
+    
+    # === BEARERS (Main beams running East-West on top of piles) ===
+    # 2 bearers: middle and north (south bearer omitted - joists use hangers to connect to building)
+    bearer_z = oz + DECK_HEIGHT_OFFSET + PILE_HEIGHT_ABOVE_GROUND - BEARER_SIZE[1]/2
+    
+    # Middle bearer
+    bpy.ops.mesh.primitive_cube_add(location=(deck_center_x, pile_y_middle, bearer_z))
+    bearer = bpy.context.active_object
+    bearer.name = "Deck_Bearer_Middle"
+    bearer.scale = (building_length/2, BEARER_SIZE[0]/2, BEARER_SIZE[1]/2)
+    bpy.ops.object.transform_apply(scale=True)
+    bearer.data.materials.append(structure_mat)
+    
+    # North bearer (inset for overhang)
+    bpy.ops.mesh.primitive_cube_add(location=(deck_center_x, pile_y_north, bearer_z))
+    bearer = bpy.context.active_object
+    bearer.name = "Deck_Bearer_North"
+    bearer.scale = (building_length/2, BEARER_SIZE[0]/2, BEARER_SIZE[1]/2)
+    bpy.ops.object.transform_apply(scale=True)
+    bearer.data.materials.append(structure_mat)
+    
+    # === JOISTS (Smaller beams running North-South, perpendicular to bearers) ===
+    # Joists span from south bearer to north bearer
+    joist_z = oz + DECK_HEIGHT_OFFSET + PILE_HEIGHT_ABOVE_GROUND + JOIST_SIZE[1]/2
+    num_joists = int(building_length / JOIST_SPACING) + 1
+    
+    for i in range(num_joists):
+        joist_x = deck_east_x + (i * JOIST_SPACING)
+        if joist_x > deck_west_x:
+            break
+        
+        bpy.ops.mesh.primitive_cube_add(location=(joist_x, deck_center_y, joist_z))
+        joist = bpy.context.active_object
+        joist.name = f"Deck_Joist_{i+1:02d}"
+        joist.scale = (JOIST_SIZE[0]/2, DECK_EXTENSION/2, JOIST_SIZE[1]/2)
+        bpy.ops.object.transform_apply(scale=True)
+        joist.data.materials.append(structure_mat)
+    
+    # === DECKING BOARDS (90mm x 25mm boards running East-West) ===
+    deck_surface_z = oz + DECK_HEIGHT_OFFSET + PILE_HEIGHT_ABOVE_GROUND + JOIST_SIZE[1] + DECK_THICKNESS/2
+    num_boards = int(DECK_EXTENSION / (DECK_BOARD_WIDTH + BOARD_GAP)) + 1
+    
+    for i in range(num_boards):
+        board_y = deck_start_y - (i * (DECK_BOARD_WIDTH + BOARD_GAP)) - DECK_BOARD_WIDTH/2
+        if board_y < deck_end_y:
+            break
+        
+        bpy.ops.mesh.primitive_cube_add(location=(deck_center_x, board_y, deck_surface_z))
+        board = bpy.context.active_object
+        board.name = f"Deck_Board_{i+1:02d}"
+        board.scale = (building_length/2, DECK_BOARD_WIDTH/2, DECK_THICKNESS/2)
+        bpy.ops.object.transform_apply(scale=True)
+        board.data.materials.append(deck_mat)
+        
+        # UV unwrap for proper texture display
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
+    
+    print(f"North Deck built at origin {origin}, extending {DECK_EXTENSION}m north")
+
+
 def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditional"):
     """
     Build the main dwelling structure with ENCLOSED GABLE PORCH:
@@ -1300,12 +1441,90 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bpy.ops.object.transform_apply(scale=True)
     porch_deck.data.materials.append(floor_mat)
     
+    # UV unwrap for porch deck texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # Steps down from porch deck on west side - using decking material
+    STEP_WIDTH = 2.5  # Full porch width (north-south)
+    STEP_DEPTH = 0.4  # 400mm deep (east-west)
+    STEP_HEIGHT = 0.15  # 150mm rise per step
+    deck_texture_path = os.path.join(os.path.dirname(__file__), "textures", "knotted-timber-staggered-1995-mm-architextures.jpg")
+    deck_mat = create_textured_material("TimberDecking", deck_texture_path)
+    
+    # First step (closer to porch)
+    step1_x = ox + LENGTH/2 + PORCH_DEPTH + STEP_DEPTH/2
+    step1_z = oz + 0.05 - STEP_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(step1_x, porch_center_y, step1_z))
+    step1 = bpy.context.active_object
+    step1.name = "MainDwelling_PorchStep1_Simple"
+    step1.scale = (STEP_DEPTH/2, STEP_WIDTH/2, STEP_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    step1.data.materials.append(deck_mat)
+    
+    # UV unwrap for texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # Second step (further from porch)
+    step2_x = step1_x + STEP_DEPTH
+    step2_z = step1_z - STEP_HEIGHT
+    
+    bpy.ops.mesh.primitive_cube_add(location=(step2_x, porch_center_y, step2_z))
+    step2 = bpy.context.active_object
+    step2.name = "MainDwelling_PorchStep2_Simple"
+    step2.scale = (STEP_DEPTH/2, STEP_WIDTH/2, STEP_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    step2.data.materials.append(deck_mat)
+    
+    # UV unwrap for texture display
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
     # Main entrance door on MAIN BUILDING'S WEST WALL (not on porch)
-    # Door: 0.9m wide Ã— 2.0m high, centered on west wall
+    # Door: 0.9m wide × 2.0m high, centered on west wall
     main_door_x = ox + LENGTH/2  # On west wall face
     add_window("MainDwelling_WestWall_Ground", (main_door_x, oy, oz + 1.0), width=0.9, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # Monopitch porch roof - single slope, high at building, low at outer edge
+    PORCH_ROOF_PITCH = 15  # degrees (gentler slope for monopitch)
+    PORCH_ROOF_OVERHANG = 0.3  # Small overhang on sides and front
+    
+    # Roof starts at eave height (top of ground floor walls) and slopes downward
+    porch_roof_high_height = oz + GROUND_FLOOR_HEIGHT
+    porch_roof_drop = PORCH_DEPTH * math.tan(math.radians(PORCH_ROOF_PITCH))
+    porch_roof_low_height = porch_roof_high_height - porch_roof_drop
+    
+    # Support posts on west edge of porch (to hold up roof)
+    POST_SIZE = 0.15  # 150mm x 150mm posts
+    POST_INSET = 0.2  # 200mm inset from north/south edges (wider spacing)
+    post_x = ox + LENGTH/2 + PORCH_DEPTH  # West edge of deck
+    post_height = porch_roof_low_height - oz  # Height to match sloped roof at west edge
+    
+    # North post
+    post_north_y = oy - PORCH_WIDTH/2 + POST_INSET
+    bpy.ops.mesh.primitive_cube_add(location=(post_x, post_north_y, oz + post_height/2))
+    post_north = bpy.context.active_object
+    post_north.name = "MainDwelling_PorchPost_North"
+    post_north.scale = (POST_SIZE/2, POST_SIZE/2, post_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    post_north.data.materials.append(floor_mat)
+    
+    # South post
+    post_south_y = oy + PORCH_WIDTH/2 - POST_INSET
+    bpy.ops.mesh.primitive_cube_add(location=(post_x, post_south_y, oz + post_height/2))
+    post_south = bpy.context.active_object
+    post_south.name = "MainDwelling_PorchPost_South"
+    post_south.scale = (POST_SIZE/2, POST_SIZE/2, post_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    post_south.data.materials.append(floor_mat)
     PORCH_ROOF_PITCH = 15  # degrees (gentler slope for monopitch)
     PORCH_ROOF_OVERHANG = 0.3  # Small overhang on sides and front
     
@@ -1351,6 +1570,73 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bpy.ops.object.mode_set(mode='OBJECT')
     porch_roof_obj.select_set(False)
     
+    # Add roof structure for realism
+    FASCIA_HEIGHT = 0.20  # 200mm fascia board height
+    FASCIA_THICKNESS = 0.025  # 25mm thickness
+    PURLIN_SIZE = (0.090, 0.045)  # 90mm x 45mm purlins (W x H)
+    
+    # Fascia board along west (low) edge
+    fascia_west_x = porch_roof_west - FASCIA_THICKNESS/2
+    fascia_west_y = (porch_roof_north + porch_roof_south) / 2
+    fascia_west_z = porch_roof_low_height - FASCIA_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(fascia_west_x, fascia_west_y, fascia_west_z))
+    fascia_west = bpy.context.active_object
+    fascia_west.name = "MainDwelling_PorchRoof_FasciaWest"
+    fascia_west_length = porch_roof_south - porch_roof_north
+    fascia_west.scale = (FASCIA_THICKNESS/2, fascia_west_length/2, FASCIA_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    fascia_west.data.materials.append(floor_mat)
+    
+    # Fascia board along north edge
+    fascia_north_x = (porch_roof_east + porch_roof_west) / 2
+    fascia_north_y = porch_roof_north + FASCIA_THICKNESS/2
+    fascia_north_z_high = porch_roof_high_height - FASCIA_HEIGHT/2
+    fascia_north_z_low = porch_roof_low_height - FASCIA_HEIGHT/2
+    fascia_north_z = (fascia_north_z_high + fascia_north_z_low) / 2
+    fascia_north_length = porch_roof_west - porch_roof_east
+    
+    bpy.ops.mesh.primitive_cube_add(location=(fascia_north_x, fascia_north_y, fascia_north_z))
+    fascia_north = bpy.context.active_object
+    fascia_north.name = "MainDwelling_PorchRoof_FasciaNorth"
+    fascia_north.scale = (fascia_north_length/2, FASCIA_THICKNESS/2, FASCIA_HEIGHT/2)
+    # Rotate to follow roof slope
+    fascia_north.rotation_euler[1] = math.radians(PORCH_ROOF_PITCH)
+    bpy.ops.object.transform_apply(scale=True, rotation=True)
+    fascia_north.data.materials.append(floor_mat)
+    
+    # Fascia board along south edge
+    fascia_south_y = porch_roof_south - FASCIA_THICKNESS/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(fascia_north_x, fascia_south_y, fascia_north_z))
+    fascia_south = bpy.context.active_object
+    fascia_south.name = "MainDwelling_PorchRoof_FasciaSouth"
+    fascia_south.scale = (fascia_north_length/2, FASCIA_THICKNESS/2, FASCIA_HEIGHT/2)
+    # Rotate to follow roof slope
+    fascia_south.rotation_euler[1] = math.radians(PORCH_ROOF_PITCH)
+    bpy.ops.object.transform_apply(scale=True, rotation=True)
+    fascia_south.data.materials.append(floor_mat)
+    
+    # Purlins (horizontal beams running east-west across the roof)
+    PURLIN_SPACING = 0.6  # 600mm spacing
+    num_purlins = int((porch_roof_west - porch_roof_east) / PURLIN_SPACING)
+    
+    for i in range(1, num_purlins):
+        purlin_x = porch_roof_east + (i * PURLIN_SPACING)
+        purlin_y = (porch_roof_north + porch_roof_south) / 2
+        # Calculate height along the slope
+        distance_from_high = purlin_x - porch_roof_east
+        slope_drop = distance_from_high * math.tan(math.radians(PORCH_ROOF_PITCH))
+        purlin_z = porch_roof_high_height - slope_drop - PURLIN_SIZE[1]/2
+        
+        bpy.ops.mesh.primitive_cube_add(location=(purlin_x, purlin_y, purlin_z))
+        purlin = bpy.context.active_object
+        purlin.name = f"MainDwelling_PorchRoof_Purlin_{i}"
+        purlin_length = porch_roof_south - porch_roof_north
+        purlin.scale = (PURLIN_SIZE[0]/2, purlin_length/2, PURLIN_SIZE[1]/2)
+        bpy.ops.object.transform_apply(scale=True)
+        purlin.data.materials.append(floor_mat)
+    
     # === INTERIOR PARTITIONS ===
     _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
@@ -1363,6 +1649,69 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === WINDOWS AND DOORS ===
     _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)
+    
+    # === FIRST FLOOR BALCONY RAILING (North Edge) ===
+    RAILING_HEIGHT = 1.0  # 1 meter high
+    RAILING_POST_SIZE = 0.075  # 75mm square posts
+    RAILING_RAIL_HEIGHT = 0.050  # 50mm high horizontal rails
+    RAILING_RAIL_DEPTH = 0.040  # 40mm deep horizontal rails
+    POST_SPACING = 1.5  # 1.5m between posts
+    
+    # Railing position - along north edge of first floor balcony
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    railing_y = oy - WIDTH/2  # At the north edge of the balcony (1m north of recessed wall)
+    railing_west_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS  # Inside west wall
+    railing_east_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS  # Inside east wall
+    railing_length = railing_west_x - railing_east_x
+    
+    # Material for railing - use treated timber
+    railing_mat = create_material("RailingTimber", (0.55, 0.45, 0.35, 1))
+    
+    # Create posts at regular intervals
+    num_posts = int(railing_length / POST_SPACING) + 1
+    actual_spacing = railing_length / (num_posts - 1) if num_posts > 1 else railing_length
+    
+    for i in range(num_posts):
+        post_x = railing_east_x + (i * actual_spacing)
+        post_z = first_floor_z + RAILING_HEIGHT/2
+        
+        bpy.ops.mesh.primitive_cube_add(location=(post_x, railing_y, post_z))
+        post = bpy.context.active_object
+        post.name = f"MainDwelling_BalconyRailing_Post_{i+1:02d}"
+        post.scale = (RAILING_POST_SIZE/2, RAILING_POST_SIZE/2, RAILING_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        post.data.materials.append(railing_mat)
+    
+    # Top rail (horizontal)
+    top_rail_x = (railing_west_x + railing_east_x) / 2
+    top_rail_z = first_floor_z + RAILING_HEIGHT - RAILING_RAIL_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, top_rail_z))
+    top_rail = bpy.context.active_object
+    top_rail.name = "MainDwelling_BalconyRailing_TopRail"
+    top_rail.scale = (railing_length/2, RAILING_RAIL_DEPTH/2, RAILING_RAIL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    top_rail.data.materials.append(railing_mat)
+    
+    # Middle rail (horizontal)
+    mid_rail_z = first_floor_z + RAILING_HEIGHT/2
+    
+    bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, mid_rail_z))
+    mid_rail = bpy.context.active_object
+    mid_rail.name = "MainDwelling_BalconyRailing_MidRail"
+    mid_rail.scale = (railing_length/2, RAILING_RAIL_DEPTH/2, RAILING_RAIL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    mid_rail.data.materials.append(railing_mat)
+    
+    # Bottom rail (horizontal)
+    bottom_rail_z = first_floor_z + 0.15  # 150mm above floor level
+    
+    bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, bottom_rail_z))
+    bottom_rail = bpy.context.active_object
+    bottom_rail.name = "MainDwelling_BalconyRailing_BottomRail"
+    bottom_rail.scale = (railing_length/2, RAILING_RAIL_DEPTH/2, RAILING_RAIL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    bottom_rail.data.materials.append(railing_mat)
     
     # === GABLE ROOF ===
     if show_roof:

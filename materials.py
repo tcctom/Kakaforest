@@ -207,6 +207,8 @@ def get_metal_roof_material():
     # Find texture files (they may have different naming patterns)
     color_path = None
     rough_path = None
+    normal_path = None
+    metallic_path = None
     
     if os.path.exists(texture_dir):
         for filename in os.listdir(texture_dir):
@@ -214,6 +216,10 @@ def get_metal_roof_material():
                 color_path = os.path.join(texture_dir, filename)
             elif 'rough' in filename.lower() and filename.endswith('.exr'):
                 rough_path = os.path.join(texture_dir, filename)
+            elif 'nor' in filename.lower() and filename.endswith('.exr'):
+                normal_path = os.path.join(texture_dir, filename)
+            elif 'metal' in filename.lower() and filename.endswith('.exr'):
+                metallic_path = os.path.join(texture_dir, filename)
     
     print(f"Roof material: Loading textures from {texture_dir}")
     
@@ -239,21 +245,29 @@ def get_metal_roof_material():
             # Mapping node for scale control (roof may need different scale)
             mapping = nodes.new(type='ShaderNodeMapping')
             mapping.location = (-800, 0)
-            # Scale texture so grooves are ~150mm apart (26.66x scale: 2.0 base * 13.33 for proper spacing)
-            mapping.inputs['Scale'].default_value = (26.66, 26.66, 26.66)
+            # Reduced scale for better visibility of corrugations (was 26.66)
+            mapping.inputs['Scale'].default_value = (8.0, 8.0, 8.0)
             mapping.inputs['Rotation'].default_value[2] = 1.5708  # Rotate 90° (π/2 radians) on Z-axis
             
             # Texture coordinate
             tex_coord = nodes.new(type='ShaderNodeTexCoord')
             tex_coord.location = (-1200, 0)
             
+            # Color Mix node to darken/blacken the texture
+            color_mix = nodes.new(type='ShaderNodeMix')
+            color_mix.data_type = 'RGBA'
+            color_mix.location = (-300, 200)
+            color_mix.inputs['Factor'].default_value = 0.85  # 85% black
+            color_mix.inputs['A'].default_value = (0.05, 0.05, 0.05, 1.0)  # Very dark gray/black
+            
             # Link texture
             links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
             links.new(mapping.outputs['Vector'], color_tex.inputs['Vector'])
-            links.new(color_tex.outputs['Color'], bsdf_node.inputs['Base Color'])
+            links.new(color_tex.outputs['Color'], color_mix.inputs['B'])
+            links.new(color_mix.outputs['Result'], bsdf_node.inputs['Base Color'])
             
             # Set metallic property for metal roof
-            bsdf_node.inputs['Metallic'].default_value = 0.8
+            bsdf_node.inputs['Metallic'].default_value = 0.9
             
             # Roughness texture
             if rough_path and os.path.exists(rough_path):
@@ -273,22 +287,68 @@ def get_metal_roof_material():
                     links.new(rough_tex.outputs['Color'], bsdf_node.inputs['Roughness'])
                 except Exception as e:
                     print(f"  ! Roughness texture failed: {e}, using default")
-                    bsdf_node.inputs['Roughness'].default_value = 0.3
+                    bsdf_node.inputs['Roughness'].default_value = 0.4
             else:
-                bsdf_node.inputs['Roughness'].default_value = 0.3
+                bsdf_node.inputs['Roughness'].default_value = 0.4
+            
+            # Normal map texture (crucial for corrugation visibility)
+            if normal_path and os.path.exists(normal_path):
+                try:
+                    normal_img = bpy.data.images.get(os.path.basename(normal_path))
+                    if not normal_img:
+                        normal_img = bpy.data.images.load(normal_path)
+                        print("  ✓ Normal map loaded")
+                    else:
+                        print("  ✓ Normal map (cached)")
+                        
+                    normal_tex = nodes.new(type='ShaderNodeTexImage')
+                    normal_tex.location = (-600, -400)
+                    normal_tex.image = normal_img
+                    normal_tex.image.colorspace_settings.name = 'Non-Color'
+                    
+                    # Normal map node
+                    normal_map = nodes.new(type='ShaderNodeNormalMap')
+                    normal_map.location = (-300, -400)
+                    normal_map.inputs['Strength'].default_value = 1.5  # Increase strength for better visibility
+                    
+                    links.new(mapping.outputs['Vector'], normal_tex.inputs['Vector'])
+                    links.new(normal_tex.outputs['Color'], normal_map.inputs['Color'])
+                    links.new(normal_map.outputs['Normal'], bsdf_node.inputs['Normal'])
+                    print("  ✓ Normal map connected")
+                except Exception as e:
+                    print(f"  ! Normal map failed: {e}")
+            
+            # Metallic texture
+            if metallic_path and os.path.exists(metallic_path):
+                try:
+                    metallic_img = bpy.data.images.get(os.path.basename(metallic_path))
+                    if not metallic_img:
+                        metallic_img = bpy.data.images.load(metallic_path)
+                        print("  ✓ Metallic texture loaded")
+                    else:
+                        print("  ✓ Metallic texture (cached)")
+                        
+                    metallic_tex = nodes.new(type='ShaderNodeTexImage')
+                    metallic_tex.location = (-600, -600)
+                    metallic_tex.image = metallic_img
+                    metallic_tex.image.colorspace_settings.name = 'Non-Color'
+                    links.new(mapping.outputs['Vector'], metallic_tex.inputs['Vector'])
+                    links.new(metallic_tex.outputs['Color'], bsdf_node.inputs['Metallic'])
+                except Exception as e:
+                    print(f"  ! Metallic texture failed: {e}, using default")
             
         except Exception as e:
             print(f"  ✗ Error loading texture: {e}")
-            # Fallback to simple metallic color
-            bsdf_node.inputs['Base Color'].default_value = (0.6, 0.6, 0.65, 1.0)
-            bsdf_node.inputs['Metallic'].default_value = 0.8
-            bsdf_node.inputs['Roughness'].default_value = 0.3
+            # Fallback to simple black metallic color
+            bsdf_node.inputs['Base Color'].default_value = (0.05, 0.05, 0.05, 1.0)
+            bsdf_node.inputs['Metallic'].default_value = 0.9
+            bsdf_node.inputs['Roughness'].default_value = 0.4
     else:
-        print("  ! Texture not found, using fallback metallic color")
-        # Fallback to simple metallic color
-        bsdf_node.inputs['Base Color'].default_value = (0.6, 0.6, 0.65, 1.0)
-        bsdf_node.inputs['Metallic'].default_value = 0.8
-        bsdf_node.inputs['Roughness'].default_value = 0.3
+        print("  ! Texture not found, using fallback black metallic color")
+        # Fallback to simple black metallic color
+        bsdf_node.inputs['Base Color'].default_value = (0.05, 0.05, 0.05, 1.0)
+        bsdf_node.inputs['Metallic'].default_value = 0.9
+        bsdf_node.inputs['Roughness'].default_value = 0.4
     
     # Connect BSDF to output
     links.new(bsdf_node.outputs['BSDF'], output_node.inputs['Surface'])

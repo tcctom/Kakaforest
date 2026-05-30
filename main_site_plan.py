@@ -130,19 +130,21 @@ if SHOW_GROUND:
     
     # Main Dwelling area (at origin, with Björken 60m south and 5m higher elevation)
     # Ground level at 0.0, building sits on slight clearing
-    main_dwelling_clearing = grid_points((-6, -8, 0.0), (6, 8, 0.0), x_spacing=0.4)
-    ground_module.grass_plane(main_dwelling_clearing)
+    main_dwelling_clearing = grid_points((-6, -3.5, 0.0), (6, 9, 0.0), x_spacing=0.4)
+    ground_module.gravel_plane(main_dwelling_clearing)
+    
+
     
     # Forest surrounds on all sides of main dwelling
-    main_dwelling_forest_north = grid_points((-18, -32, -0.2), (8, -8, -0.1), x_spacing=0.5)
-    main_dwelling_forest_south = grid_points((-18, 28, -0.1), (8, 8, 0.2), x_spacing=0.5)
+    main_dwelling_forest_north = grid_points((-18, -32, -4.2), (8, -3.5, -0.4), x_spacing=0.5, slope_direction='y')
+    main_dwelling_forest_south = grid_points((-10, 28, 0.5), (30, 8, 0.5), x_spacing=0.5, slope_direction='y')
     main_dwelling_forest_east = grid_points((-30, -8, -0.2), (-6, 8, -0.1), x_spacing=0.5)
-    main_dwelling_forest_west = grid_points((6, -18, -0.1), (30, 28, 0.0), x_spacing=0.5)
+    main_dwelling_forest_west = grid_points((6, -18, -3.1), (30, 8, 0.5), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
     ground_module.forest_plane(main_dwelling_forest_south)
     ground_module.forest_plane(main_dwelling_forest_east)
-    ground_module.forest_plane(main_dwelling_forest_west)
+    ground_module.gravel_plane(main_dwelling_forest_west)
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
@@ -156,6 +158,9 @@ if SHOW_GROUND:
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
 #main_dwelling_module.build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="flush")
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="flush")
+
+# 1a. Build North Deck - extends 3m north from ground floor
+main_dwelling_module.build_north_deck(origin=(0, 0, 0))
 
 # 1b. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(0, 60, 4.55))

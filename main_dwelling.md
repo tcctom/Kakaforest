@@ -129,3 +129,10 @@ Shower in north west corner and stepping in from east. toilet in south west corn
 
 ### Guest bedroom
 This will be in the north east corner of the ground floor. east west width 4 meters. north south length 3 meters. built in wardrobe the full 3 meter length on the west side. internal door on the south wall just clear of the wardrobe.
+
+## Landscaping
+Create a timber deck extending 3 meters north from the north edge of our ground floor. It will be built with piles, bearers, joists and 90mm x 25mm decking. Joist hangers will be used to connect the deck to the buildin, so don't need a bearer there. please use this texture for the decking:
+ textures/knotted-timber-staggered-1995-mm-architextures.jpg
+
+
+
