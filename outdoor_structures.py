@@ -119,6 +119,85 @@ def create_boulder_material():
     
     return mat
 
+def create_single_boulder(position, base_size=0.8, name="Boulder"):
+    """
+    Create a single jagged boulder at the specified position.
+    
+    Args:
+        position: Tuple (x, y, z) for the boulder position
+        base_size: Base size of the boulder in meters (default 0.8m)
+        name: Name for the boulder object
+    
+    Returns:
+        The created boulder object
+    """
+    x, y, z = position
+    
+    # Get boulder material
+    boulder_mat = create_boulder_material()
+    
+    # Irregular dimensions for jagged boulder shape
+    scale_x = base_size * random.uniform(0.6, 1.5)
+    scale_y = base_size * random.uniform(0.6, 1.5)
+    scale_z = base_size * random.uniform(0.5, 1.2)  # Can be flatter or blockier
+    
+    # Create boulder using CUBE for angular, jagged appearance
+    bpy.ops.mesh.primitive_cube_add(
+        size=1.0,
+        location=(x, y, z + scale_z/2)
+    )
+    boulder = bpy.context.active_object
+    boulder.name = name
+    boulder.scale = (scale_x, scale_y, scale_z)
+    
+    # Random rotation for natural appearance - more extreme angles
+    boulder.rotation_euler = (
+        random.uniform(-math.pi/4, math.pi/4),
+        random.uniform(-math.pi/4, math.pi/4),
+        random.uniform(0, math.pi*2)
+    )
+    
+    bpy.ops.object.transform_apply(scale=True, rotation=True)
+    
+    # Add subdivision surface BEFORE displacement - minimal to keep angular
+    subsurf_mod = boulder.modifiers.new(name="Subdivision", type='SUBSURF')
+    subsurf_mod.levels = 2  # Enough geometry for displacement but still angular
+    subsurf_mod.render_levels = 2
+    
+    # Primary displacement modifier for large jagged rocky features
+    displace_mod = boulder.modifiers.new(name="DisplaceLarge", type='DISPLACE')
+    displace_mod.strength = random.uniform(0.5, 0.9)  # Very strong for jagged appearance
+    displace_mod.mid_level = 0.5
+    
+    # Create noise texture for displacement - use MUSGRAVE for angular rocky appearance
+    noise_tex = bpy.data.textures.new(name=f"{name}_Noise", type='MUSGRAVE')
+    noise_tex.musgrave_type = 'RIDGED_MULTIFRACTAL'  # Creates sharp ridges and breaks
+    noise_tex.noise_scale = random.uniform(1.0, 2.0)  # Larger angular features
+    noise_tex.dimension_max = random.uniform(0.5, 1.0)  # Lower = sharper edges
+    noise_tex.lacunarity = random.uniform(3.0, 4.0)  # Higher = more angular contrast
+    noise_tex.octaves = random.uniform(3.0, 5.0)  # More layers of angular detail
+    noise_tex.noise_basis = 'BLENDER_ORIGINAL'
+    displace_mod.texture = noise_tex
+    displace_mod.texture_coords = 'OBJECT'
+    
+    # Secondary displacement for sharp fractures and edges
+    displace_mod2 = boulder.modifiers.new(name="DisplaceDetail", type='DISPLACE')
+    displace_mod2.strength = random.uniform(0.15, 0.3)  # Sharp edge details
+    displace_mod2.mid_level = 0.5
+    
+    noise_tex2 = bpy.data.textures.new(name=f"{name}_NoiseDetail", type='VORONOI')
+    noise_tex2.noise_scale = random.uniform(5.0, 8.0)  # Creates angular cell patterns
+    noise_tex2.distance_metric = 'DISTANCE_SQUARED'  # Sharper cell edges
+    displace_mod2.texture = noise_tex2
+    displace_mod2.texture_coords = 'OBJECT'
+    
+    # Apply smooth shading for natural appearance
+    bpy.context.view_layer.objects.active = boulder
+    bpy.ops.object.shade_smooth()
+    
+    boulder.data.materials.append(boulder_mat)
+    
+    return boulder
 
 def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.2):
     """
@@ -137,9 +216,6 @@ def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.2):
     distance = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
     num_boulders = int(distance / spacing) + 1
     
-    # Get boulder material
-    boulder_mat = create_boulder_material()
-    
     boulders = []
     for i in range(num_boulders):
         # Calculate position along the line
@@ -157,69 +233,14 @@ def build_boulder_row(start_pos, end_pos, spacing=1.2, size_variation=0.2):
             x += (dx / length) * offset
             y += (dy / length) * offset
         
-        # Random boulder size (base size ~0.6m with variation)
-        base_size = 0.8
-        size_factor = 1.0 + random.uniform(-size_variation, size_variation)
-        # More extreme variation in dimensions for irregular, jagged boulders
-        scale_x = base_size * size_factor * random.uniform(0.6, 1.5)
-        scale_y = base_size * size_factor * random.uniform(0.6, 1.5)
-        scale_z = base_size * size_factor * random.uniform(0.5, 1.2)  # Can be flatter or blockier
-        
-        # Create boulder using CUBE for angular, jagged appearance
-        bpy.ops.mesh.primitive_cube_add(
-            size=1.0,
-            location=(x, y, z + scale_z/2)
+        # Create boulder using the single boulder function
+        # Apply size variation to base_size for each boulder in the row
+        varied_size = 0.8 * (1.0 + random.uniform(-size_variation, size_variation))
+        boulder = create_single_boulder(
+            position=(x, y, z),
+            base_size=varied_size,
+            name=f"Boulder_{i+1:02d}"
         )
-        boulder = bpy.context.active_object
-        boulder.name = f"Boulder_{i+1:02d}"
-        boulder.scale = (scale_x, scale_y, scale_z)
-        
-        # Random rotation for natural appearance - more extreme angles
-        boulder.rotation_euler = (
-            random.uniform(-math.pi/4, math.pi/4),
-            random.uniform(-math.pi/4, math.pi/4),
-            random.uniform(0, math.pi*2)
-        )
-        
-        bpy.ops.object.transform_apply(scale=True, rotation=True)
-        
-        # Add subdivision surface BEFORE displacement - minimal to keep angular
-        subsurf_mod = boulder.modifiers.new(name="Subdivision", type='SUBSURF')
-        subsurf_mod.levels = 2  # Enough geometry for displacement but still angular
-        subsurf_mod.render_levels = 2
-        
-        # Primary displacement modifier for large jagged rocky features
-        displace_mod = boulder.modifiers.new(name="DisplaceLarge", type='DISPLACE')
-        displace_mod.strength = random.uniform(0.5, 0.9)  # Very strong for jagged appearance
-        displace_mod.mid_level = 0.5
-        
-        # Create noise texture for displacement - use MUSGRAVE for angular rocky appearance
-        noise_tex = bpy.data.textures.new(name=f"BoulderNoise_{i}", type='MUSGRAVE')
-        noise_tex.musgrave_type = 'RIDGED_MULTIFRACTAL'  # Creates sharp ridges and breaks
-        noise_tex.noise_scale = random.uniform(1.0, 2.0)  # Larger angular features
-        noise_tex.dimension_max = random.uniform(0.5, 1.0)  # Lower = sharper edges
-        noise_tex.lacunarity = random.uniform(3.0, 4.0)  # Higher = more angular contrast
-        noise_tex.octaves = random.uniform(3.0, 5.0)  # More layers of angular detail
-        noise_tex.noise_basis = 'BLENDER_ORIGINAL'
-        displace_mod.texture = noise_tex
-        displace_mod.texture_coords = 'OBJECT'
-        
-        # Secondary displacement for sharp fractures and edges
-        displace_mod2 = boulder.modifiers.new(name="DisplaceDetail", type='DISPLACE')
-        displace_mod2.strength = random.uniform(0.15, 0.3)  # Sharp edge details
-        displace_mod2.mid_level = 0.5
-        
-        noise_tex2 = bpy.data.textures.new(name=f"BoulderNoiseDetail_{i}", type='VORONOI')
-        noise_tex2.noise_scale = random.uniform(5.0, 8.0)  # Creates angular cell patterns
-        noise_tex2.distance_metric = 'DISTANCE_SQUARED'  # Sharper cell edges
-        displace_mod2.texture = noise_tex2
-        displace_mod2.texture_coords = 'OBJECT'
-        
-        # Apply smooth shading for natural appearance
-        bpy.context.view_layer.objects.active = boulder
-        bpy.ops.object.shade_smooth()
-        
-        boulder.data.materials.append(boulder_mat)
         boulders.append(boulder)
     
     return boulders
@@ -265,24 +286,22 @@ def build_pavers_east(origin=(0, 0, 0)):
     
     return pavers
 
-def build_water_tank(origin=(0, 0, 0)):
+def build_water_tank(origin=(0, 0, 0), diameter=3.5, height=2.5):
     """
-    Build a 25000 liter cylindrical water tank.
+    Build a cylindrical water tank.
     
     Args:
         origin: Tuple (x, y, z) for the base center of the tank
+        diameter: Tank diameter in meters (default 3.5m for 25000L tank)
+        height: Tank height in meters (default 2.5m)
     """
     ox, oy, oz = origin
     
-    # Tank specifications
-    TANK_DIAMETER = 3.5
-    TANK_HEIGHT = 2.5
-    
     # Create cylindrical tank
     bpy.ops.mesh.primitive_cylinder_add(
-        radius=TANK_DIAMETER/2, 
-        depth=TANK_HEIGHT,
-        location=(ox, oy, oz + TANK_HEIGHT/2)
+        radius=diameter/2, 
+        depth=height,
+        location=(ox, oy, oz + height/2)
     )
     water_tank = bpy.context.active_object
     water_tank.name = "WaterTank_25000L"

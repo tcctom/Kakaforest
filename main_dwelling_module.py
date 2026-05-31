@@ -63,6 +63,58 @@ def create_textured_material(name, texture_path):
     return mat
 
 
+def create_laminate_floor_material():
+    """Create or get laminate floor material with texture for top surfaces"""
+    mat = bpy.data.materials.get("LaminateFloor")
+    if mat:
+        print(f"DEBUG: Material 'LaminateFloor' already exists, returning cached version")
+        return mat
+    
+    import os
+    texture_path = os.path.join(os.path.dirname(__file__), "textures", "laminate_floor_02", "laminate_floor_02_diff_1k.jpg")
+    
+    print(f"DEBUG: Creating new material 'LaminateFloor' with texture: {texture_path}")
+    mat = bpy.data.materials.new(name="LaminateFloor")
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    
+    # Get the Principled BSDF node
+    principled = nodes.get("Principled BSDF")
+    
+    # Create Image Texture node
+    tex_image = nodes.new(type='ShaderNodeTexImage')
+    tex_image.location = (-300, 300)
+    
+    # Load the image
+    try:
+        img = bpy.data.images.load(texture_path)
+        tex_image.image = img
+        tex_image.image.colorspace_settings.name = 'sRGB'
+    except Exception as e:
+        print(f"WARNING: Could not load laminate floor texture: {texture_path}, Error: {e}")
+    
+    # Add Mapping node for scale control (no rotation for floors)
+    mapping = nodes.new(type='ShaderNodeMapping')
+    mapping.location = (-600, 300)
+    # Scale appropriately for floor planks
+    mapping.inputs['Scale'].default_value = (2.0, 2.0, 2.0)
+    
+    # Add Texture Coordinate node
+    tex_coord = nodes.new(type='ShaderNodeTexCoord')
+    tex_coord.location = (-800, 300)
+    
+    # Connect nodes: TexCoord -> Mapping -> Image Texture -> Principled BSDF
+    links.new(tex_coord.outputs['Generated'], mapping.inputs['Vector'])
+    links.new(mapping.outputs['Vector'], tex_image.inputs['Vector'])
+    links.new(tex_image.outputs['Color'], principled.inputs['Base Color'])
+    
+    # Adjust material properties for laminate floor
+    principled.inputs['Roughness'].default_value = 0.4  # Slightly glossy laminate finish
+    
+    return mat
+
+
 # === HELPER FUNCTIONS FOR MAIN DWELLING ===
 
 def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat):
@@ -313,7 +365,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
 
 
 def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
-    """Create ground floor and first floor slabs (no stairs - to be added later)"""
+    """Create ground floor and first floor slabs with laminate texture on top surfaces only"""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     
     # Floor dimensions: fit within exterior walls (between interior faces)
@@ -323,13 +375,30 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     # Center the floor slightly north since south wall reduces the width
     floor_center_y = oy - EXTERIOR_WALL_THICKNESS/2
     
-    # Ground Floor
+    # Create laminate floor material for top surfaces
+    laminate_mat = create_laminate_floor_material()
+    
+    # Create white ceiling material for first floor underside
+    white_ceiling_mat = create_material("WhiteCeiling", (1.0, 1.0, 1.0, 1.0))
+    
+    # === GROUND FLOOR ===
     bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, oz + 0.05))
     ground_floor = bpy.context.active_object
     ground_floor.name = "MainDwelling_GroundFloor"
     ground_floor.scale = (floor_length/2, floor_width/2, 0.05)
     bpy.ops.object.transform_apply(scale=True)
-    ground_floor.data.materials.append(floor_mat)
+    
+    # Add both materials (default for sides/bottom, laminate for top)
+    ground_floor.data.materials.append(floor_mat)  # Material slot 0 - default
+    ground_floor.data.materials.append(laminate_mat)  # Material slot 1 - laminate
+    
+    # Assign laminate material to top face only
+    # In Blender cube after scale: face index 5 is -Z(bottom), face index 4 is +Z(top)
+    # But we need to check the normal direction - top face has positive Z normal
+    for i, poly in enumerate(ground_floor.data.polygons):
+        if poly.normal.z > 0.9:  # Top face (normal pointing up in +Z)
+            poly.material_index = 1  # Laminate texture
+            print(f"Ground floor: Assigned laminate to polygon {i} (top face)")
     
     # UV unwrap for texture display
     bpy.ops.object.mode_set(mode='EDIT')
@@ -337,14 +406,28 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
     
-    # First Floor - 200mm thick with stairwell opening
+    # === FIRST FLOOR ===
+    # 200mm thick with stairwell opening
     # Located so bottom is at first_floor_z and top is at first_floor_z + 0.2
     bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, first_floor_z + 0.1))
     first_floor_slab = bpy.context.active_object
     first_floor_slab.name = "MainDwelling_FirstFloor"
     first_floor_slab.scale = (floor_length/2, floor_width/2, 0.1)
     bpy.ops.object.transform_apply(scale=True)
-    first_floor_slab.data.materials.append(floor_mat)
+    
+    # Add materials: default for sides, white for bottom (ceiling), laminate for top
+    first_floor_slab.data.materials.append(floor_mat)  # Material slot 0 - default (sides)
+    first_floor_slab.data.materials.append(laminate_mat)  # Material slot 1 - laminate (top)
+    first_floor_slab.data.materials.append(white_ceiling_mat)  # Material slot 2 - white ceiling (bottom)
+    
+    # Assign materials based on normal direction
+    for i, poly in enumerate(first_floor_slab.data.polygons):
+        if poly.normal.z > 0.9:  # Top face (normal pointing up in +Z)
+            poly.material_index = 1  # Laminate texture
+            print(f"First floor: Assigned laminate to polygon {i} (top face)")
+        elif poly.normal.z < -0.9:  # Bottom face (normal pointing down in -Z)
+            poly.material_index = 2  # White ceiling
+            print(f"First floor: Assigned white ceiling to polygon {i} (bottom face)")
     
     # UV unwrap for texture display
     bpy.ops.object.mode_set(mode='EDIT')
@@ -357,12 +440,14 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
                                             EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat)
 
 
-def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
+def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
     """Create ground floor interior partitions for guest bedroom with built-in wardrobe
     
     Args:
         WIDTH: Total building width (7m - full roof span)
         ENCLOSED_WIDTH: Enclosed building width (6m - north wall recessed)
+        GROUND_FLOOR_HEIGHT: Height of ground floor (2.5m)
+        FIRST_FLOOR_HEIGHT: Height of first floor (2.4m)
         NORTH_RECESS: Distance north wall is recessed from north edge (1m)
     """
     interior_wall_mat = get_interior_wall_material()
@@ -461,6 +546,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # === PARTITION WALL EAST OF STAIRCASE ===
     # N-S wall immediately west of (actually east of) staircase footprint, 2.5m long from south wall
+    # This partition extends through BOTH floors (ground + first floor)
     STAIRWELL_WIDTH = 2.0  # Staircase is 2m E-W
     PARTITION_LENGTH = 2.5  # 2.5m N-S dimension
     
@@ -475,10 +561,13 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     partition_x = stairwell_east_x - INTERIOR_WALL_THICKNESS/2
     partition_center_y = south_interior_y - PARTITION_LENGTH/2
     
-    bpy.ops.mesh.primitive_cube_add(location=(partition_x, partition_center_y, oz + ground_floor_wall_height/2))
+    # Full height partition extending through both floors
+    full_partition_height = GROUND_FLOOR_HEIGHT + FIRST_FLOOR_HEIGHT
+    
+    bpy.ops.mesh.primitive_cube_add(location=(partition_x, partition_center_y, oz + full_partition_height/2))
     stair_partition = bpy.context.active_object
-    stair_partition.name = "MainDwelling_GroundFloor_StaircasePartition"
-    stair_partition.scale = (INTERIOR_WALL_THICKNESS/2, PARTITION_LENGTH/2, ground_floor_wall_height/2)
+    stair_partition.name = "MainDwelling_StaircasePartition_BothFloors"
+    stair_partition.scale = (INTERIOR_WALL_THICKNESS/2, PARTITION_LENGTH/2, full_partition_height/2)
     bpy.ops.object.transform_apply(scale=True)
     stair_partition.data.materials.append(interior_wall_mat)
     
@@ -487,18 +576,46 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     LOG_BURNER_WIDTH = 0.5   # E-W dimension
     LOG_BURNER_DEPTH = 0.65  # N-S dimension  
     LOG_BURNER_HEIGHT = 0.7  # Height of main body
+    LEG_HEIGHT = 0.15        # 150mm tall legs
+    LEG_DIAMETER = 0.05      # 50mm diameter legs
     FLUE_DIAMETER = 0.15     # 150mm diameter flue pipe
     FLUE_HEIGHT = 6.8        # Extends through ground floor ceiling and first floor
     
     # Materials
     log_burner_mat = create_material("LogBurner", (0.1, 0.1, 0.1, 1))  # Dark metal
     flue_mat = create_material("FluePipe", (0.15, 0.15, 0.15, 1))      # Metal pipe
+    granite_mat = get_kitchen_bench_material()  # Granite slab
+    glass_mat = create_material("LogBurnerGlass", (0.1, 0.1, 0.1, 0.3))  # Dark tinted glass
     
     # Position: centered on cupboard E-W, 0.3m south of cupboard south wall
     cupboard_south_edge_y = north_interior_face + CUPBOARD_DEPTH
     log_burner_x = west_partition_x + INTERIOR_WALL_THICKNESS/2 + CUPBOARD_WIDTH/2 + 0.10
     log_burner_y = cupboard_south_edge_y + 0.8 + LOG_BURNER_DEPTH/2
-    log_burner_z = oz + LOG_BURNER_HEIGHT/2
+    
+    FLOOR_TOP = oz + 0.1  # Ground floor top surface (100mm thick slab)
+    HEARTH_THICKNESS = 0.03  # 30mm thick
+    log_burner_z = FLOOR_TOP + HEARTH_THICKNESS + LEG_HEIGHT + LOG_BURNER_HEIGHT/2  # Sits on hearth + legs
+    
+    # Granite hearth slab (larger than log burner footprint, extends to partition on north)
+    HEARTH_WIDTH = LOG_BURNER_WIDTH + 0.4  # 200mm each side E-W
+    # Calculate depth to extend from partition (north) to 200mm south of log burner (south)
+    hearth_north_edge = cupboard_south_edge_y  # Butts against partition
+    hearth_south_edge = log_burner_y + LOG_BURNER_DEPTH/2 + 0.2  # 200mm south of burner
+    HEARTH_DEPTH = hearth_south_edge - hearth_north_edge
+    hearth_y = (hearth_north_edge + hearth_south_edge) / 2  # Center of slab
+    
+    bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, hearth_y, FLOOR_TOP + HEARTH_THICKNESS/2))
+    hearth = bpy.context.active_object
+    hearth.name = "MainDwelling_GuestBedroom_Hearth"
+    hearth.scale = (HEARTH_WIDTH/2, HEARTH_DEPTH/2, HEARTH_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    hearth.data.materials.append(granite_mat)
+    
+    # UV unwrap hearth for texture
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
     
     # Create log burner body
     bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, log_burner_y, log_burner_z))
@@ -508,8 +625,50 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bpy.ops.object.transform_apply(scale=True)
     log_burner.data.materials.append(log_burner_mat)
     
+    # Create 4 legs (corners of log burner)
+    leg_offset_x = LOG_BURNER_WIDTH/2 - LEG_DIAMETER
+    leg_offset_y = LOG_BURNER_DEPTH/2 - LEG_DIAMETER
+    leg_positions = [
+        (log_burner_x - leg_offset_x, log_burner_y - leg_offset_y),  # SW
+        (log_burner_x + leg_offset_x, log_burner_y - leg_offset_y),  # SE
+        (log_burner_x - leg_offset_x, log_burner_y + leg_offset_y),  # NW
+        (log_burner_x + leg_offset_x, log_burner_y + leg_offset_y),  # NE
+    ]
+    
+    for i, (leg_x, leg_y) in enumerate(leg_positions):
+        bpy.ops.mesh.primitive_cylinder_add(
+            location=(leg_x, leg_y, FLOOR_TOP + HEARTH_THICKNESS + LEG_HEIGHT/2),
+            radius=LEG_DIAMETER/2,
+            depth=LEG_HEIGHT
+        )
+        leg = bpy.context.active_object
+        leg.name = f"MainDwelling_GuestBedroom_LogBurner_Leg_{i+1}"
+        leg.data.materials.append(log_burner_mat)
+    
+    # Glass door (west face, where opening faces)
+    GLASS_WIDTH = LOG_BURNER_WIDTH * 0.8  # Slightly smaller than burner width
+    GLASS_HEIGHT = LOG_BURNER_HEIGHT * 0.7  # 70% of burner height
+    GLASS_THICKNESS = 0.01  # 10mm thick glass
+    
+    glass_x = log_burner_x - LOG_BURNER_WIDTH/2 - GLASS_THICKNESS/2  # West face
+    glass_z = log_burner_z  # Centered vertically
+    
+    bpy.ops.mesh.primitive_cube_add(location=(glass_x, log_burner_y, glass_z))
+    glass_door = bpy.context.active_object
+    glass_door.name = "MainDwelling_GuestBedroom_LogBurner_GlassDoor"
+    glass_door.scale = (GLASS_THICKNESS/2, GLASS_WIDTH/2, GLASS_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    glass_door.data.materials.append(glass_mat)
+    
+    # Configure glass transparency
+    glass_mat.blend_method = 'BLEND'
+    bsdf = glass_mat.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs['Alpha'].default_value = 0.3
+    bsdf.inputs['Transmission Weight'].default_value = 1.0
+    bsdf.inputs['Roughness'].default_value = 0.0
+    
     # Create flue pipe (vertical cylinder)
-    flue_z = oz + LOG_BURNER_HEIGHT + FLUE_HEIGHT/2
+    flue_z = FLOOR_TOP + HEARTH_THICKNESS + LEG_HEIGHT + LOG_BURNER_HEIGHT + FLUE_HEIGHT/2
     bpy.ops.mesh.primitive_cylinder_add(location=(log_burner_x, log_burner_y, flue_z), radius=FLUE_DIAMETER/2, depth=FLUE_HEIGHT)
     flue = bpy.context.active_object
     flue.name = "MainDwelling_GuestBedroom_Flue"
@@ -517,7 +676,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
 
 def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
-    """Create kitchen bench against the ground floor south wall
+    """Create L-shaped kitchen bench against the ground floor south wall and stairwell partition
     
     Args:
         WIDTH: Total building width (7m - full roof span)
@@ -525,10 +684,11 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         EXTERIOR_WALL_THICKNESS: Thickness of exterior walls (0.2m)
     """
     # Kitchen bench specifications
-    BENCH_LENGTH = 2.4  # E-W dimension
+    BENCH_LENGTH = 2.4  # E-W dimension (main section)
     BENCH_DEPTH = 0.6   # N-S dimension
     BENCH_HEIGHT = 0.9  # Standard counter height
     BENCH_THICKNESS = 0.05  # Benchtop thickness
+    L_SECTION_LENGTH = 2.0  # N-S dimension (L-section along stairwell)
     
     # Calculate positions
     # South wall interior face
@@ -536,33 +696,159 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     # West wall interior face
     west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
     
-    # Bench center position (starts from west wall, extends 3.6m east)
+    # Stairwell position (2m wide E-W)
+    STAIRWELL_WIDTH = 2.0
+    stairwell_east_x = west_interior_x - STAIRWELL_WIDTH
+    
+    # Main bench center position (runs E-W along south wall)
     bench_center_x = west_interior_x - BENCH_LENGTH/2 - 2.1  # Start 2.1m from west wall
     bench_center_y = south_interior_y - BENCH_DEPTH/2
     bench_top_z = oz + BENCH_HEIGHT
+    
+    # L-section center position (runs N-S along stairwell partition, on WEST side)
+    # Position it at the east end of main bench, extending north
+    main_bench_east_end = west_interior_x - 2.1  # East end of main bench
+    l_section_x = main_bench_east_end - BENCH_DEPTH/2  # West of stairwell partition
+    l_section_y = south_interior_y - BENCH_DEPTH - L_SECTION_LENGTH/2  # North from main bench corner
     
     # Create materials
     bench_mat = get_kitchen_bench_material()  # Granite texture
     cabinet_mat = get_kitchen_cabinet_material()  # Darker cabinet color
     
-    # Base cabinets
     cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
+    
+    # === MAIN SECTION (E-W along south wall) ===
+    # Base cabinets
     bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, oz + cabinet_height/2))
-    cabinets = bpy.context.active_object
-    cabinets.name = "MainDwelling_KitchenBench_Cabinets"
-    cabinets.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, cabinet_height/2)
+    cabinets_main = bpy.context.active_object
+    cabinets_main.name = "MainDwelling_KitchenBench_Cabinets_Main"
+    cabinets_main.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, cabinet_height/2)
     bpy.ops.object.transform_apply(scale=True)
-    cabinets.data.materials.append(cabinet_mat)
+    cabinets_main.data.materials.append(cabinet_mat)
     
     # Benchtop
     bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, bench_top_z - BENCH_THICKNESS/2))
-    benchtop = bpy.context.active_object
-    benchtop.name = "MainDwelling_KitchenBench_Top"
-    benchtop.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, BENCH_THICKNESS/2)
+    benchtop_main = bpy.context.active_object
+    benchtop_main.name = "MainDwelling_KitchenBench_Top_Main"
+    benchtop_main.scale = (BENCH_LENGTH/2, BENCH_DEPTH/2, BENCH_THICKNESS/2)
     bpy.ops.object.transform_apply(scale=True)
-    benchtop.data.materials.append(bench_mat)
+    benchtop_main.data.materials.append(bench_mat)
     
-    print(f"Kitchen bench created: {BENCH_LENGTH}m long, starting from west wall at x={west_interior_x} extending east")
+    # UV unwrap for texture
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # === L-SECTION (N-S along stairwell partition) ===
+    # Base cabinets
+    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, oz + cabinet_height/2))
+    cabinets_l = bpy.context.active_object
+    cabinets_l.name = "MainDwelling_KitchenBench_Cabinets_LSection"
+    cabinets_l.scale = (BENCH_DEPTH/2, L_SECTION_LENGTH/2, cabinet_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+    cabinets_l.data.materials.append(cabinet_mat)
+    
+    # Benchtop
+    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, bench_top_z - BENCH_THICKNESS/2))
+    benchtop_l = bpy.context.active_object
+    benchtop_l.name = "MainDwelling_KitchenBench_Top_LSection"
+    benchtop_l.scale = (BENCH_DEPTH/2, L_SECTION_LENGTH/2, BENCH_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    benchtop_l.data.materials.append(bench_mat)
+    
+    # UV unwrap for texture
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # === WALL CABINETS ===
+    WALL_CABINET_DEPTH = 0.35  # Shallower than base cabinets
+    WALL_CABINET_HEIGHT = 0.7  # 700mm tall
+    WALL_CABINET_GAP = 0.45  # 450mm gap above benchtop
+    wall_cabinet_z = bench_top_z + WALL_CABINET_GAP + WALL_CABINET_HEIGHT/2
+    
+    # Wall cabinet along N-S partition (from south wall north along stairwell)
+    # Calculate length to extend from south wall to north end of L-section
+    wall_cab_length_ns = BENCH_DEPTH + L_SECTION_LENGTH  # Full length from south wall
+    wall_cab_ns_y = south_interior_y - wall_cab_length_ns/2  # Center from south wall northward
+    wall_cab_ns_x = main_bench_east_end - WALL_CABINET_DEPTH/2  # Against partition, west side
+    
+    bpy.ops.mesh.primitive_cube_add(location=(wall_cab_ns_x, wall_cab_ns_y, wall_cabinet_z))
+    wall_cab_ns = bpy.context.active_object
+    wall_cab_ns.name = "MainDwelling_KitchenBench_WallCabinet_NS"
+    wall_cab_ns.scale = (WALL_CABINET_DEPTH/2, wall_cab_length_ns/2, WALL_CABINET_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    wall_cab_ns.data.materials.append(cabinet_mat)
+    
+    print(f"L-shaped kitchen bench created: {BENCH_LENGTH}m E-W section, {L_SECTION_LENGTH}m N-S section with N-S wall cabinet")
+
+
+def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
+    """Create dining table north of stairs on ground floor
+    
+    Table dimensions: 1800mm long × 800mm wide × 750mm high
+    Positioned north of the southwest corner staircase
+    
+    Args:
+        WIDTH: Total building width (7m)
+        LENGTH: Building length (9m)
+        EXTERIOR_WALL_THICKNESS: Thickness of exterior walls (0.2m)
+    """
+    # Table dimensions
+    TABLE_LENGTH = 1.8  # Long axis (E-W)
+    TABLE_WIDTH = 0.8   # Short axis (N-S)
+    TABLE_HEIGHT = 0.75
+    LEG_SIZE = 0.08     # 80mm square legs
+    TOP_THICKNESS = 0.04  # 40mm thick top
+    
+    
+    # Position table north of stairs with clearance
+    CLEARANCE = 0.4  # 400mm clearance from stairwell
+    table_x = ox + 1.0
+    table_y = oy - 1.3
+    table_top_z = oz + TABLE_HEIGHT - TOP_THICKNESS/2
+    
+    # Create material
+    table_mat = create_material("DiningTableWood", (0.55, 0.35, 0.20, 1))  # Medium wood tone
+    
+    # === TABLE TOP ===
+    bpy.ops.mesh.primitive_cube_add(location=(table_x, table_y, table_top_z))
+    table_top = bpy.context.active_object
+    table_top.name = "MainDwelling_DiningTable_Top"
+    table_top.scale = (TABLE_LENGTH/2, TABLE_WIDTH/2, TOP_THICKNESS/2)
+    bpy.ops.object.transform_apply(scale=True)
+    table_top.data.materials.append(table_mat)
+    
+    # UV unwrap for texture
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # === TABLE LEGS (4 corners) ===
+    leg_height = TABLE_HEIGHT - TOP_THICKNESS
+    leg_z = oz + leg_height/2
+    leg_inset = 0.1  # Inset legs 100mm from edges
+    
+    # Corner positions
+    leg_positions = [
+        (table_x - TABLE_LENGTH/2 + leg_inset, table_y - TABLE_WIDTH/2 + leg_inset),  # SE
+        (table_x + TABLE_LENGTH/2 - leg_inset, table_y - TABLE_WIDTH/2 + leg_inset),  # SW
+        (table_x - TABLE_LENGTH/2 + leg_inset, table_y + TABLE_WIDTH/2 - leg_inset),  # NE
+        (table_x + TABLE_LENGTH/2 - leg_inset, table_y + TABLE_WIDTH/2 - leg_inset),  # NW
+    ]
+    
+    for i, (leg_x, leg_y) in enumerate(leg_positions):
+        bpy.ops.mesh.primitive_cube_add(location=(leg_x, leg_y, leg_z))
+        leg = bpy.context.active_object
+        leg.name = f"MainDwelling_DiningTable_Leg_{i+1}"
+        leg.scale = (LEG_SIZE/2, LEG_SIZE/2, leg_height/2)
+        bpy.ops.object.transform_apply(scale=True)
+        leg.data.materials.append(table_mat)
+    
+    print(f"Dining table created at ({table_x:.2f}, {table_y:.2f}, {oz}): {TABLE_LENGTH}m × {TABLE_WIDTH}m × {TABLE_HEIGHT}m")
 
 
 def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -663,6 +949,8 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     - Entrance: East side of north wall
     """
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    FIRST_FLOOR_SLAB_THICKNESS = 0.2  # First floor is 200mm thick
+    first_floor_top = first_floor_z + FIRST_FLOOR_SLAB_THICKNESS
     
     # Ensuite dimensions
     ENSUITE_WIDTH = 2.0   # E-W dimension
@@ -699,8 +987,8 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     shower_x_center = (shower_west_edge + shower_east_edge) / 2
     shower_y_center = (shower_north_edge + shower_south_edge) / 2
     
-    # Shower tray (raised platform)
-    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, shower_y_center, first_floor_z + SHOWER_TRAY_HEIGHT/2))
+    # Shower tray (raised platform) - sits on top of first floor slab
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT/2))
     shower_tray = bpy.context.active_object
     shower_tray.name = "MainDwelling_Ensuite_ShowerTray"
     shower_tray.scale = (SHOWER_SIZE/2, SHOWER_SIZE/2, SHOWER_TRAY_HEIGHT/2)
@@ -713,7 +1001,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     # West wall (back wall against ensuite west wall)
     west_wall_x = shower_west_edge - WALL_THICKNESS/2
     bpy.ops.mesh.primitive_cube_add(location=(west_wall_x, shower_y_center, 
-                                               first_floor_z + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
+                                               first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
     west_wall = bpy.context.active_object
     west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
     west_wall.scale = (WALL_THICKNESS/2, SHOWER_SIZE/2, WALL_HEIGHT/2)
@@ -723,7 +1011,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     # North wall (side wall against ensuite north wall)
     north_wall_y = shower_north_edge - WALL_THICKNESS/2
     bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, north_wall_y, 
-                                               first_floor_z + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
+                                               first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
     north_wall = bpy.context.active_object
     north_wall.name = "MainDwelling_Ensuite_ShowerWallNorth"
     north_wall.scale = (SHOWER_SIZE/2, WALL_THICKNESS/2, WALL_HEIGHT/2)
@@ -735,7 +1023,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     glass_height = 1.8
     glass_x = shower_east_edge + glass_thickness/2
     bpy.ops.mesh.primitive_cube_add(location=(glass_x, shower_y_center, 
-                                               first_floor_z + SHOWER_TRAY_HEIGHT + glass_height/2))
+                                               first_floor_top + SHOWER_TRAY_HEIGHT + glass_height/2))
     shower_screen = bpy.context.active_object
     shower_screen.name = "MainDwelling_Ensuite_ShowerScreen"
     shower_screen.scale = (glass_thickness/2, SHOWER_SIZE/2, glass_height/2)
@@ -744,7 +1032,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     
     # Shower head (mounted on west wall)
     bpy.ops.mesh.primitive_uv_sphere_add(location=(west_wall_x + 0.15, shower_y_center, 
-                                                    first_floor_z + SHOWER_TRAY_HEIGHT + 1.8), radius=0.05)
+                                                    first_floor_top + SHOWER_TRAY_HEIGHT + 1.8), radius=0.05)
     shower_head = bpy.context.active_object
     shower_head.name = "MainDwelling_Ensuite_ShowerHead"
     shower_head.data.materials.append(chrome_mat)
@@ -761,7 +1049,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     toilet_center_y = ensuite_south - TOILET_WIDTH/2 - 0.15  # 150mm from south wall
     
     # Toilet bowl (combined bowl and tank as one unit for simplicity)
-    bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, first_floor_z + TOILET_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, first_floor_top + TOILET_HEIGHT/2))
     toilet_bowl = bpy.context.active_object
     toilet_bowl.name = "MainDwelling_Ensuite_ToiletBowl"
     toilet_bowl.scale = (TOILET_DEPTH/2, TOILET_WIDTH/2, TOILET_HEIGHT/2)
@@ -771,7 +1059,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     # Toilet tank (against west wall)
     tank_width = 0.15
     bpy.ops.mesh.primitive_cube_add(location=(ensuite_west - tank_width/2, toilet_center_y, 
-                                               first_floor_z + TOILET_TANK_HEIGHT/2))
+                                               first_floor_top + TOILET_TANK_HEIGHT/2))
     toilet_tank = bpy.context.active_object
     toilet_tank.name = "MainDwelling_Ensuite_ToiletTank"
     toilet_tank.scale = (tank_width/2, TOILET_WIDTH/2, TOILET_TANK_HEIGHT/2)
@@ -791,7 +1079,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     
     # Vanity cabinet
     cabinet_mat = create_material("VanityCabinet", (0.4, 0.3, 0.2, 1))
-    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, first_floor_z + VANITY_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, first_floor_top + VANITY_HEIGHT/2))
     vanity_cabinet = bpy.context.active_object
     vanity_cabinet.name = "MainDwelling_Ensuite_VanityCabinet"
     vanity_cabinet.scale = (VANITY_DEPTH/2, VANITY_WIDTH/2, VANITY_HEIGHT/2)
@@ -800,7 +1088,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     
     # Basin
     bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, 
-                                               first_floor_z + VANITY_HEIGHT + BASIN_HEIGHT/2))
+                                               first_floor_top + VANITY_HEIGHT + BASIN_HEIGHT/2))
     basin = bpy.context.active_object
     basin.name = "MainDwelling_Ensuite_Basin"
     basin.scale = ((VANITY_DEPTH - 0.1)/2, (VANITY_WIDTH - 0.1)/2, BASIN_HEIGHT/2)
@@ -809,7 +1097,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     
     # Tap (positioned toward front/west of basin)
     bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x + 0.15, vanity_center_y, 
-                                                   first_floor_z + VANITY_HEIGHT + 0.15), radius=0.02, depth=0.2)
+                                                   first_floor_top + VANITY_HEIGHT + 0.15), radius=0.02, depth=0.2)
     tap = bpy.context.active_object
     tap.name = "MainDwelling_Ensuite_Tap"
     tap.data.materials.append(chrome_mat)
@@ -863,9 +1151,9 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_WestWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # GROUND FLOOR - SOUTH WALL (full width)
-    add_window("MainDwelling_SouthWall_Ground", (ox - 3, south_wall_y, oz + 1.4), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox - 3, south_wall_y, oz + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MainDwelling_SouthWall_Ground", (ox - 1.5, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox + 0.8, south_wall_y, oz + 1.4), width=2.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox + 0.7, south_wall_y, oz + 1.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     # Double-height window at stair landing - ground floor portion
     add_window("MainDwelling_SouthWall_Ground", (ox + 3.3, south_wall_y, oz + 2.15), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
@@ -1370,7 +1658,7 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
                width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # === INTERIOR PARTITIONS ===
-    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
+    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     
     # === ENSUITE FURNITURE ===
@@ -1378,6 +1666,9 @@ def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditiona
     
     # === KITCHEN BENCH ===
     _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+    
+    # === DINING TABLE ===
+    _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
     
     # === WINDOWS AND DOORS ===
     _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)
@@ -1641,7 +1932,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
         purlin.data.materials.append(floor_mat)
     
     # === INTERIOR PARTITIONS ===
-    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
+    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
     
     # === ENSUITE FURNITURE ===
@@ -1649,6 +1940,9 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === KITCHEN BENCH ===
     _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+    
+    # === DINING TABLE ===
+    _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
     
     # === WINDOWS AND DOORS ===
     _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)

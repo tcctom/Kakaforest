@@ -137,18 +137,18 @@ if SHOW_GROUND:
     
     # Forest surrounds on all sides of main dwelling
     main_dwelling_forest_north = grid_points((-18, -32, -4.2), (8, -3.5, -0.4), x_spacing=0.5, slope_direction='y')
-    main_dwelling_forest_south = grid_points((-10, 28, 0.5), (30, 8, 0.5), x_spacing=0.5, slope_direction='y')
+    flat_grass_play_area = grid_points((-10, 28, 0.5), (30, 8, 0.5), x_spacing=0.5, slope_direction='y')
     main_dwelling_forest_east = grid_points((-30, -8, -0.2), (-6, 8, -0.1), x_spacing=0.5)
     main_dwelling_forest_west = grid_points((6, -18, -3.1), (30, 8, 0.5), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
-    ground_module.forest_plane(main_dwelling_forest_south)
+    ground_module.forest_plane(flat_grass_play_area)
     ground_module.forest_plane(main_dwelling_forest_east)
     ground_module.gravel_plane(main_dwelling_forest_west)
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-# björken_module.build_red_cottage(origin=(0, 60, 5.0))
+björken_module.build_red_cottage(origin=(0, 60, 5.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
@@ -165,11 +165,13 @@ main_dwelling_module.build_north_deck(origin=(0, 0, 0))
 # 1b. Build boulder row along south edge of clearing
 outdoor_structures.build_boulder_row(start_pos=(-5, 7.8, 0), end_pos=(5, 7.8, 0), spacing=0.4)
 # and north and south of porch
-outdoor_structures.build_boulder_row(start_pos=(6, -3.5, -0.75), end_pos=(6.5, -1.4, -0.4), spacing=0.4, size_variation=0.1)
-outdoor_structures.build_boulder_row(start_pos=(6, 1.5, -0.3), end_pos=(6, 2.5, -0.1), spacing=0.5, size_variation=0.1)
+outdoor_structures.create_single_boulder(position=(6.5, -2.2, -0.4), base_size=1.0)
+outdoor_structures.create_single_boulder(position=(6.5, -1.6, -0.4), base_size=0.9)
+outdoor_structures.create_single_boulder(position=(6.5, 1.9, -0.4), base_size=0.9)
+
 
 # 1c. Pavers extending east from cottage
-#outdoor_structures.build_pavers_east(origin=(0, 60, 4.55))
+outdoor_structures.build_pavers_east(origin=(0, 60, 4.55))
 
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y) from Björken
@@ -186,8 +188,16 @@ outdoor_structures.build_boulder_row(start_pos=(6, 1.5, -0.3), end_pos=(6, 2.5, 
 #wet_wing_lower1.furniture(origin=(13.0, 65.0, 5.0), building_width=10.0, building_depth=4.0)
 
 # 4. Water Tank - 25000 liter cylindrical tank
-# Diameter: 3.5m, Height: 2.5m, Bottom center relative to Björken
-#outdoor_structures.build_water_tank(origin=(-3.0, 73.0, 6.0))
+# Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
+#outdoor_structures.build_water_tank(origin=(-3.0, 73.0, 6.0))  #behind björken
+outdoor_structures.build_water_tank(origin=(19.0, 6.0, -0.5))
+outdoor_structures.build_water_tank(origin=(23.0, 6.0, -0.5))
+
+#https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
+#outdoor_structures.build_water_tank(origin=(3.0, 4.5, -0.0), diameter=1.7, height=1.8)
+
+#https://www.devan.co.nz/shop/tanks/water-tanks-above/1000-ltr-tank-2/
+outdoor_structures.build_water_tank(origin=(2.2, 4.1, -0.0), diameter=0.9, height=2.0)
 
 
 
