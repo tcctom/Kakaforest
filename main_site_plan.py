@@ -105,13 +105,13 @@ if SHOW_GROUND:
     #forest_areas.append(by_water_tank_pad)
     
     # Build terrain layers for each material type
-    ground_module.grass_plane(north_björken)
+    #ground_module.grass_plane(north_björken)
 
     #badminton and surrounding area is mostly grass, but with some natural undulation and patches of moss/gravel
-    ground_module.grass_plane(grid_points((-10, 50, 2), (8, 42, 1.8), x_spacing=0.5, slope_direction='y'))
+    #ground_module.grass_plane(grid_points((-10, 50, 2), (8, 42, 1.8), x_spacing=0.5, slope_direction='y'))
         
     #under and around Björken is mostly gravel with some patches of grass 
-    ground_module.gravel_plane(grid_points((-10, 57.5, 4.5), (8, 63.1, 4.5), x_spacing=0.4))
+    #ground_module.gravel_plane(grid_points((-10, 57.5, 4.5), (8, 63.1, 4.5), x_spacing=0.4))
 
     #drive_end_parking_west = grid_points((4, 50, 3.0), (12, 54, 3.1), x_spacing=0.3)
     #drive_mid_area = grid_points((5, 54.5, 3.3), (15, 56, 3.5), x_spacing=0.3)
@@ -148,7 +148,7 @@ if SHOW_GROUND:
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(0, 60, 5.0))
+#björken_module.build_red_cottage(origin=(0, 60, 5.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
