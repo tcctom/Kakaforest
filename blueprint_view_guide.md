@@ -67,6 +67,72 @@ switch_to_camera('BP_Site_Plan')
 3. Press **Ctrl+Numpad 0** to make it the active camera
 4. Press **Numpad 0** to view through it
 
+## Adding Room Labels and Dimensions
+
+### Adding Room Labels
+To add text labels for rooms, use the `create_room_label()` function:
+
+```python
+create_room_label('Kitchen', (x, y, 1.3), size=0.5)
+create_room_label('Living Room', (x, y, 1.3), size=0.5)
+create_room_label('Bedroom', (x, y, 1.3), size=0.4)
+```
+
+**Parameters:**
+- `text`: The label text to display
+- `location`: Tuple `(x, y, z)` for label position (use cut height for z, e.g., 1.3)
+- `size`: Text size in Blender units (default 0.5)
+
+**Tips:**
+- Position labels at room centers for best visibility
+- Use z-coordinate matching your cut height (e.g., 1.3m for ground floor)
+- Larger rooms can use bigger text sizes (0.6-0.8)
+- Labels automatically update position when you rerun with new coordinates
+
+### Adding Dimension Lines
+To add architectural dimension lines with measurements:
+
+```python
+create_dimension_line(
+    (x1, y1),           # Start point
+    (x2, y2),           # End point
+    offset=0.5,         # Distance from edge (+ or -)
+    text_size=0.25,     # Text size
+    z_height=1.3,       # Match your cut height
+    name_suffix='name'  # Unique identifier
+)
+```
+
+**Parameters:**
+- `start`: Starting point as `(x, y)` tuple
+- `end`: Ending point as `(x, y)` tuple
+- `offset`: Distance to offset dimension line from measured edge in meters
+  - Positive = outward from the measurement
+  - Negative = inward
+  - Typical: 0.4 to 0.6m
+- `text_size`: Size of measurement text (default 0.3)
+- `z_height`: Z coordinate for all elements (should match floor plan cut height)
+- `name_suffix`: Unique name for this dimension (e.g., 'south_wall', 'room_width')
+
+**Examples:**
+```python
+# Measure exterior wall (8m long)
+create_dimension_line((-4, -3), (4, -3), offset=-0.6, text_size=0.25, z_height=1.3, name_suffix="south_wall")
+
+# Measure room width (vertical measurement)
+create_dimension_line((4, -3), (4, 3), offset=0.6, text_size=0.25, z_height=1.3, name_suffix="east_wall")
+
+# Measure interior span
+create_dimension_line((-1, 0), (3, 0), offset=0.4, text_size=0.25, z_height=1.3, name_suffix="room_width")
+```
+
+**Features:**
+- Automatically detects horizontal vs vertical measurements
+- Creates extension lines (ticks) at both ends
+- Displays measurement in meters with 2 decimal places
+- Works with any angle (best for horizontal/vertical walls)
+- Black lines and text for clarity on white background
+
 ## Customizing the View
 
 ### Adjusting Camera Position
