@@ -103,14 +103,17 @@ main_dwelling_module.build_north_deck(
     north_recess=1.0
 )
 
-# Set up top orthographic view
+# Set up top orthographic view (standard Blender orientation: +X right, +Y up, -Z toward camera)
 for area in bpy.context.screen.areas:
     if area.type == 'VIEW_3D':
         space = area.spaces.active
         space.region_3d.view_perspective = 'ORTHO'
         space.shading.type = 'SOLID'
-        # Set to top view
-        space.region_3d.view_rotation = (0, 0, 0, 1)  # Top down view
+        # Set to standard top view: numpad 7
+        # Quaternion for top view looking down -Z axis
+        import math
+        space.region_3d.view_rotation = (0.7071068, 0.7071068, 0, 0)
+        space.region_3d.view_distance = 30
         break
 
 print("\n" + "="*60)
