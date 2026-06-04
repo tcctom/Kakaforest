@@ -132,6 +132,9 @@ if SHOW_GROUND:
     # Ground level at 0.0, building sits on slight clearing
     main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -9, 0.0), x_spacing=0.4)
     ground_module.gravel_plane(main_dwelling_clearing)
+    # Small banks down on east and west sides - use smaller spacing for narrow width
+    ground_module.gravel_plane(grid_points((6, 4, 0.0), (6.5, -9, -2.0), x_spacing=0.1, slope_direction='x'))
+    ground_module.gravel_plane(grid_points((-6, 4, 0.0), (-6.5, -9, -2.0), x_spacing=0.1, slope_direction='x'))
     
 
     
@@ -139,12 +142,13 @@ if SHOW_GROUND:
     main_dwelling_forest_north = grid_points((18, 32, 0), (-8, 3.5, -4.2), x_spacing=0.5, slope_direction='y')
     flat_grass_play_area = grid_points((10, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')
     main_dwelling_forest_east = grid_points((30, 3.5, -0.2), (6, -8, -0.1), x_spacing=0.5)
-    main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -7.5, -3.1), x_spacing=0.5, slope_direction='y')
+    main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -3.5, -3.1), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
     ground_module.forest_plane(flat_grass_play_area)
     ground_module.forest_plane(main_dwelling_forest_east)
     ground_module.gravel_plane(main_dwelling_forest_west)
+    ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
     ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)

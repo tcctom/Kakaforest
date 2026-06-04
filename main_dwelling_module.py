@@ -600,8 +600,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     HEARTH_WIDTH = LOG_BURNER_WIDTH + 0.4  # 200mm each side E-W
     # Calculate depth to extend from partition (north) to 200mm south of log burner (south)
     hearth_north_edge = cupboard_south_edge_y  # Butts against partition
-    hearth_south_edge = log_burner_y + LOG_BURNER_DEPTH/2 + 0.2  # 200mm south of burner
-    HEARTH_DEPTH = hearth_south_edge - hearth_north_edge
+    HEARTH_DEPTH = 1.5 
+    hearth_south_edge = hearth_north_edge - HEARTH_DEPTH
     hearth_y = (hearth_north_edge + hearth_south_edge) / 2  # Center of slab
     
     bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, hearth_y, FLOOR_TOP + HEARTH_THICKNESS/2))
@@ -1745,7 +1745,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     STEP_WIDTH = 2.5  # Full porch width (north-south)
     STEP_DEPTH = 0.4  # 400mm deep (east-west)
     STEP_HEIGHT = 0.15  # 150mm rise per step
-    NUM_STEPS = 5  # Total number of steps
+    NUM_STEPS = 6  # Total number of steps
     deck_texture_path = os.path.join(os.path.dirname(__file__), "textures", "knotted-timber-staggered-1995-mm-architextures.jpg")
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)
     
