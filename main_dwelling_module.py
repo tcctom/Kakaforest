@@ -1918,10 +1918,10 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     for i in range(1, num_purlins):
         purlin_x = porch_roof_building + (i * PURLIN_SPACING)
         purlin_y = (porch_roof_north + porch_roof_south) / 2
-        # Calculate height along the slope
-        distance_from_high = purlin_x - porch_roof_building
-        slope_drop = distance_from_high * math.tan(math.radians(PORCH_ROOF_PITCH))
-        purlin_z = porch_roof_high_height - slope_drop - PURLIN_SIZE[1]/2
+        # Calculate height along the slope (now building=LOW, outer=HIGH after swap)
+        distance_from_low = purlin_x - porch_roof_building
+        slope_rise = distance_from_low * math.tan(math.radians(PORCH_ROOF_PITCH))
+        purlin_z = porch_roof_low_height + slope_rise - PURLIN_SIZE[1]/2
         
         bpy.ops.mesh.primitive_cube_add(location=(purlin_x, purlin_y, purlin_z))
         purlin = bpy.context.active_object
