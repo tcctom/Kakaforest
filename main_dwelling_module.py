@@ -127,8 +127,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     
     # === GROUND FLOOR EXTERIOR WALLS ===
     # North Wall (recessed NORTH_RECESS inward from north edge)
-    # North edge is at oy - WIDTH/2, recess by NORTH_RECESS, position at outer face minus half thickness
-    north_wall_y = oy - WIDTH/2 + NORTH_RECESS - EXTERIOR_WALL_THICKNESS/2
+    # North edge is at oy + WIDTH/2, recess by NORTH_RECESS, position at outer face minus half thickness
+    north_wall_y = oy + WIDTH/2 - NORTH_RECESS + EXTERIOR_WALL_THICKNESS/2
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, oz + GROUND_FLOOR_HEIGHT/2))
     north_wall_ground = bpy.context.active_object
     north_wall_ground.name = "MainDwelling_NorthWall_Ground"
@@ -141,7 +141,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     north_wall_ground.data.polygons[1].material_index = 1
     
     # South Wall (extends to full WIDTH)
-    south_wall_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS/2
+    south_wall_y = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS/2
     bpy.ops.mesh.primitive_cube_add(location=(ox, south_wall_y, oz + GROUND_FLOOR_HEIGHT/2))
     south_wall_ground = bpy.context.active_object
     south_wall_ground.name = "MainDwelling_SouthWall_Ground"
@@ -155,7 +155,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     
     # East Wall (spans FULL 7m north-south, flush with floors and roof)
     east_west_wall_depth = WIDTH  # Full 7m span to match floor/roof edges
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
     east_wall_ground = bpy.context.active_object
     east_wall_ground.name = "MainDwelling_EastWall_Ground"
     east_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
@@ -167,7 +167,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     east_wall_ground.data.polygons[2].material_index = 1
     
     # West Wall (spans FULL 7m north-south, flush with floors and roof)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
     west_wall_ground = bpy.context.active_object
     west_wall_ground.name = "MainDwelling_WestWall_Ground"
     west_wall_ground.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, GROUND_FLOOR_HEIGHT/2)
@@ -457,8 +457,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     GUEST_BEDROOM_DEPTH = 3.0   # N-S dimension
     
     # Interior reference points (north wall recessed from north edge by NORTH_RECESS)
-    east_interior_face = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
-    north_interior_face = oy - WIDTH/2 + NORTH_RECESS
+    east_interior_face = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
+    north_interior_face = oy + WIDTH/2 - NORTH_RECESS
     
     # Ground floor wall height (slightly shorter to avoid poking through first floor slab)
     FLOOR_SLAB_THICKNESS = 0.1
@@ -468,8 +468,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Position so that east face of wall is exactly GUEST_BEDROOM_WIDTH from east interior face
     # Extended 500mm south beyond original GUEST_BEDROOM_DEPTH
     WEST_WALL_EXTENSION = 0.5  # Additional 500mm south
-    west_partition_x = east_interior_face + GUEST_BEDROOM_WIDTH + INTERIOR_WALL_THICKNESS/2
-    west_partition_center_y = north_interior_face + (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION)/2
+    west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS/2
+    west_partition_center_y = north_interior_face - (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION)/2
     
     bpy.ops.mesh.primitive_cube_add(location=(west_partition_x, west_partition_center_y, oz + ground_floor_wall_height/2))
     west_partition = bpy.context.active_object
@@ -479,8 +479,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     west_partition.data.materials.append(interior_wall_mat)
     
     # South partition wall (E-W) - southern edge of guest bedroom
-    south_partition_y = north_interior_face + GUEST_BEDROOM_DEPTH - INTERIOR_WALL_THICKNESS/2
-    south_partition_center_x = east_interior_face + GUEST_BEDROOM_WIDTH/2
+    south_partition_y = north_interior_face - GUEST_BEDROOM_DEPTH + INTERIOR_WALL_THICKNESS/2
+    south_partition_center_x = east_interior_face - GUEST_BEDROOM_WIDTH/2
     
     bpy.ops.mesh.primitive_cube_add(location=(south_partition_center_x, south_partition_y, oz + ground_floor_wall_height/2))
     south_partition = bpy.context.active_object
@@ -491,9 +491,9 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # Door on south wall, positioned clear of wardrobe (wardrobe is on west side)
     # Place door about 1.5m from east wall
-    door_x = east_interior_face + 2.9
-    add_window("MainDwelling_GroundFloor_GuestBedroomSouthWall", (door_x, south_partition_y + INTERIOR_WALL_THICKNESS/2, oz + 1.0), 
-               width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    door_x = east_interior_face - 2.9
+    add_window("MainDwelling_GroundFloor_GuestBedroomSouthWall", (door_x, south_partition_y - INTERIOR_WALL_THICKNESS/2, oz + 1.0), 
+               width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     
     # === CUPBOARD IN GUEST BEDROOM ===
     # Create a cupboard in NW corner of guest bedroom: 600mm (E-W) × 2000mm (N-S)
@@ -501,10 +501,10 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     CUPBOARD_DEPTH = 2.0    # N-S dimension (2000mm)
     
     # West N-S partition of cupboard - 600mm west of guest bedroom west wall
-    # Current west wall outer (west) face is at: west_partition_x + INTERIOR_WALL_THICKNESS/2
+    # Current west wall outer (west) face is at: west_partition_x - INTERIOR_WALL_THICKNESS/2
     # New wall center is 600mm west of that, plus half its thickness
-    cupboard_west_wall_x = west_partition_x + INTERIOR_WALL_THICKNESS/2 + CUPBOARD_WIDTH + INTERIOR_WALL_THICKNESS/2
-    cupboard_west_wall_center_y = north_interior_face + CUPBOARD_DEPTH/2
+    cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS/2 - CUPBOARD_WIDTH - INTERIOR_WALL_THICKNESS/2
+    cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH/2
     
     bpy.ops.mesh.primitive_cube_add(location=(cupboard_west_wall_x, cupboard_west_wall_center_y, oz + ground_floor_wall_height/2))
     cupboard_west_wall = bpy.context.active_object
@@ -514,8 +514,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     cupboard_west_wall.data.materials.append(interior_wall_mat)
     
     # South E-W partition of cupboard - connects the two N-S walls at 2m from north wall
-    cupboard_south_wall_y = north_interior_face + CUPBOARD_DEPTH - INTERIOR_WALL_THICKNESS/2
-    cupboard_south_wall_center_x = west_partition_x + INTERIOR_WALL_THICKNESS/2 + CUPBOARD_WIDTH/2
+    cupboard_south_wall_y = north_interior_face - CUPBOARD_DEPTH + INTERIOR_WALL_THICKNESS/2
+    cupboard_south_wall_center_x = west_partition_x - INTERIOR_WALL_THICKNESS/2 - CUPBOARD_WIDTH/2
     
     bpy.ops.mesh.primitive_cube_add(location=(cupboard_south_wall_center_x, cupboard_south_wall_y, oz + ground_floor_wall_height/2))
     cupboard_south_wall = bpy.context.active_object
@@ -533,8 +533,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
     
     # Position bed with headboard (pillow side) against south partition, centered E-W in bedroom
-    guest_bed_x = east_interior_face + GUEST_BEDROOM_WIDTH/2
-    guest_bed_y = south_partition_y - INTERIOR_WALL_THICKNESS/2 - BED_LENGTH/2
+    guest_bed_x = east_interior_face - GUEST_BEDROOM_WIDTH/2
+    guest_bed_y = south_partition_y + INTERIOR_WALL_THICKNESS/2 + BED_LENGTH/2
     guest_bed_z = oz + BED_HEIGHT/2
     
     bpy.ops.mesh.primitive_cube_add(location=(guest_bed_x, guest_bed_y, guest_bed_z))
@@ -551,15 +551,15 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     PARTITION_LENGTH = 2.5  # 2.5m N-S dimension
     
     # Calculate positions (staircase is in SW corner)
-    west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
-    south_interior_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    west_interior_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS
     
     # Staircase east edge is 2m east of west wall
-    stairwell_east_x = west_interior_x - STAIRWELL_WIDTH
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
     
     # Position partition at east edge of stairwell (immediately west/adjacent to stairwell)
-    partition_x = stairwell_east_x - INTERIOR_WALL_THICKNESS/2
-    partition_center_y = south_interior_y - PARTITION_LENGTH/2
+    partition_x = stairwell_east_x + INTERIOR_WALL_THICKNESS/2
+    partition_center_y = south_interior_y + PARTITION_LENGTH/2
     
     # Full height partition extending through both floors
     full_partition_height = GROUND_FLOOR_HEIGHT + FIRST_FLOOR_HEIGHT
@@ -588,9 +588,9 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     glass_mat = create_material("LogBurnerGlass", (0.1, 0.1, 0.1, 0.3))  # Dark tinted glass
     
     # Position: centered on cupboard E-W, 0.3m south of cupboard south wall
-    cupboard_south_edge_y = north_interior_face + CUPBOARD_DEPTH
-    log_burner_x = west_partition_x + INTERIOR_WALL_THICKNESS/2 + CUPBOARD_WIDTH/2 + 0.10
-    log_burner_y = cupboard_south_edge_y + 0.8 + LOG_BURNER_DEPTH/2
+    cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
+    log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS/2 - CUPBOARD_WIDTH/2 - 0.10
+    log_burner_y = cupboard_south_edge_y - 0.8 - LOG_BURNER_DEPTH/2
     
     FLOOR_TOP = oz + 0.1  # Ground floor top surface (100mm thick slab)
     HEARTH_THICKNESS = 0.03  # 30mm thick
@@ -650,7 +650,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     GLASS_HEIGHT = LOG_BURNER_HEIGHT * 0.7  # 70% of burner height
     GLASS_THICKNESS = 0.01  # 10mm thick glass
     
-    glass_x = log_burner_x - LOG_BURNER_WIDTH/2 - GLASS_THICKNESS/2  # West face
+    glass_x = log_burner_x + LOG_BURNER_WIDTH/2 + GLASS_THICKNESS/2  # West face
     glass_z = log_burner_z  # Centered vertically
     
     bpy.ops.mesh.primitive_cube_add(location=(glass_x, log_burner_y, glass_z))
@@ -692,24 +692,24 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     
     # Calculate positions
     # South wall interior face
-    south_interior_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS
     # West wall interior face
-    west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
+    west_interior_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
     
     # Stairwell position (2m wide E-W)
     STAIRWELL_WIDTH = 2.0
-    stairwell_east_x = west_interior_x - STAIRWELL_WIDTH
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
     
     # Main bench center position (runs E-W along south wall)
-    bench_center_x = west_interior_x - BENCH_LENGTH/2 - 2.1  # Start 2.1m from west wall
-    bench_center_y = south_interior_y - BENCH_DEPTH/2
+    bench_center_x = west_interior_x + BENCH_LENGTH/2 + 2.1  # Start 2.1m from west wall
+    bench_center_y = south_interior_y + BENCH_DEPTH/2
     bench_top_z = oz + BENCH_HEIGHT
     
     # L-section center position (runs N-S along stairwell partition, on WEST side)
     # Position it at the east end of main bench, extending north
-    main_bench_east_end = west_interior_x - 2.1  # East end of main bench
-    l_section_x = main_bench_east_end - BENCH_DEPTH/2  # West of stairwell partition
-    l_section_y = south_interior_y - BENCH_DEPTH - L_SECTION_LENGTH/2  # North from main bench corner
+    main_bench_east_end = west_interior_x + 2.1  # East end of main bench
+    l_section_x = main_bench_east_end + BENCH_DEPTH/2  # West of stairwell partition
+    l_section_y = south_interior_y + BENCH_DEPTH + L_SECTION_LENGTH/2  # North from main bench corner
     
     # Create materials
     bench_mat = get_kitchen_bench_material()  # Granite texture
@@ -772,8 +772,8 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     # Wall cabinet along N-S partition (from south wall north along stairwell)
     # Calculate length to extend from south wall to north end of L-section
     wall_cab_length_ns = BENCH_DEPTH + L_SECTION_LENGTH  # Full length from south wall
-    wall_cab_ns_y = south_interior_y - wall_cab_length_ns/2  # Center from south wall northward
-    wall_cab_ns_x = main_bench_east_end - WALL_CABINET_DEPTH/2  # Against partition, west side
+    wall_cab_ns_y = south_interior_y + wall_cab_length_ns/2  # Center from south wall northward
+    wall_cab_ns_x = main_bench_east_end + WALL_CABINET_DEPTH/2  # Against partition, west side
     
     bpy.ops.mesh.primitive_cube_add(location=(wall_cab_ns_x, wall_cab_ns_y, wall_cabinet_z))
     wall_cab_ns = bpy.context.active_object
@@ -806,8 +806,8 @@ def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     
     # Position table north of stairs with clearance
     CLEARANCE = 0.4  # 400mm clearance from stairwell
-    table_x = ox + 1.0
-    table_y = oy - 1.3
+    table_x = ox - 1.0
+    table_y = oy + 1.3
     table_top_z = oz + TABLE_HEIGHT - TOP_THICKNESS/2
     
     # Create material
