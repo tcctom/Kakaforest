@@ -133,8 +133,8 @@ if SHOW_GROUND:
     main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -9, 0.0), x_spacing=0.4)
     ground_module.gravel_plane(main_dwelling_clearing)
     # Small banks down on east and west sides - narrow strips need fine X spacing, reasonable Y spacing
-    ground_module.gravel_plane(grid_points((6, 4, 0.0), (6.5, -9, -0.5), x_spacing=0.1, y_spacing=0.3, slope_direction='x'))
-    ground_module.gravel_plane(grid_points((-6, 4, 0.0), (-6.5, -9, -0.5), x_spacing=0.1, y_spacing=0.3, slope_direction='x'))
+    ground_module.gravel_plane(grid_points((6, 4, 0.0), (7, -9, -1), x_spacing=0.5, y_spacing=0.5, slope_direction='x'))
+    ground_module.gravel_plane(grid_points((-7, -9, -1),(-6, 4, 0.0), x_spacing=0.5, y_spacing=0.5, slope_direction='x'))
     
 
     

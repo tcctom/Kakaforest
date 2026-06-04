@@ -650,7 +650,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     GLASS_HEIGHT = LOG_BURNER_HEIGHT * 0.7  # 70% of burner height
     GLASS_THICKNESS = 0.01  # 10mm thick glass
     
-    glass_x = log_burner_x + LOG_BURNER_WIDTH/2 + GLASS_THICKNESS/2  # West face
+    glass_x = log_burner_x - LOG_BURNER_WIDTH/2 - GLASS_THICKNESS/2  # West face
     glass_z = log_burner_z  # Centered vertically
     
     bpy.ops.mesh.primitive_cube_add(location=(glass_x, log_burner_y, glass_z))
