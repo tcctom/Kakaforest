@@ -625,7 +625,7 @@ def show_ground_floor_plan():
     print("\nAdding room labels...")
     # Example labels - adjust coordinates to match your building layout
     # Using Z at cut height so labels are visible
-    create_room_label('GROUND FLOOR', (0, -4.5, 1.3), size=0.8)
+    create_room_label('GROUND FLOOR', (0, -6.5, 1.3), size=0.8)
     create_room_label('Dining', (2, -2, 1.3), size=0.4)
     create_room_label('Kitchen', (0.8, 2, 1.3), size=0.4)
     create_room_label('Bathroom', (-3, 2, 1.3), size=0.4)
@@ -640,7 +640,7 @@ def show_ground_floor_plan():
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     create_dimension_line((-4.5, -3.5), (4.5, -3.5), offset=-0.6, text_size=0.3, z_height=1.3, name_suffix="south_wall")
     create_dimension_line((4.5, -3.5), (4.5, 3.5), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((0, -1), (4, -1), offset=0.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
+    create_dimension_line((-0.05, -0.6), (4.3, -0.6), offset=0.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
     
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")
