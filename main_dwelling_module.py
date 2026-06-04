@@ -1833,10 +1833,13 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bpy.context.collection.objects.link(porch_roof_obj)
     
     # Roof extends with overhang on north, south, and west sides
-    porch_roof_building = ox - LENGTH/2  # Flush with building wall (should be HIGH)
-    porch_roof_outer = ox - LENGTH/2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG  # Outer edge with overhang (should be LOW)
+    porch_roof_building = ox - LENGTH/2  # Flush with building wall (HIGH - where roof attaches)
+    porch_roof_outer = ox - LENGTH/2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG  # Outer edge (LOW - drainage point)
     porch_roof_north = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
     porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
+    
+    # Calculate absolute distance for proper calculations (outer is west/negative of building)
+    porch_roof_span = abs(porch_roof_outer - porch_roof_building)
     
     porch_verts = [
         # Building edge HIGH (for proper drainage away from building)
@@ -1888,7 +1891,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     fascia_north_z_high = porch_roof_high_height - FASCIA_HEIGHT/2
     fascia_north_z_low = porch_roof_low_height - FASCIA_HEIGHT/2
     fascia_north_z = (fascia_north_z_high + fascia_north_z_low) / 2
-    fascia_north_length = porch_roof_outer - porch_roof_building
+    fascia_north_length = porch_roof_span
     
     bpy.ops.mesh.primitive_cube_add(location=(fascia_north_x, fascia_north_y, fascia_north_z))
     fascia_north = bpy.context.active_object
@@ -1913,13 +1916,14 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # Purlins (horizontal beams running east-west across the roof)
     PURLIN_SPACING = 0.6  # 600mm spacing
-    num_purlins = int((porch_roof_outer - porch_roof_building) / PURLIN_SPACING)
+    num_purlins = int(porch_roof_span / PURLIN_SPACING)
     
     for i in range(1, num_purlins):
-        purlin_x = porch_roof_building + (i * PURLIN_SPACING)
+        # Move in NEGATIVE X direction (toward west/outer edge)
+        purlin_x = porch_roof_building - (i * PURLIN_SPACING)
         purlin_y = (porch_roof_north + porch_roof_south) / 2
         # Calculate height along the slope (building=HIGH, outer=LOW for drainage)
-        distance_from_high = purlin_x - porch_roof_building
+        distance_from_high = abs(purlin_x - porch_roof_building)
         slope_drop = distance_from_high * math.tan(math.radians(PORCH_ROOF_PITCH))
         purlin_z = porch_roof_high_height - slope_drop - PURLIN_SIZE[1]/2
         
