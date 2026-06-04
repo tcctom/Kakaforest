@@ -22,7 +22,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     roof_thickness = 0.05
     
     # Calculate wall heights based on mono-pitch roof (north wall is HIGHER)
-    # Roof tilts -12° (negative rotation lifts north edge)
+    # Roof tilts +12° (positive rotation lifts north/+Y edge)
     run_to_edge = D/2 + 0.3  # Distance from center to roof edge (3.3m)
     roof_rise = run_to_edge * math.sin(math.radians(ROOF_PITCH))  # ~0.686m (use sin for rotation)
     clearance = 0.03  # 30mm clearance so walls don't poke through roof
@@ -141,13 +141,13 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     door_y_position = oy + D/2 - 2.0  # 2 meters from north wall
     add_door("WetWing_InteriorWall", position=(ox, door_y_position, oz), width=0.9, height=2.1, depth=INTERIOR_WALL_THICKNESS, axis='X')
     
-    # Skillion Roof (HIGH ON NORTH: -Y)
+    # Skillion Roof (HIGH ON NORTH: +Y)
     if show_roof:  # Set show_roof=False in function call to hide roof
         bpy.ops.mesh.primitive_cube_add(location=(ox, oy, oz + ROOF_HEIGHT_CENTER))
         roof = bpy.context.active_object
         roof.name = "WetWing_Roof"
         roof.scale = (W/2 + 0.3, D/2 + 0.3, roof_thickness/2)
-        roof.rotation_euler = (math.radians(-ROOF_PITCH), 0, 0)
+        roof.rotation_euler = (math.radians(ROOF_PITCH), 0, 0)
         roof.data.materials.append(get_metal_roof_material())
         
         # UV unwrap for texture display

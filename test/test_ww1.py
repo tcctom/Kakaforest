@@ -11,9 +11,11 @@ import importlib
 # Add parent directory to path
 sys.path.insert(0, r"c:\KakaForestRetreat")
 
-# Import and reload module
+# Import and reload modules (including furniture)
+import ww1_furniture
 import ww1_module
-importlib.reload(ww1_module)
+importlib.reload(ww1_furniture)  # Reload furniture first
+importlib.reload(ww1_module)      # Then reload main module
 from ww1_module import build_potius_wet_wing
 
 # Clear scene
