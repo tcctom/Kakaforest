@@ -685,7 +685,24 @@ def show_first_floor_plan():
     create_room_label('FIRST FLOOR', (0, -6.5, 3.8), size=0.8)
     create_room_label('Master bedroom', (+2.5, 1, 3.8), size=0.4)
     create_room_label('Office', (-1, -2, 3.8), size=0.4)
+    create_room_label('Living', (-2, 1, 3.8), size=0.4)
+
     
+    # Clean up old dimension lines (in case names were changed)
+    cleanup_dimensions()
+    
+    # Add sample dimension lines
+    print("\nAdding dimension lines...")
+    # Example measurements - adjust to match your actual wall positions
+    # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
+    create_dimension_line((-4.5, -3.5), (4.5, -3.5), offset=-0.6, text_size=0.3, z_height=3.8, name_suffix="south_wall")
+    create_dimension_line((4.5, 3.5), (4.5, -3.5), offset=1.6, text_size=0.3, z_height=3.8, name_suffix="east_wall")
+    create_dimension_line((-4.3, 2.5), (0.2, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+    create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
+    create_dimension_line((4.5, 2.5), (4.5, -1.25), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_length")
+    
+
+
     print("\n✓ First floor plan ready!")
     print("  To add more labels: create_room_label('Bedroom', (x, y, 3.8), size=0.5)")
     print("="*60)

@@ -98,7 +98,7 @@ def create_laminate_floor_material():
     mapping = nodes.new(type='ShaderNodeMapping')
     mapping.location = (-600, 300)
     # Scale appropriately for floor planks
-    mapping.inputs['Scale'].default_value = (2.0, 2.0, 2.0)
+    mapping.inputs['Scale'].default_value = (4.0, 4.0, 4.0)
     
     # Add Texture Coordinate node
     tex_coord = nodes.new(type='ShaderNodeTexCoord')
@@ -590,7 +590,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Position: centered on cupboard E-W, 0.3m south of cupboard south wall
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
     log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS/2 - CUPBOARD_WIDTH/2 - 0.10
-    log_burner_y = cupboard_south_edge_y - 0.8 - LOG_BURNER_DEPTH/2
+    log_burner_y = cupboard_south_edge_y - 0.6 - LOG_BURNER_DEPTH/2
     
     FLOOR_TOP = oz + 0.1  # Ground floor top surface (100mm thick slab)
     HEARTH_THICKNESS = 0.03  # 30mm thick
@@ -1135,19 +1135,19 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_outer_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # GROUND FLOOR - EAST WALL (spans full 7m)
-    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy - 2, oz + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy - 2, oz + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # FIRST FLOOR - EAST WALL (spans full 7m)
-    add_window("MainDwelling_EastWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_EastWall_First", (ox + LENGTH/2, oy - 2, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_First", (ox + LENGTH/2, oy + 1.5, first_floor_z + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_First", (ox + LENGTH/2, oy - 2, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     
     # GROUND FLOOR - WEST WALL (spans full 7m)
     add_window("MainDwelling_WestWall_Ground", (ox - LENGTH/2, oy + 1.7, oz + 1.45), width=0.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     #add_window("MainDwelling_WestWall_Ground", (ox - LENGTH/2, oy - 0.65, oz + 1.1), width=0.5, height=1.8, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # FIRST FLOOR - WEST WALL (spans full 7m)
-    add_window("MainDwelling_WestWall_First", (ox - LENGTH/2, oy, first_floor_z + 1.2), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MainDwelling_WestWall_First", (ox - LENGTH/2, oy, first_floor_z + 1.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     #add_window("MainDwelling_WestWall_First", (ox - LENGTH/2, oy - 1.5, first_floor_z + 1.2), width=1.5, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # GROUND FLOOR - SOUTH WALL (full width)
@@ -1158,9 +1158,9 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_SouthWall_Ground", (ox - 3.3, south_wall_y, oz + 2.15), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     
     # FIRST FLOOR - SOUTH WALL (full width)
-    add_window("MainDwelling_SouthWall_First", (ox + 3.2, south_wall_y, first_floor_z + 1.2), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_First", (ox + 1.0, south_wall_y, first_floor_z + 1.2), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_First", (ox - 0.8, south_wall_y, first_floor_z + 1.2), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_First", (ox + 3.2, south_wall_y, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_First", (ox + 1.0, south_wall_y, first_floor_z + 1.5), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_First", (ox - 0.8, south_wall_y, first_floor_z + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     # Double-height window at stair landing - first floor portion
     add_window("MainDwelling_SouthWall_First", (ox - 3.3, south_wall_y, first_floor_z + 0.4), width=1.2, height=2.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     
