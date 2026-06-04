@@ -682,7 +682,9 @@ def show_first_floor_plan():
     
     # Add sample labels
     print("\nAdding room labels...")
-    create_room_label('FIRST FLOOR', (0, 1.5, 3.8), size=0.8)
+    create_room_label('FIRST FLOOR', (0, -6.5, 3.8), size=0.8)
+    create_room_label('Master bedroom', (+2.5, 1, 3.8), size=0.4)
+    create_room_label('Office', (-1, -2, 3.8), size=0.4)
     
     print("\n✓ First floor plan ready!")
     print("  To add more labels: create_room_label('Bedroom', (x, y, 3.8), size=0.5)")
