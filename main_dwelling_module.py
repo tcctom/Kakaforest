@@ -137,8 +137,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     north_wall_ground.data.materials.append(potius_mat)
     north_wall_ground.data.materials.append(interior_wall_mat)
-    # Assign interior material to south face (index 1)
-    north_wall_ground.data.polygons[1].material_index = 1
+    # Assign interior material to south face (index 3)
+    north_wall_ground.data.polygons[3].material_index = 1
     
     # South Wall (extends to full WIDTH)
     south_wall_y = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS/2
@@ -150,8 +150,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     south_wall_ground.data.materials.append(potius_mat)
     south_wall_ground.data.materials.append(interior_wall_mat)
-    # Assign interior material to north face (index 3)
-    south_wall_ground.data.polygons[3].material_index = 1
+    # Assign interior material to north face (index 1)
+    south_wall_ground.data.polygons[1].material_index = 1
     
     # East Wall (spans FULL 7m north-south, flush with floors and roof)
     east_west_wall_depth = WIDTH  # Full 7m span to match floor/roof edges
@@ -163,8 +163,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     east_wall_ground.data.materials.append(potius_mat)
     east_wall_ground.data.materials.append(interior_wall_mat)
-    # Assign interior material to west face (index 2)
-    east_wall_ground.data.polygons[2].material_index = 1
+    # Assign interior material to west face (index 0)
+    east_wall_ground.data.polygons[0].material_index = 1
     
     # West Wall (spans FULL 7m north-south, flush with floors and roof)
     bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz + GROUND_FLOOR_HEIGHT/2))
@@ -175,8 +175,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     west_wall_ground.data.materials.append(potius_mat)
     west_wall_ground.data.materials.append(interior_wall_mat)
-    # Assign interior material to east face (index 0)
-    west_wall_ground.data.polygons[0].material_index = 1
+    # Assign interior material to east face (index 2)
+    west_wall_ground.data.polygons[2].material_index = 1
     
     # === FIRST FLOOR EXTERIOR WALLS ===
     # North Wall (recessed, same as ground floor)
@@ -188,8 +188,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     north_wall_first.data.materials.append(potius_mat)
     north_wall_first.data.materials.append(interior_wall_mat)
-    # Assign interior material to south face (index 1)
-    north_wall_first.data.polygons[1].material_index = 1
+    # Assign interior material to south face (index 3)
+    north_wall_first.data.polygons[3].material_index = 1
     
     # South Wall (extends to full WIDTH)
     bpy.ops.mesh.primitive_cube_add(location=(ox, south_wall_y, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -200,8 +200,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     south_wall_first.data.materials.append(potius_mat)
     south_wall_first.data.materials.append(interior_wall_mat)
-    # Assign interior material to north face (index 3)
-    south_wall_first.data.polygons[3].material_index = 1
+    # Assign interior material to north face (index 1)
+    south_wall_first.data.polygons[1].material_index = 1
     
     # East Wall (spans FULL 7m north-south, independent of recessed north wall)
     bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -212,8 +212,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     east_wall_first.data.materials.append(potius_mat)
     east_wall_first.data.materials.append(interior_wall_mat)
-    # Assign interior material to west face (index 2)
-    east_wall_first.data.polygons[2].material_index = 1
+    # Assign interior material to west face (index 0)
+    east_wall_first.data.polygons[0].material_index = 1
     
     # West Wall (spans FULL 7m north-south, independent of recessed north wall)
     bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
@@ -224,8 +224,8 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     # Add both materials (exterior and interior)
     west_wall_first.data.materials.append(potius_mat)
     west_wall_first.data.materials.append(interior_wall_mat)
-    # Assign interior material to east face (index 0)
-    west_wall_first.data.polygons[0].material_index = 1
+    # Assign interior material to east face (index 2)
+    west_wall_first.data.polygons[2].material_index = 1
 
 
 def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat):
