@@ -21,16 +21,16 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     red_mat = create_material("RedCottage", (0.7, 0.05, 0.05, 1))
     
     # Build 4 exterior walls as separate solid boxes
-    # North Wall (-Y side)
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy - D/2 + EXTERIOR_WALL_THICKNESS/2, oz + H/2))
+    # North Wall (+Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy + D/2 - EXTERIOR_WALL_THICKNESS/2, oz + H/2))
     north_wall = bpy.context.active_object
     north_wall.name = "Cottage_NorthWall"
     north_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H/2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall.data.materials.append(red_mat)
     
-    # South Wall (+Y side)
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy + D/2 - EXTERIOR_WALL_THICKNESS/2, oz + H/2))
+    # South Wall (-Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy - D/2 + EXTERIOR_WALL_THICKNESS/2, oz + H/2))
     south_wall = bpy.context.active_object
     south_wall.name = "Cottage_SouthWall"
     south_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H/2)
@@ -83,7 +83,7 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     # Create piles in a grid pattern
     # Main building piles: every 1.5m along X, every 2.1m along Y
     pile_x_positions = [-W/2 + 0.5, -W/2 + 2.0, -W/2 + 3.5, -W/2 + 5.0, -W/2 + 5.7]  # 5 rows
-    pile_y_positions = [-D/2 + 0.5, 0, D/2 - 0.5]  # 3 columns for main building
+    pile_y_positions = [D/2 - 0.5, 0, -D/2 + 0.5]  # 3 columns for main building
     
     # Main building piles
     for px in pile_x_positions:
@@ -97,9 +97,9 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
             pile.data.materials.append(foundation_mat)
     
     # Verandah piles (north side, under 4.0m × 1.5m verandah)
-    # Verandah spans X: from -3.1 to +0.9, Y: from -3.6 to -2.1
+    # Verandah spans X: from -3.1 to +0.9, Y: from 2.1 to 3.6
     verandah_pile_x_positions = [-2.8, -1.5, -0.2, 0.6]  # Along verandah length
-    verandah_pile_y_positions = [-D/2 - VERANDAH_WIDTH/2, -D/2 - VERANDAH_WIDTH + 0.3]  # Two rows under verandah
+    verandah_pile_y_positions = [D/2 + VERANDAH_WIDTH/2, D/2 + VERANDAH_WIDTH - 0.3]  # Two rows under verandah
     
     for px in verandah_pile_x_positions:
         for py in verandah_pile_y_positions:
@@ -145,7 +145,7 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
         roof_depth = D + VERANDAH_WIDTH + 2 * ROOF_OVERHANG  # 6.3m (north-south)
         
         # Ridge position: centered between south edge (with overhang) and north edge (with overhang)
-        ridge_y_offset = -0.75  # Shifted north to cover verandah
+        ridge_y_offset = 0.75  # Shifted north to cover verandah
         
         # Calculate rise from ridge to edges
         run = roof_depth / 2  # 3.15m from ridge to each edge
@@ -214,7 +214,7 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
         obj.select_set(False)
     # Position: east edge at ox-W/2, extends 4m along north face toward west
     verandah_x = ox - (W/2 - VERANDAH_LENGTH/2)  # Center: ox - 3.1 + 2.0 = ox - 1.1
-    verandah_y = oy - D/2 - VERANDAH_WIDTH/2     # North of cottage: oy - 2.1 - 0.75
+    verandah_y = oy + D/2 + VERANDAH_WIDTH/2     # North of cottage: oy + 2.1 + 0.75
     verandah_z = oz + VERANDAH_HEIGHT/2          # Just above ground
     
     bpy.ops.mesh.primitive_cube_add(location=(verandah_x, verandah_y, verandah_z))
@@ -230,7 +230,7 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
     white_mat = create_material("WhitePost", (0.95, 0.95, 0.95, 1))
     
     # Position posts at outer edge of verandah (north edge)
-    post_y = oy - D/2 - VERANDAH_WIDTH + POST_SIZE/2  # At north edge of verandah
+    post_y = oy + D/2 + VERANDAH_WIDTH - POST_SIZE/2  # At north edge of verandah
     post_z = oz + VERANDAH_HEIGHT + POST_HEIGHT/2  # From deck level to roof
     
     # Three posts evenly spaced along verandah length
@@ -249,15 +249,15 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
         post.data.materials.append(white_mat)
 
     # Add windows on North wall
-    add_window("Cottage_NorthWall", position=(ox-1.2, oy - D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("Cottage_NorthWall", position=(ox+2, oy - D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("Cottage_NorthWall", position=(ox-1.2, oy + D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("Cottage_NorthWall", position=(ox+2, oy + D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS)
 
     # Add window on East wall (east = -X direction)
-    add_window("Cottage_EastWall", position=(ox - W/2, oy - 0.8, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("Cottage_EastWall", position=(ox - W/2, oy + 0.8, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
 
     # Add window on West wall (west = +X direction)
-    add_window("Cottage_WestWall", position=(ox + W/2, oy - 0.8, oz + 1.6), width=0.8, height=1.125, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("Cottage_WestWall", position=(ox + W/2, oy + 0.8, oz + 1.6), width=0.8, height=1.125, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     # Add white corner trim to all 4 exterior corners
     add_corner_trim(origin=(ox, oy, oz), width=W, depth=D, height=H)
