@@ -1840,11 +1840,11 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     porch_verts = [
         # High edge (at building wall)
-        (porch_roof_east, porch_roof_north, porch_roof_high_height),  # 0: NE corner (high)
-        (porch_roof_east, porch_roof_south, porch_roof_high_height),  # 1: SE corner (high)
+        (porch_roof_east, porch_roof_north, porch_roof_low_height),  # 0: At building (was high, now low)
+        (porch_roof_east, porch_roof_south, porch_roof_low_height),  # 1: At building (was high, now low)
         # Low edge (at outer edge)
-        (porch_roof_west, porch_roof_north, porch_roof_low_height),   # 2: NW corner (low)
-        (porch_roof_west, porch_roof_south, porch_roof_low_height),   # 3: SW corner (low)
+        (porch_roof_west, porch_roof_north, porch_roof_high_height),   # 2: At outer (was low, now high)
+        (porch_roof_west, porch_roof_south, porch_roof_high_height),   # 3: At outer (was low, now high)
     ]
     
     porch_faces = [
