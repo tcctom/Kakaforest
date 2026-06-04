@@ -265,14 +265,14 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     LANDING_HEIGHT = TOTAL_RISE / 2  # 1.35m
     
     # Southwest corner interior reference (oz is ground level)
-    west_interior_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
-    south_interior_y = oy + WIDTH/2 - EXTERIOR_WALL_THICKNESS
+    west_interior_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS
     
     # Stairwell boundaries in SW corner
     stairwell_west_x = west_interior_x
-    stairwell_east_x = west_interior_x - STAIRWELL_WIDTH
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
     stairwell_south_y = south_interior_y
-    stairwell_north_y = south_interior_y - STAIRWELL_LENGTH
+    stairwell_north_y = south_interior_y + STAIRWELL_LENGTH
     
     # Materials
     stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
@@ -280,12 +280,12 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     
     # === FLIGHT 1: Ground to Landing (SOUTH along EAST edge) ===
     # Starts at NORTH edge, travels SOUTH
-    flight1_x = stairwell_east_x + FLIGHT_WIDTH/2 + 0.05  # East edge, 50mm from edge
-    flight1_start_y = stairwell_north_y + STEP_TREAD/2 + 0.05  # Start from north
+    flight1_x = stairwell_east_x - FLIGHT_WIDTH/2 - 0.05  # East edge, 50mm from edge
+    flight1_start_y = stairwell_north_y - STEP_TREAD/2 - 0.05  # Start from north
     
     for i in range(STEPS_PER_FLIGHT):
         step_height = oz + STEP_RISE * (i + 1)
-        step_y = flight1_start_y + (i * STEP_TREAD)  # Move south (positive Y)
+        step_y = flight1_start_y - (i * STEP_TREAD)  # Move south (negative Y)
         
         bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
         step = bpy.context.active_object
@@ -296,7 +296,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     
     # === LANDING: At SOUTH edge, spans East-West ===
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
-    landing_y = stairwell_south_y - LANDING_DEPTH/2  # South edge
+    landing_y = stairwell_south_y + LANDING_DEPTH/2  # South edge
     # Landing top surface must align with top of step 7
     # Step 7 top = oz + 7*STEP_RISE + STEP_RISE/2 = oz + LANDING_HEIGHT + STEP_RISE/2
     # Landing thickness = 0.1m (scale 0.05 on 2m cube), so center = top - 0.05
@@ -317,12 +317,12 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     
     # === FLIGHT 2: Landing to Upper Floor (NORTH along WEST edge, clockwise turn) ===
     # Starts at landing (south), travels NORTH
-    flight2_x = stairwell_west_x - FLIGHT_WIDTH/2 - 0.05  # West edge, 50mm from wall
-    flight2_start_y = stairwell_south_y - LANDING_DEPTH - STEP_TREAD/2  # Start from south end
+    flight2_x = stairwell_west_x + FLIGHT_WIDTH/2 + 0.05  # West edge, 50mm from wall
+    flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD/2  # Start from south end
     
     for i in range(STEPS_PER_FLIGHT):
         step_height = landing_z + STEP_RISE * (i + 1)
-        step_y = flight2_start_y - (i * STEP_TREAD)  # Move north (negative Y)
+        step_y = flight2_start_y + (i * STEP_TREAD)  # Move north (positive Y)
         
         bpy.ops.mesh.primitive_cube_add(location=(flight2_x, step_y, step_height))
         step = bpy.context.active_object
@@ -334,7 +334,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     # === STAIRWELL OPENING in First Floor Slab ===
     # Opening encompasses Flight 2 and Landing
     opening_x = (stairwell_west_x + stairwell_east_x) / 2
-    opening_y = stairwell_south_y - LANDING_DEPTH/2 - (STEPS_PER_FLIGHT * STEP_TREAD)/2
+    opening_y = stairwell_south_y + LANDING_DEPTH/2 + (STEPS_PER_FLIGHT * STEP_TREAD)/2
     opening_width = STAIRWELL_WIDTH + 0.1  # Add small margin
     opening_length = LANDING_DEPTH + (STEPS_PER_FLIGHT * STEP_TREAD) + 0.1
     
@@ -373,7 +373,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     # North-south: fit between south interior face and north interior face
     floor_width = WIDTH - EXTERIOR_WALL_THICKNESS  # Account for south wall thickness
     # Center the floor slightly north since south wall reduces the width
-    floor_center_y = oy - EXTERIOR_WALL_THICKNESS/2
+    floor_center_y = oy + EXTERIOR_WALL_THICKNESS/2
     
     # Create laminate floor material for top surfaces
     laminate_mat = create_laminate_floor_material()
@@ -1208,11 +1208,11 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
         bpy.context.collection.objects.link(obj)
         
-        east_edge = ox - LENGTH/2
-        west_edge = ox + LENGTH/2
+        east_edge = ox + LENGTH/2
+        west_edge = ox - LENGTH/2
         # Roof spans full 7m WIDTH, flush with building edges
-        north_eave_y = oy - WIDTH/2
-        south_eave_y = oy + WIDTH/2
+        north_eave_y = oy + WIDTH/2
+        south_eave_y = oy - WIDTH/2
         
         verts = [
             (east_edge, north_eave_y, eave_height),
@@ -1254,7 +1254,7 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
                     vert = mesh.vertices[loop.vertex_index]
                     # Scale UVs: world_dimension / 2.0 to match wall UV scale
                     # This gives ~150mm grooves after material's 13.33x scaling
-                    u = (vert.co.y - (oy - WIDTH/2)) / 2.0
+                    u = (vert.co.y - (oy + WIDTH/2)) / 2.0
                     v = (vert.co.z - eave_height) / 2.0
                     uv_layer[loop_idx].uv = (u, v)
         
@@ -1276,8 +1276,8 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         bpy.context.collection.objects.link(obj)
         
         half_length = (LENGTH + 2 * ROOF_OVERHANG) / 2
-        north_eave_y = oy - WIDTH/2 - ROOF_OVERHANG
-        south_eave_y = oy + WIDTH/2 + ROOF_OVERHANG
+        north_eave_y = oy + WIDTH/2 + ROOF_OVERHANG
+        south_eave_y = oy - WIDTH/2 - ROOF_OVERHANG
         
         verts = [
             (ox - half_length, north_eave_y, eave_height),
@@ -1381,19 +1381,19 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     JOIST_SPACING = 0.45  # 450mm centers
     
     # Calculate deck position (north of recessed wall)
-    # North edge of building is at oy - building_width/2
-    # Recessed north wall is at oy - building_width/2 + north_recess
-    north_wall_y = oy - building_width/2 + north_recess
-    deck_start_y = north_wall_y - 1.0  # Move 1 meter further north
-    deck_end_y = deck_start_y - DECK_EXTENSION
+    # North edge of building is at oy + building_width/2
+    # Recessed north wall is at oy + building_width/2 - north_recess
+    north_wall_y = oy + building_width/2 - north_recess
+    deck_start_y = north_wall_y + 1.0  # Move 1 meter further north
+    deck_end_y = deck_start_y + DECK_EXTENSION
     deck_center_y = (deck_start_y + deck_end_y) / 2
     
     # Deck height adjustment: lower by 520mm (raised 80mm from original)
     DECK_HEIGHT_OFFSET = -0.52  # 520mm below ground level
     
     # Deck spans full building length east-west
-    deck_west_x = ox + building_length/2
-    deck_east_x = ox - building_length/2
+    deck_west_x = ox - building_length/2
+    deck_east_x = ox + building_length/2
     deck_center_x = ox
     
     # Materials
@@ -1411,8 +1411,8 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     NORTH_BEARER_INSET = 0.15  # 150mm inset from north edge for overhang
     
     # Calculate pile row positions to match bearer positions
-    pile_y_middle = deck_start_y - pile_spacing_ns
-    pile_y_north = deck_start_y - (2 * pile_spacing_ns) + NORTH_BEARER_INSET
+    pile_y_middle = deck_start_y + pile_spacing_ns
+    pile_y_north = deck_start_y + (2 * pile_spacing_ns) - NORTH_BEARER_INSET
     
     pile_positions = [
         ("Middle", pile_y_middle),
@@ -1423,7 +1423,7 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     
     for row_name, pile_y in pile_positions:
         for col in range(pile_cols):
-            pile_x = deck_east_x + (col + 1) * pile_spacing_ew
+            pile_x = deck_east_x - (col + 1) * pile_spacing_ew
             
             bpy.ops.mesh.primitive_cube_add(location=(pile_x, pile_y, pile_center_z))
             pile = bpy.context.active_object
@@ -1458,8 +1458,8 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     num_joists = int(building_length / JOIST_SPACING) + 1
     
     for i in range(num_joists):
-        joist_x = deck_east_x + (i * JOIST_SPACING)
-        if joist_x > deck_west_x:
+        joist_x = deck_east_x - (i * JOIST_SPACING)
+        if joist_x < deck_west_x:
             break
         
         bpy.ops.mesh.primitive_cube_add(location=(joist_x, deck_center_y, joist_z))
@@ -1474,8 +1474,8 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     num_boards = int(DECK_EXTENSION / (DECK_BOARD_WIDTH + BOARD_GAP)) + 1
     
     for i in range(num_boards):
-        board_y = deck_start_y - (i * (DECK_BOARD_WIDTH + BOARD_GAP)) - DECK_BOARD_WIDTH/2
-        if board_y < deck_end_y:
+        board_y = deck_start_y + (i * (DECK_BOARD_WIDTH + BOARD_GAP)) + DECK_BOARD_WIDTH/2
+        if board_y > deck_end_y:
             break
         
         bpy.ops.mesh.primitive_cube_add(location=(deck_center_x, board_y, deck_surface_z))
