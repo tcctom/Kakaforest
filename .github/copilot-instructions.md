@@ -20,9 +20,9 @@ This project creates a modular site planning system for architectural visualizat
 - **X-axis**: West (+X) / East (-X)
   - Red cottage (Björken) at X=0 is on the EAST side
   - Wet wing at X=11 is on the WEST side
-- **Y-axis**: South (+Y) / North (-Y) 
+- **Y-axis**: North (+Y) / South (-Y) 
 - **Z-axis**: Up (+Z) / Down (-Z)
-- Building fronts typically face North (-Y direction)
+- Building fronts typically face North (+Y direction)
 - When adding windows: use `axis='Y'` for north/south walls, `axis='X'` for east/west walls
 
 ## Coding Conventions
