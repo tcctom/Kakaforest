@@ -6,8 +6,12 @@ import importlib
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import and reload module
+# Import and reload modules (including dependencies)
+import utils
+import materials
 import main_dwelling_module
+importlib.reload(utils)
+importlib.reload(materials)
 importlib.reload(main_dwelling_module)
 
 # Cleanup
