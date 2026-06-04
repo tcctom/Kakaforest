@@ -1897,8 +1897,8 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     fascia_north = bpy.context.active_object
     fascia_north.name = "MainDwelling_PorchRoof_FasciaNorth"
     fascia_north.scale = (fascia_north_length/2, FASCIA_THICKNESS/2, FASCIA_HEIGHT/2)
-    # Rotate to follow roof slope
-    fascia_north.rotation_euler[1] = math.radians(PORCH_ROOF_PITCH)
+    # Rotate to follow roof slope (negative for west side, slopes down in -X direction)
+    fascia_north.rotation_euler[1] = math.radians(-PORCH_ROOF_PITCH)
     bpy.ops.object.transform_apply(scale=True, rotation=True)
     fascia_north.data.materials.append(floor_mat)
     
@@ -1909,8 +1909,8 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     fascia_south = bpy.context.active_object
     fascia_south.name = "MainDwelling_PorchRoof_FasciaSouth"
     fascia_south.scale = (fascia_north_length/2, FASCIA_THICKNESS/2, FASCIA_HEIGHT/2)
-    # Rotate to follow roof slope
-    fascia_south.rotation_euler[1] = math.radians(PORCH_ROOF_PITCH)
+    # Rotate to follow roof slope (negative for west side, slopes down in -X direction)
+    fascia_south.rotation_euler[1] = math.radians(-PORCH_ROOF_PITCH)
     bpy.ops.object.transform_apply(scale=True, rotation=True)
     fascia_south.data.materials.append(floor_mat)
     
