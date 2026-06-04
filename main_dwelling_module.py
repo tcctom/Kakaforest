@@ -204,7 +204,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     south_wall_first.data.polygons[3].material_index = 1
     
     # East Wall (spans FULL 7m north-south, independent of recessed north wall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     east_wall_first = bpy.context.active_object
     east_wall_first.name = "MainDwelling_EastWall_First"
     east_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
@@ -216,7 +216,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     east_wall_first.data.polygons[2].material_index = 1
     
     # West Wall (spans FULL 7m north-south, independent of recessed north wall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS/2, oy, first_floor_z + FIRST_FLOOR_HEIGHT/2))
     west_wall_first = bpy.context.active_object
     west_wall_first.name = "MainDwelling_WestWall_First"
     west_wall_first.scale = (EXTERIOR_WALL_THICKNESS/2, east_west_wall_depth/2, FIRST_FLOOR_HEIGHT/2)
@@ -1118,21 +1118,21 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     
     # Calculate wall positions
     north_wall_y = oy + WIDTH/2 - NORTH_RECESS + EXTERIOR_WALL_THICKNESS/2
-    north_wall_interior_face = north_wall_y - EXTERIOR_WALL_THICKNESS/2  # Interior face position
+    north_wall_outer_face = north_wall_y + EXTERIOR_WALL_THICKNESS/2  # Outer face position for windows
     south_wall_y = oy - WIDTH/2
     
     # East/West walls span full WIDTH, centered at oy
     east_west_window_spacing = WIDTH / 3
     south_spacing = LENGTH / 4
     
-    # GROUND FLOOR - NORTH WALL (recessed) - position at interior face
-    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_interior_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    #add_window("MainDwelling_NorthWall_Ground", (ox, north_wall_interior_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_interior_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # GROUND FLOOR - NORTH WALL (recessed) - position at outer face
+    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_outer_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    #add_window("MainDwelling_NorthWall_Ground", (ox, north_wall_outer_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_outer_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
-    # FIRST FLOOR - NORTH WALL (recessed) - position at interior face
-    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_interior_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_interior_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    # FIRST FLOOR - NORTH WALL (recessed) - position at outer face
+    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_outer_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_outer_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # GROUND FLOOR - EAST WALL (spans full 7m)
     add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.2), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
