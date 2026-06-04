@@ -1839,12 +1839,12 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
     
     porch_verts = [
-        # High edge (at building wall) - these should get high_height
-        (porch_roof_building, porch_roof_north, porch_roof_high_height),  # 0: At building, north corner (HIGH)
-        (porch_roof_building, porch_roof_south, porch_roof_high_height),  # 1: At building, south corner (HIGH)
-        # Low edge (at outer edge) - these should get low_height  
-        (porch_roof_outer, porch_roof_north, porch_roof_low_height),   # 2: At outer edge, north corner (LOW)
-        (porch_roof_outer, porch_roof_south, porch_roof_low_height),   # 3: At outer edge, south corner (LOW)
+        # Building edge should be HIGH, outer should be LOW (swap these to fix rendering)
+        (porch_roof_building, porch_roof_north, porch_roof_low_height),  # 0: At building (swap to LOW)
+        (porch_roof_building, porch_roof_south, porch_roof_low_height),  # 1: At building (swap to LOW)
+        # Outer edge  
+        (porch_roof_outer, porch_roof_north, porch_roof_high_height),   # 2: At outer edge (swap to HIGH)
+        (porch_roof_outer, porch_roof_south, porch_roof_high_height),   # 3: At outer edge (swap to HIGH)
     ]
     
     porch_faces = [
