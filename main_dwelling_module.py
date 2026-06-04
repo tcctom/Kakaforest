@@ -1870,7 +1870,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     PURLIN_SIZE = (0.090, 0.045)  # 90mm x 45mm purlins (W x H)
     
     # Fascia board along west (low) edge
-    fascia_west_x = porch_roof_west - FASCIA_THICKNESS/2
+    fascia_west_x = porch_roof_outer - FASCIA_THICKNESS/2
     fascia_west_y = (porch_roof_north + porch_roof_south) / 2
     fascia_west_z = porch_roof_low_height - FASCIA_HEIGHT/2
     
@@ -1883,12 +1883,12 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     fascia_west.data.materials.append(floor_mat)
     
     # Fascia board along north edge
-    fascia_north_x = (porch_roof_east + porch_roof_west) / 2
+    fascia_north_x = (porch_roof_building + porch_roof_outer) / 2
     fascia_north_y = porch_roof_north + FASCIA_THICKNESS/2
     fascia_north_z_high = porch_roof_high_height - FASCIA_HEIGHT/2
     fascia_north_z_low = porch_roof_low_height - FASCIA_HEIGHT/2
     fascia_north_z = (fascia_north_z_high + fascia_north_z_low) / 2
-    fascia_north_length = porch_roof_west - porch_roof_east
+    fascia_north_length = porch_roof_outer - porch_roof_building
     
     bpy.ops.mesh.primitive_cube_add(location=(fascia_north_x, fascia_north_y, fascia_north_z))
     fascia_north = bpy.context.active_object
@@ -1913,13 +1913,13 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # Purlins (horizontal beams running east-west across the roof)
     PURLIN_SPACING = 0.6  # 600mm spacing
-    num_purlins = int((porch_roof_west - porch_roof_east) / PURLIN_SPACING)
+    num_purlins = int((porch_roof_outer - porch_roof_building) / PURLIN_SPACING)
     
     for i in range(1, num_purlins):
-        purlin_x = porch_roof_east + (i * PURLIN_SPACING)
+        purlin_x = porch_roof_building + (i * PURLIN_SPACING)
         purlin_y = (porch_roof_north + porch_roof_south) / 2
         # Calculate height along the slope
-        distance_from_high = purlin_x - porch_roof_east
+        distance_from_high = purlin_x - porch_roof_building
         slope_drop = distance_from_high * math.tan(math.radians(PORCH_ROOF_PITCH))
         purlin_z = porch_roof_high_height - slope_drop - PURLIN_SIZE[1]/2
         
