@@ -1833,18 +1833,18 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bpy.context.collection.objects.link(porch_roof_obj)
     
     # Roof extends with overhang on north, south, and west sides
-    porch_roof_east = ox - LENGTH/2  # Flush with building wall
-    porch_roof_west = ox - LENGTH/2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG  # Outer edge with overhang
+    porch_roof_building = ox - LENGTH/2  # Flush with building wall (should be HIGH)
+    porch_roof_outer = ox - LENGTH/2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG  # Outer edge with overhang (should be LOW)
     porch_roof_north = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
     porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
     
     porch_verts = [
-        # High edge (at building wall)
-        (porch_roof_east, porch_roof_north, porch_roof_low_height),  # 0: At building (was high, now low)
-        (porch_roof_east, porch_roof_south, porch_roof_low_height),  # 1: At building (was high, now low)
-        # Low edge (at outer edge)
-        (porch_roof_west, porch_roof_north, porch_roof_high_height),   # 2: At outer (was low, now high)
-        (porch_roof_west, porch_roof_south, porch_roof_high_height),   # 3: At outer (was low, now high)
+        # High edge (at building wall) - these should get high_height
+        (porch_roof_building, porch_roof_north, porch_roof_high_height),  # 0: At building, north corner (HIGH)
+        (porch_roof_building, porch_roof_south, porch_roof_high_height),  # 1: At building, south corner (HIGH)
+        # Low edge (at outer edge) - these should get low_height  
+        (porch_roof_outer, porch_roof_north, porch_roof_low_height),   # 2: At outer edge, north corner (LOW)
+        (porch_roof_outer, porch_roof_south, porch_roof_low_height),   # 3: At outer edge, south corner (LOW)
     ]
     
     porch_faces = [
