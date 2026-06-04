@@ -1839,12 +1839,12 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
     
     porch_verts = [
-        # Building edge should be HIGH, outer should be LOW (swap these to fix rendering)
-        (porch_roof_building, porch_roof_north, porch_roof_low_height),  # 0: At building (swap to LOW)
-        (porch_roof_building, porch_roof_south, porch_roof_low_height),  # 1: At building (swap to LOW)
-        # Outer edge  
-        (porch_roof_outer, porch_roof_north, porch_roof_high_height),   # 2: At outer edge (swap to HIGH)
-        (porch_roof_outer, porch_roof_south, porch_roof_high_height),   # 3: At outer edge (swap to HIGH)
+        # Building edge HIGH (for proper drainage away from building)
+        (porch_roof_building, porch_roof_north, porch_roof_high_height),  # 0: At building (HIGH)
+        (porch_roof_building, porch_roof_south, porch_roof_high_height),  # 1: At building (HIGH)
+        # Outer edge LOW
+        (porch_roof_outer, porch_roof_north, porch_roof_low_height),   # 2: At outer edge (LOW)
+        (porch_roof_outer, porch_roof_south, porch_roof_low_height),   # 3: At outer edge (LOW)
     ]
     
     porch_faces = [
@@ -1918,10 +1918,10 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     for i in range(1, num_purlins):
         purlin_x = porch_roof_building + (i * PURLIN_SPACING)
         purlin_y = (porch_roof_north + porch_roof_south) / 2
-        # Calculate height along the slope (now building=LOW, outer=HIGH after swap)
-        distance_from_low = purlin_x - porch_roof_building
-        slope_rise = distance_from_low * math.tan(math.radians(PORCH_ROOF_PITCH))
-        purlin_z = porch_roof_low_height + slope_rise - PURLIN_SIZE[1]/2
+        # Calculate height along the slope (building=HIGH, outer=LOW for drainage)
+        distance_from_high = purlin_x - porch_roof_building
+        slope_drop = distance_from_high * math.tan(math.radians(PORCH_ROOF_PITCH))
+        purlin_z = porch_roof_high_height - slope_drop - PURLIN_SIZE[1]/2
         
         bpy.ops.mesh.primitive_cube_add(location=(purlin_x, purlin_y, purlin_z))
         purlin = bpy.context.active_object
