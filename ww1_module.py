@@ -63,24 +63,24 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     
     verts = [
         # Bottom face
-        (-half_thick, -half_depth, 0),  # 0: SW bottom inner
-        (half_thick, -half_depth, 0),   # 1: SW bottom outer
-        (half_thick, half_depth, 0),    # 2: NW bottom outer
-        (-half_thick, half_depth, 0),   # 3: NW bottom inner
-        # Top face (north is taller)
-        (-half_thick, -half_depth, H_NORTH),  # 4: N top inner
-        (half_thick, -half_depth, H_NORTH),   # 5: N top outer
-        (half_thick, half_depth, H_SOUTH),    # 6: S top outer
-        (-half_thick, half_depth, H_SOUTH),   # 7: S top inner
+        (-half_thick, -half_depth, 0),  # 0: South bottom inner
+        (half_thick, -half_depth, 0),   # 1: South bottom outer
+        (half_thick, half_depth, 0),    # 2: North bottom outer
+        (-half_thick, half_depth, 0),   # 3: North bottom inner
+        # Top face (north is taller at +Y)
+        (-half_thick, half_depth, H_NORTH),  # 4: N top inner
+        (half_thick, half_depth, H_NORTH),   # 5: N top outer
+        (half_thick, -half_depth, H_SOUTH),  # 6: S top outer
+        (-half_thick, -half_depth, H_SOUTH), # 7: S top inner
     ]
     
     faces = [
         (0, 1, 2, 3),    # Bottom
         (4, 5, 6, 7),    # Top (sloped)
-        (0, 4, 5, 1),    # North end
-        (2, 6, 7, 3),    # South end
-        (1, 5, 6, 2),    # Outer face
-        (3, 7, 4, 0),    # Inner face
+        (2, 5, 4, 3),    # North end (at +half_depth)
+        (0, 7, 6, 1),    # South end (at -half_depth)
+        (1, 6, 5, 2),    # Outer face
+        (3, 4, 7, 0),    # Inner face
     ]
     
     mesh.from_pydata(verts, [], faces)
@@ -112,22 +112,22 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     
     verts = [
         # Bottom face
-        (-half_thick_int, -half_depth, 0),  # 0: N bottom west
-        (half_thick_int, -half_depth, 0),   # 1: N bottom east
-        (half_thick_int, half_depth, 0),    # 2: S bottom east
-        (-half_thick_int, half_depth, 0),   # 3: S bottom west
-        # Top face (north is taller)
-        (-half_thick_int, -half_depth, H_NORTH),  # 4: N top west
-        (half_thick_int, -half_depth, H_NORTH),   # 5: N top east
-        (half_thick_int, half_depth, H_SOUTH),    # 6: S top east
-        (-half_thick_int, half_depth, H_SOUTH),   # 7: S top west
+        (-half_thick_int, -half_depth, 0),  # 0: S bottom west
+        (half_thick_int, -half_depth, 0),   # 1: S bottom east
+        (half_thick_int, half_depth, 0),    # 2: N bottom east
+        (-half_thick_int, half_depth, 0),   # 3: N bottom west
+        # Top face (north at +Y is taller)
+        (-half_thick_int, half_depth, H_NORTH),  # 4: N top west
+        (half_thick_int, half_depth, H_NORTH),   # 5: N top east
+        (half_thick_int, -half_depth, H_SOUTH),  # 6: S top east
+        (-half_thick_int, -half_depth, H_SOUTH), # 7: S top west
     ]
     
     faces = [
         (0, 1, 2, 3),    # Bottom
         (4, 5, 6, 7),    # Top (sloped)
-        (0, 4, 5, 1),    # North end
-        (2, 6, 7, 3),    # South end
+        (2, 5, 4, 3),    # North end (at +half_depth)
+        (0, 7, 6, 1),    # South end (at -half_depth)
         (1, 5, 6, 2),    # East face
         (3, 7, 4, 0),    # West face
     ]
