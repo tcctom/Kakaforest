@@ -17,9 +17,9 @@ This project creates a modular site planning system for architectural visualizat
 
 ## Coordinate System
 - **Origin**: (0, 0, 0) is ground level  
-- **X-axis**: West (+X) / East (-X)
-  - Red cottage (Björken) at X=0 is on the EAST side
-  - Wet wing at X=11 is on the WEST side
+- **X-axis**: East (+X) / West (-X)
+  - Red cottage (Björken) at X=0 is on center
+  - Wet wing at X=11 is on the EAST side
 - **Y-axis**: North (+Y) / South (-Y) 
 - **Z-axis**: Up (+Z) / Down (-Z)
 - Building fronts typically face North (+Y direction)
