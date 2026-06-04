@@ -249,8 +249,8 @@ def build_red_cottage(origin=(0,0,0), show_roof=True):  # Set show_roof=False to
         post.data.materials.append(white_mat)
 
     # Add windows on North wall
-    add_window("Cottage_NorthWall", position=(ox+1.2, oy + D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("Cottage_NorthWall", position=(ox-2, oy + D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("Cottage_NorthWall", position=(ox+1.2, oy + D/2, oz+1.05), width=1.8, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("Cottage_NorthWall", position=(ox-2, oy + D/2, oz+1.6), width=1.0, height=1.125, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
     # Add window on East wall (east = +X direction)
     add_window("Cottage_EastWall", position=(ox + W/2, oy + 0.8, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')

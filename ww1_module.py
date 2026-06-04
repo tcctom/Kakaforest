@@ -194,10 +194,10 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     sw_trim.data.materials.append(trim_mat)
     
     # Add windows on North face (same dimensions as red cottage)
-    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # Add window on West face (0.5m wide, 1.2m tall, 0.8m off floor, 0.5m in from north)  
     # West = -X side (lower X values = west)
