@@ -130,21 +130,22 @@ if SHOW_GROUND:
     
     # Main Dwelling area (at origin, with Björken 60m south and 5m higher elevation)
     # Ground level at 0.0, building sits on slight clearing
-    main_dwelling_clearing = grid_points((6, 3.5, 0.0), (-6, -9, 0.0), x_spacing=0.4)
+    main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -9, 0.0), x_spacing=0.4)
     ground_module.gravel_plane(main_dwelling_clearing)
     
 
     
     # Forest surrounds on all sides of main dwelling
-    main_dwelling_forest_north = grid_points((18, 32, -4.2), (-8, 3.5, -0.4), x_spacing=0.5, slope_direction='y')
+    main_dwelling_forest_north = grid_points((18, 32, 0), (-8, 3.5, -4.2), x_spacing=0.5, slope_direction='y')
     flat_grass_play_area = grid_points((10, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')
-    main_dwelling_forest_east = grid_points((30, 8, -0.2), (6, -8, -0.1), x_spacing=0.5)
-    main_dwelling_forest_west = grid_points((-6, 18, -3.1), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')
+    main_dwelling_forest_east = grid_points((30, 3.5, -0.2), (6, -8, -0.1), x_spacing=0.5)
+    main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -7.5, -3.1), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
     ground_module.forest_plane(flat_grass_play_area)
     ground_module.forest_plane(main_dwelling_forest_east)
     ground_module.gravel_plane(main_dwelling_forest_west)
+    ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
@@ -190,8 +191,8 @@ outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-19.0, -6.0, -0.5))
-outdoor_structures.build_water_tank(origin=(-23.0, -6.0, -0.5))
+outdoor_structures.build_water_tank(origin=(-19.0, -5.5, -0.5))
+outdoor_structures.build_water_tank(origin=(-23.0, -5.5, -0.5))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)

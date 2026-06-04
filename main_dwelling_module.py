@@ -1745,42 +1745,29 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     STEP_WIDTH = 2.5  # Full porch width (north-south)
     STEP_DEPTH = 0.4  # 400mm deep (east-west)
     STEP_HEIGHT = 0.15  # 150mm rise per step
+    NUM_STEPS = 5  # Total number of steps
     deck_texture_path = os.path.join(os.path.dirname(__file__), "textures", "knotted-timber-staggered-1995-mm-architextures.jpg")
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)
     
-    # First step (closer to porch)
-    step1_x = ox - LENGTH/2 - PORCH_DEPTH - STEP_DEPTH/2
-    step1_z = oz + 0.05 - STEP_HEIGHT/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(step1_x, porch_center_y, step1_z))
-    step1 = bpy.context.active_object
-    step1.name = "MainDwelling_PorchStep1_Simple"
-    step1.scale = (STEP_DEPTH/2, STEP_WIDTH/2, STEP_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    step1.data.materials.append(deck_mat)
-    
-    # UV unwrap for texture display
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
-    bpy.ops.object.mode_set(mode='OBJECT')
-    
-    # Second step (further from porch)
-    step2_x = step1_x + STEP_DEPTH
-    step2_z = step1_z - STEP_HEIGHT
-    
-    bpy.ops.mesh.primitive_cube_add(location=(step2_x, porch_center_y, step2_z))
-    step2 = bpy.context.active_object
-    step2.name = "MainDwelling_PorchStep2_Simple"
-    step2.scale = (STEP_DEPTH/2, STEP_WIDTH/2, STEP_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    step2.data.materials.append(deck_mat)
-    
-    # UV unwrap for texture display
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
-    bpy.ops.object.mode_set(mode='OBJECT')
+    # Create all steps in a loop
+    for i in range(NUM_STEPS):
+        # Calculate position for each step
+        step_x = ox - LENGTH/2 - PORCH_DEPTH - STEP_DEPTH/2 - (i * STEP_DEPTH)
+        step_z = oz + 0.05 - STEP_HEIGHT * (i + 1)
+        
+        # Create step
+        bpy.ops.mesh.primitive_cube_add(location=(step_x, porch_center_y, step_z))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_PorchStep{i+1}_Simple"
+        step.scale = (STEP_DEPTH/2, STEP_WIDTH/2, STEP_HEIGHT/2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(deck_mat)
+        
+        # UV unwrap for texture display
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
     
     # Main entrance door on MAIN BUILDING'S WEST WALL (not on porch)
     # Door: 0.9m wide × 2.0m high, centered on west wall
