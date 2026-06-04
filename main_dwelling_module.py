@@ -1725,7 +1725,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     PORCH_DEPTH = 1.5   # East-west depth
     
     # Porch deck - positioned west of west wall, centered
-    porch_center_x = ox + LENGTH/2 + PORCH_DEPTH/2
+    porch_center_x = ox - LENGTH/2 - PORCH_DEPTH/2
     porch_center_y = oy  # Centered on building
     
     bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz + 0.05))
@@ -1749,7 +1749,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)
     
     # First step (closer to porch)
-    step1_x = ox + LENGTH/2 + PORCH_DEPTH + STEP_DEPTH/2
+    step1_x = ox - LENGTH/2 - PORCH_DEPTH - STEP_DEPTH/2
     step1_z = oz + 0.05 - STEP_HEIGHT/2
     
     bpy.ops.mesh.primitive_cube_add(location=(step1_x, porch_center_y, step1_z))
@@ -1784,8 +1784,8 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # Main entrance door on MAIN BUILDING'S WEST WALL (not on porch)
     # Door: 0.9m wide × 2.0m high, centered on west wall
-    main_door_x = ox + LENGTH/2  # On west wall face
-    add_window("MainDwelling_WestWall_Ground", (main_door_x, oy, oz + 1.0), width=0.9, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    main_door_x = ox - LENGTH/2  # On west wall face
+    add_window("MainDwelling_WestWall_Ground", (main_door_x, oy, oz + 1.0), width=0.9, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
     # Monopitch porch roof - single slope, high at building, low at outer edge
     PORCH_ROOF_PITCH = 15  # degrees (gentler slope for monopitch)
@@ -1799,11 +1799,11 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     # Support posts on west edge of porch (to hold up roof)
     POST_SIZE = 0.15  # 150mm x 150mm posts
     POST_INSET = 0.2  # 200mm inset from north/south edges (wider spacing)
-    post_x = ox + LENGTH/2 + PORCH_DEPTH  # West edge of deck
+    post_x = ox - LENGTH/2 - PORCH_DEPTH  # West edge of deck
     post_height = porch_roof_low_height - oz  # Height to match sloped roof at west edge
     
     # North post
-    post_north_y = oy - PORCH_WIDTH/2 + POST_INSET
+    post_north_y = oy + PORCH_WIDTH/2 - POST_INSET
     bpy.ops.mesh.primitive_cube_add(location=(post_x, post_north_y, oz + post_height/2))
     post_north = bpy.context.active_object
     post_north.name = "MainDwelling_PorchPost_North"
@@ -1812,7 +1812,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     post_north.data.materials.append(floor_mat)
     
     # South post
-    post_south_y = oy + PORCH_WIDTH/2 - POST_INSET
+    post_south_y = oy - PORCH_WIDTH/2 + POST_INSET
     bpy.ops.mesh.primitive_cube_add(location=(post_x, post_south_y, oz + post_height/2))
     post_south = bpy.context.active_object
     post_south.name = "MainDwelling_PorchPost_South"
@@ -1833,10 +1833,10 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     bpy.context.collection.objects.link(porch_roof_obj)
     
     # Roof extends with overhang on north, south, and west sides
-    porch_roof_east = ox + LENGTH/2  # Flush with building wall
-    porch_roof_west = ox + LENGTH/2 + PORCH_DEPTH + PORCH_ROOF_OVERHANG  # Outer edge with overhang
-    porch_roof_north = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
-    porch_roof_south = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
+    porch_roof_east = ox - LENGTH/2  # Flush with building wall
+    porch_roof_west = ox - LENGTH/2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG  # Outer edge with overhang
+    porch_roof_north = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
+    porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
     
     porch_verts = [
         # High edge (at building wall)
@@ -1956,10 +1956,10 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # Railing position - along north edge of first floor balcony
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
-    railing_y = oy - WIDTH/2  # At the north edge of the balcony (1m north of recessed wall)
-    railing_west_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS  # Inside west wall
-    railing_east_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS  # Inside east wall
-    railing_length = railing_west_x - railing_east_x
+    railing_y = oy + WIDTH/2  # At the north edge of the balcony (1m north of recessed wall)
+    railing_west_x = ox - LENGTH/2 + EXTERIOR_WALL_THICKNESS  # Inside west wall
+    railing_east_x = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS  # Inside east wall
+    railing_length = railing_east_x - railing_west_x
     
     # Material for railing - use treated timber
     railing_mat = create_material("RailingTimber", (0.55, 0.45, 0.35, 1))
@@ -1969,7 +1969,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     actual_spacing = railing_length / (num_posts - 1) if num_posts > 1 else railing_length
     
     for i in range(num_posts):
-        post_x = railing_east_x + (i * actual_spacing)
+        post_x = railing_west_x + (i * actual_spacing)
         post_z = first_floor_z + RAILING_HEIGHT/2
         
         bpy.ops.mesh.primitive_cube_add(location=(post_x, railing_y, post_z))
