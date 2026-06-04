@@ -26,10 +26,10 @@ def build_wet_wing_furniture(origin=(0,0,0), building_width=6.0, building_depth=
     BED_HEIGHT = 0.5  # meters (mattress height off floor)
     PILLOW_HEIGHT = 0.2  # meters
     
-    # Position: West wall is at ox + W/2, north wall is at oy - D/2
-    # Bed centered 1m from north wall means bed center at: oy - D/2 + 1.0 + BED_LENGTH/2
-    bed_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - BED_WIDTH/2  # Against west wall, inward by wall thickness
-    bed_y = oy - D/2 + 1.0 + BED_LENGTH/2  # 1m from north wall + half bed length
+    # Position: West wall is at ox - W/2, north wall is at oy + D/2
+    # Bed centered 1m from north wall means bed center at: oy + D/2 - 1.0 - BED_LENGTH/2
+    bed_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + BED_WIDTH/2  # Against west wall, inward by wall thickness
+    bed_y = oy + D/2 - 1.0 - BED_LENGTH/2  # 1m from north wall + half bed length
     bed_z = oz + BED_HEIGHT/2  # Half bed height above floor
     
     # Mattress
@@ -44,7 +44,7 @@ def build_wet_wing_furniture(origin=(0,0,0), building_width=6.0, building_depth=
     pillow_width = 0.6
     pillow_depth = 0.4
     pillow_z = bed_z + BED_HEIGHT/2 + PILLOW_HEIGHT/2
-    pillow_x = ox + W/2 - EXTERIOR_WALL_THICKNESS - pillow_depth/2  # Against west wall
+    pillow_x = ox - W/2 + EXTERIOR_WALL_THICKNESS + pillow_depth/2  # Against west wall
     
     # Left pillow
     bpy.ops.mesh.primitive_cube_add(location=(pillow_x, bed_y - 0.4, pillow_z))
@@ -69,11 +69,11 @@ def build_wet_wing_furniture(origin=(0,0,0), building_width=6.0, building_depth=
     BENCHTOP_THICKNESS = 0.04  # meters (top surface thickness)
     INTERIOR_WALL_THICKNESS = 0.11  # meters
     
-    # Position: East side of interior wall (negative X), toward south end
-    # Interior wall center is at ox, east face is at ox - INTERIOR_WALL_THICKNESS/2
+    # Position: East side of interior wall (positive X), toward south end
+    # Interior wall center is at ox, east face is at ox + INTERIOR_WALL_THICKNESS/2
     # Position benchtop 1m from south wall
-    benchtop_x = ox - INTERIOR_WALL_THICKNESS/2 - BENCHTOP_DEPTH/2  # East side of interior wall
-    benchtop_y = oy + D/2 - 1.0 - BENCHTOP_WIDTH/2  # 1m from south wall
+    benchtop_x = ox + INTERIOR_WALL_THICKNESS/2 + BENCHTOP_DEPTH/2  # East side of interior wall
+    benchtop_y = oy - D/2 + 1.0 + BENCHTOP_WIDTH/2  # 1m from south wall
     benchtop_z = oz + BENCHTOP_HEIGHT/2  # Half height above floor
     
     # Benchtop base (cabinet)

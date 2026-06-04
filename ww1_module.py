@@ -27,7 +27,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     roof_rise = run_to_edge * math.sin(math.radians(ROOF_PITCH))  # ~0.686m (use sin for rotation)
     clearance = 0.03  # 30mm clearance so walls don't poke through roof
     
-    # North wall (-Y) is taller, south wall (+Y) is shorter
+    # North wall (+Y) is taller, south wall (-Y) is shorter
     H_NORTH = ROOF_HEIGHT_CENTER + roof_rise - (roof_thickness/2) - clearance  # ~3.856m
     H_SOUTH = ROOF_HEIGHT_CENTER - roof_rise - (roof_thickness/2) - clearance  # ~2.490m
     
@@ -35,23 +35,23 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     red_mat = create_material("RedCottage", (0.7, 0.05, 0.05, 1))
     
     # Build 4 exterior walls as separate solid boxes
-    # North Wall (Higher wall, -Y side)
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy - D/2 + EXTERIOR_WALL_THICKNESS/2, oz + H_NORTH/2))
+    # North Wall (Higher wall, +Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy + D/2 - EXTERIOR_WALL_THICKNESS/2, oz + H_NORTH/2))
     north_wall = bpy.context.active_object
     north_wall.name = "WetWing_NorthWall"
     north_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H_NORTH/2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall.data.materials.append(red_mat)
     
-    # South Wall (Lower wall, +Y side)
-    bpy.ops.mesh.primitive_cube_add(location=(ox, oy + D/2 - EXTERIOR_WALL_THICKNESS/2, oz + H_SOUTH/2))
+    # South Wall (Lower wall, -Y side)
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy - D/2 + EXTERIOR_WALL_THICKNESS/2, oz + H_SOUTH/2))
     south_wall = bpy.context.active_object
     south_wall.name = "WetWing_SouthWall"
     south_wall.scale = (W/2, EXTERIOR_WALL_THICKNESS/2, H_SOUTH/2)
     bpy.ops.object.transform_apply(scale=True)
     south_wall.data.materials.append(red_mat)
     
-    # West Wall (+X side) - Wall with sloped top matching roof
+    # West Wall (-X side) - Wall with sloped top matching roof
     mesh = bpy.data.meshes.new("WestWallMesh")
     west_wall = bpy.data.objects.new("WetWing_WestWall", mesh)
     bpy.context.collection.objects.link(west_wall)
@@ -84,15 +84,15 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     ]
     
     mesh.from_pydata(verts, [], faces)
-    west_wall.location = (ox + W/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz)  # WEST wall at +X (higher X = west)
+    west_wall.location = (ox - W/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz)  # WEST wall at -X (lower X = west)
     west_wall.data.materials.append(red_mat)
     
-    # East Wall (-X side) - Mirror of west wall
+    # East Wall (+X side) - Mirror of west wall
     mesh = bpy.data.meshes.new("EastWallMesh")
     east_wall = bpy.data.objects.new("WetWing_EastWall", mesh)
     bpy.context.collection.objects.link(east_wall)
     mesh.from_pydata(verts, [], faces)
-    east_wall.location = (ox - W/2 + EXTERIOR_WALL_THICKNESS/2, oy, oz)  # EAST wall at -X (lower X = east)
+    east_wall.location = (ox + W/2 - EXTERIOR_WALL_THICKNESS/2, oy, oz)  # EAST wall at +X (higher X = east)
     east_wall.data.materials.append(red_mat)
     
     # Floor
@@ -136,9 +136,9 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     interior_wall.location = (ox, oy, oz)
     interior_wall.data.materials.append(create_material("InteriorWhite", (0.95, 0.95, 0.95, 1)))
     
-    # Add door to interior wall - 2m from north wall (north wall is at oy - D/2)
+    # Add door to interior wall - 2m from north wall (north wall is at oy + D/2)
     # Interior wall runs N-S along X=0, so use axis='X' for the cut
-    door_y_position = oy - D/2 + 2.0  # 2 meters from north wall
+    door_y_position = oy + D/2 - 2.0  # 2 meters from north wall
     add_door("WetWing_InteriorWall", position=(ox, door_y_position, oz), width=0.9, height=2.1, depth=INTERIOR_WALL_THICKNESS, axis='X')
     
     # Skillion Roof (HIGH ON NORTH: -Y)
@@ -162,7 +162,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     trim_width = 0.15
     
     # NW Corner (tall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox - W/2, oy - D/2, oz + H_NORTH/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox - W/2, oy + D/2, oz + H_NORTH/2))
     nw_trim = bpy.context.active_object
     nw_trim.name = "CornerTrim_NW"
     nw_trim.scale = (trim_width/2, trim_width/2, H_NORTH/2)
@@ -170,7 +170,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     nw_trim.data.materials.append(trim_mat)
     
     # NE Corner (tall)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + W/2, oy - D/2, oz + H_NORTH/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox + W/2, oy + D/2, oz + H_NORTH/2))
     ne_trim = bpy.context.active_object
     ne_trim.name = "CornerTrim_NE"
     ne_trim.scale = (trim_width/2, trim_width/2, H_NORTH/2)
@@ -178,7 +178,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     ne_trim.data.materials.append(trim_mat)
     
     # SE Corner (shorter)
-    bpy.ops.mesh.primitive_cube_add(location=(ox + W/2, oy + D/2, oz + H_SOUTH/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox + W/2, oy - D/2, oz + H_SOUTH/2))
     se_trim = bpy.context.active_object
     se_trim.name = "CornerTrim_SE"
     se_trim.scale = (trim_width/2, trim_width/2, H_SOUTH/2)
@@ -186,7 +186,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     se_trim.data.materials.append(trim_mat)
     
     # SW Corner (shorter)
-    bpy.ops.mesh.primitive_cube_add(location=(ox - W/2, oy + D/2, oz + H_SOUTH/2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox - W/2, oy - D/2, oz + H_SOUTH/2))
     sw_trim = bpy.context.active_object
     sw_trim.name = "CornerTrim_SW"
     sw_trim.scale = (trim_width/2, trim_width/2, H_SOUTH/2)
@@ -194,18 +194,18 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     sw_trim.data.materials.append(trim_mat)
     
     # Add windows on North face (same dimensions as red cottage)
-    add_window("WetWing_NorthWall", position=(ox-1.4, oy - D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox-1.4, oy - D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox+1.4, oy - D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
-    add_window("WetWing_NorthWall", position=(ox+1.4, oy - D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing_NorthWall", position=(ox+1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+1.1), width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS)
+    add_window("WetWing_NorthWall", position=(ox-1.4, oy + D/2, oz+3.0), width=2.0, height=0.9, depth=EXTERIOR_WALL_THICKNESS)
     
     # Add window on West face (0.5m wide, 1.2m tall, 0.8m off floor, 0.5m in from north)  
-    # West = +X side (higher X values = west)
-    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 0.6, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("WetWing_WestWall", position=(ox + W/2, oy - D/2 + 3.2, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    # West = -X side (lower X values = west)
+    add_window("WetWing_WestWall", position=(ox - W/2, oy + D/2 - 0.6, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("WetWing_WestWall", position=(ox - W/2, oy + D/2 - 3.2, oz + 1.4), width=0.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
     
-    add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 4.5, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
-    add_window("WetWing_EastWall", position=(ox - W/2, oy - D/2 + 1.5, oz + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("WetWing_EastWall", position=(ox + W/2, oy + D/2 - 4.5, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("WetWing_EastWall", position=(ox + W/2, oy + D/2 - 1.5, oz + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
 
 
@@ -216,7 +216,7 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     VERANDAH_HEIGHT = 0.1  # meters (thickness)
     
     verandah_x = ox  # Centered on building
-    verandah_y = oy - D/2 - VERANDAH_WIDTH/2  # North of building
+    verandah_y = oy + D/2 + VERANDAH_WIDTH/2  # North of building
     verandah_z = oz + VERANDAH_HEIGHT/2  # Just above ground
     
     bpy.ops.mesh.primitive_cube_add(location=(verandah_x, verandah_y, verandah_z))
@@ -228,8 +228,8 @@ def build_potius_wet_wing(origin=(0,0,0), show_roof=True):  # Set show_roof=Fals
     
     # Verandah along east face (1.5m x 7.5m - extends to overlap with north verandah)
     verandah_east_length = D + VERANDAH_WIDTH  # 6m + 1.5m = 7.5m
-    verandah_east_x = ox - W/2 - VERANDAH_WIDTH/2  # East of building (negative X)
-    verandah_east_y = oy - VERANDAH_WIDTH/2  # Shifted north to extend past north wall
+    verandah_east_x = ox + W/2 + VERANDAH_WIDTH/2  # East of building (positive X)
+    verandah_east_y = oy + VERANDAH_WIDTH/2  # Shifted north to extend past north wall
     verandah_east_z = oz + VERANDAH_HEIGHT/2  # Just above ground
     
     bpy.ops.mesh.primitive_cube_add(location=(verandah_east_x, verandah_east_y, verandah_east_z))
