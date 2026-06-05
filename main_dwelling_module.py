@@ -178,6 +178,35 @@ def create_laminate_floor_material():
     
     return mat
 
+def create_glass_material(name="ShowerGlass"):
+    """Creates a physically accurate, clear glass material using nodes"""
+    mat = bpy.data.materials.get(name)
+    if mat:
+        return mat
+        
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    
+    nodes.clear()
+    
+    # Create Output and Principled BSDF
+    output = nodes.new(type='ShaderNodeOutputMaterial')
+    principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    links.new(principled.outputs['BSDF'], output.inputs['Surface'])
+    
+    # Glass Properties Settings
+    principled.inputs['Base Color'].default_value = (0.95, 0.98, 1.0, 1.0) # Tinted slightly blue/clear
+    principled.inputs['Roughness'].default_value = 0.0                      # Perfectly smooth
+    principled.inputs['IOR'].default_value = 1.45                           # Index of Refraction for standard glass
+    principled.inputs['Transmission Weight'].default_value = 1.0            # 100% see-through
+ 
+    # Forces the viewport preview to treat the glass as a simple translucent sheet
+    mat.diffuse_color = (0.7, 0.85, 0.9, 0.2)  # Light blue viewport color tint with low alpha
+    mat.blend_method = 'BLEND'                 # Explicitly forces alpha blending   
+    
+    return mat
 
 # === HELPER FUNCTIONS FOR MAIN DWELLING ===
 
@@ -1033,12 +1062,11 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     # Materials
     white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
     chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
-    glass_mat = create_material("ShowerGlass", (0.7, 0.85, 0.9, 0.3))
     
     # === SHOWER IN NW CORNER (stepping in from east) ===
-    SHOWER_SIZE = 1.1  # 1100mm square shower
+    SHOWER_SIZE = 1.0  # 1000mm square shower
     SHOWER_TRAY_HEIGHT = 0.15  # 150mm high tray
-    WALL_THICKNESS = 0.1  # 50mm thick walls
+    WALL_THICKNESS = 0.1  # 100mm thick walls
     WALL_HEIGHT = 2.0
     
     # Position shower in NW corner - back walls align with room walls
@@ -1083,7 +1111,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
                                                first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
     west_wall = bpy.context.active_object
     west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
-    west_wall.scale = (WALL_THICKNESS/2, SHOWER_SIZE/2, WALL_HEIGHT/2)
+    west_wall.scale = (WALL_THICKNESS/4, SHOWER_SIZE/2, WALL_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     west_wall.data.materials.append(tile_mat)
     
@@ -1093,24 +1121,68 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
                                                first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
     north_wall = bpy.context.active_object
     north_wall.name = "MainDwelling_Ensuite_ShowerWallNorth"
-    north_wall.scale = (SHOWER_SIZE/2, WALL_THICKNESS/2, WALL_HEIGHT/2)
+    north_wall.scale = (SHOWER_SIZE/2, WALL_THICKNESS/4, WALL_HEIGHT/2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall.data.materials.append(tile_mat)
     
-    # Shower glass screen (east side - entrance, shorter than walls)
+    # =========================================================================
+    # SHOWER GLASS SCREENS (EAST & SOUTH) USING EXISTING WORKING GLASS MATERIAL
+    # =========================================================================
+
+    # 1. Get your existing working glass material (or fallback if it doesn't exist yet)
+    glass_mat = bpy.data.materials.get("Glass")
+    if not glass_mat:
+        # Fallback to creating it exactly like your windows do
+        glass_mat = bpy.data.materials.new(name="Glass")
+        glass_mat.use_nodes = True
+        glass_mat.blend_method = 'BLEND'
+        bsdf = glass_mat.node_tree.nodes.get("Principled BSDF")
+        if bsdf:
+            bsdf.inputs['Base Color'].default_value = (0.8, 0.95, 1.0, 1.0)
+            bsdf.inputs['Roughness'].default_value = 0.0
+            bsdf.inputs['IOR'].default_value = 1.52
+            bsdf.inputs['Alpha'].default_value = 0.3
+            transmission_input = bsdf.inputs.get('Transmission Weight') or bsdf.inputs.get('Transmission')
+            if transmission_input:
+                transmission_input.default_value = 1.0
+
+    # 2. Setup structural dimensions
     glass_thickness = 0.01
     glass_height = 1.8
-    glass_x = shower_east_edge - glass_thickness/2
-    bpy.ops.mesh.primitive_cube_add(location=(glass_x, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + glass_height/2))
-    shower_screen = bpy.context.active_object
-    shower_screen.name = "MainDwelling_Ensuite_ShowerScreen"
-    shower_screen.scale = (glass_thickness/2, SHOWER_SIZE/2, glass_height/2)
+    glass_z_location = first_floor_top + SHOWER_TRAY_HEIGHT + glass_height/2
+
+    # 3. EAST GLASS WALL (Runs North-South)
+    east_glass_x = shower_east_edge - glass_thickness/2
+
+    bpy.ops.mesh.primitive_cube_add(location=(east_glass_x, shower_y_center, glass_z_location))
+    east_glass = bpy.context.active_object
+    east_glass.name = "MainDwelling_Ensuite_ShowerScreenEast"
+    east_glass.scale = (glass_thickness/2, SHOWER_SIZE/2, glass_height/2)
     bpy.ops.object.transform_apply(scale=True)
-    shower_screen.data.materials.append(glass_mat)
+
+    # Apply the material and the viewport visibility flags from your window code
+    east_glass.data.materials.append(glass_mat)
+    east_glass.show_transparent = True
+    east_glass.display_type = 'TEXTURED'
+
+
+    # 4. SOUTH GLASS WALL (Runs East-West)
+    south_glass_y = shower_south_edge + glass_thickness/2
+
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, south_glass_y, glass_z_location))
+    south_glass = bpy.context.active_object
+    south_glass.name = "MainDwelling_Ensuite_ShowerScreenSouth"
+    south_glass.scale = (SHOWER_SIZE/2, glass_thickness/2, glass_height/2)
+    bpy.ops.object.transform_apply(scale=True)
+
+    # Apply the material and the viewport visibility flags from your window code
+    south_glass.data.materials.append(glass_mat)
+    south_glass.show_transparent = True
+    south_glass.display_type = 'TEXTURED'
+
     
     # Shower head (mounted on west wall)
-    bpy.ops.mesh.primitive_uv_sphere_add(location=(west_wall_x - 0.15, shower_y_center, 
-                                                    first_floor_top + SHOWER_TRAY_HEIGHT + 1.8), radius=0.05)
+    bpy.ops.mesh.primitive_uv_sphere_add(location=(west_wall_x + 0.15, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + 1.8), radius=0.1)
     shower_head = bpy.context.active_object
     shower_head.name = "MainDwelling_Ensuite_ShowerHead"
     shower_head.data.materials.append(chrome_mat)
