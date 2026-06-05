@@ -1,5 +1,6 @@
 ﻿import bpy  # type: ignore
 import math
+import os
 
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
 from materials import get_interior_wall_material, get_floor_wood_material, get_metal_roof_material, get_kitchen_bench_material, get_kitchen_cabinet_material
@@ -59,6 +60,69 @@ def create_textured_material(name, texture_path):
     
     # Adjust material properties for better wood appearance
     principled.inputs['Roughness'].default_value = 0.7  # Natural wood finish
+    
+    return mat
+
+
+def create_textured_material2(name, texture_path, rotation_z=0, scale=(1.0, 1.0, 1.0), roughness=0.5, projection='FLAT'):
+    """Create or get a material with an image texture with customizable mapping"""
+    mat = bpy.data.materials.get(name)
+    if mat:
+        print(f"DEBUG: Material '{name}' already exists, returning cached version")
+        return mat
+    
+    print(f"DEBUG: Creating new material '{name}' with texture: {texture_path}")
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    
+    # Clear default nodes to ensure we know exactly what is there
+    nodes.clear()
+    
+    # Create Material Output and Principled BSDF from scratch to avoid 'None' errors
+    output = nodes.new(type='ShaderNodeOutputMaterial')
+    output.location = (300, 0)
+    
+    principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    principled.location = (0, 0)
+    links.new(principled.outputs['BSDF'], output.inputs['Surface'])
+    
+    # Create Image Texture node
+    tex_image = nodes.new(type='ShaderNodeTexImage')
+    tex_image.location = (-300, 0)
+    tex_image.projection = projection  # Can be 'FLAT' or 'BOX'
+    if projection == 'BOX':
+        tex_image.projection_blend = 0.1  # Blends seams nicely on 3D cubes
+    
+    # Load the image safely
+    if os.path.exists(texture_path):
+        try:
+            img = bpy.data.images.load(texture_path)
+            tex_image.image = img
+            tex_image.image.colorspace_settings.name = 'sRGB'
+        except Exception as e:
+            print(f"WARNING: Could not load texture: {texture_path}, Error: {e}")
+    else:
+        print(f"WARNING: Texture file not found at: {texture_path}")
+    
+    # Add Mapping node
+    mapping = nodes.new(type='ShaderNodeMapping')
+    mapping.location = (-600, 0)
+    mapping.inputs['Rotation'].default_value[2] = math.radians(rotation_z)
+    mapping.inputs['Scale'].default_value = scale
+    
+    # Add Texture Coordinate node
+    tex_coord = nodes.new(type='ShaderNodeTexCoord')
+    tex_coord.location = (-800, 0)
+    
+    # Connect nodes using 'Object' instead of 'Generated' (better for Box projection alignment)
+    links.new(tex_coord.outputs['Object'], mapping.inputs['Vector'])
+    links.new(mapping.outputs['Vector'], tex_image.inputs['Vector'])
+    links.new(tex_image.outputs['Color'], principled.inputs['Base Color'])
+    
+    # Adjust roughness
+    principled.inputs['Roughness'].default_value = roughness
     
     return mat
 
@@ -972,9 +1036,9 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     glass_mat = create_material("ShowerGlass", (0.7, 0.85, 0.9, 0.3))
     
     # === SHOWER IN NW CORNER (stepping in from east) ===
-    SHOWER_SIZE = 0.9  # 900mm square shower
+    SHOWER_SIZE = 1.1  # 1100mm square shower
     SHOWER_TRAY_HEIGHT = 0.15  # 150mm high tray
-    WALL_THICKNESS = 0.1  # 100mm thick walls
+    WALL_THICKNESS = 0.1  # 50mm thick walls
     WALL_HEIGHT = 2.0
     
     # Position shower in NW corner - back walls align with room walls
@@ -996,7 +1060,22 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     shower_tray.data.materials.append(white_mat)
     
     # Shower walls (tile/panel material)
-    tile_mat = create_material("ShowerTile", (0.9, 0.9, 0.88, 1))
+    #tile_mat = create_material("ShowerTile", (0.9, 0.9, 0.88, 1))
+
+    # Path to granite texture
+    granite_path = os.path.abspath("textures/granite_tile_03/granite_tile_03_diff_1k.jpg")
+
+    # Call the refactored function with settings optimized for tile walls
+    tile_mat = create_textured_material2(
+        name="ShowerTile", 
+        texture_path=granite_path, 
+        rotation_z=0,                 # No rotation needed for the tile
+        scale=(1.5, 1.5, 1.5),        # Adjust these numbers to size your tiles up/down
+        roughness=0.2,                # Lower roughness = shinier, polished granite look
+        projection='BOX'              # BOX mapping means no UV stretching on the cube walls!
+    )
+
+
     
     # West wall (back wall against ensuite west wall)
     west_wall_x = shower_west_edge + WALL_THICKNESS/2
@@ -1009,7 +1088,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     west_wall.data.materials.append(tile_mat)
     
     # North wall (side wall against ensuite north wall)
-    north_wall_y = shower_north_edge + WALL_THICKNESS/2
+    north_wall_y = shower_north_edge - WALL_THICKNESS/2
     bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, north_wall_y, 
                                                first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT/2))
     north_wall = bpy.context.active_object
@@ -1022,8 +1101,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     glass_thickness = 0.01
     glass_height = 1.8
     glass_x = shower_east_edge - glass_thickness/2
-    bpy.ops.mesh.primitive_cube_add(location=(glass_x, shower_y_center, 
-                                               first_floor_top + SHOWER_TRAY_HEIGHT + glass_height/2))
+    bpy.ops.mesh.primitive_cube_add(location=(glass_x, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + glass_height/2))
     shower_screen = bpy.context.active_object
     shower_screen.name = "MainDwelling_Ensuite_ShowerScreen"
     shower_screen.scale = (glass_thickness/2, SHOWER_SIZE/2, glass_height/2)
