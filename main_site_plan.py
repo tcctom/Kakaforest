@@ -161,7 +161,6 @@ if SHOW_GROUND:
 # Roof options: 
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
-#main_dwelling_module.build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="flush")
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="flush")
 
 # 1a. Build North Deck - extends 3m north from ground floor

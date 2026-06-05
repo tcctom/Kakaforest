@@ -2,6 +2,7 @@
 import math
 import os
 
+from test.test_main_dwelling_first_floor import EXTERIOR_WALL_THICKNESS
 from utils import apply_shadowclad_grooves, add_window, create_corrugated_iron_material, add_corner_trim
 from materials import get_interior_wall_material, get_floor_wood_material, get_metal_roof_material, get_kitchen_bench_material, get_kitchen_cabinet_material
 
@@ -546,8 +547,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     interior_wall_mat = get_interior_wall_material()
     
     # Guest bedroom in NE corner: 3.4m (E-W) × 3m (N-S)
-    GUEST_BEDROOM_WIDTH = 3.4   # E-W dimension
-    GUEST_BEDROOM_DEPTH = 3.0   # N-S dimension
+    GUEST_BEDROOM_WIDTH = 3.10   # E-W dimension
+    GUEST_BEDROOM_DEPTH = 3.5   # N-S dimension
     
     # Interior reference points (north wall recessed from north edge by NORTH_RECESS)
     east_interior_face = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
@@ -559,8 +560,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # West partition wall (N-S) - separates guest bedroom from rest of ground floor
     # Position so that east face of wall is exactly GUEST_BEDROOM_WIDTH from east interior face
-    # Extended 500mm south beyond original GUEST_BEDROOM_DEPTH
-    WEST_WALL_EXTENSION = 0.5  # Additional 500mm south
+    # Extended 400mm south beyond original GUEST_BEDROOM_DEPTH
+    WEST_WALL_EXTENSION = 0.4  # Additional 400mm south
     west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS/2
     west_partition_center_y = north_interior_face - (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION)/2
     
@@ -584,14 +585,14 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # Door on south wall, positioned clear of wardrobe (wardrobe is on west side)
     # Place door about 1.5m from east wall
-    door_x = east_interior_face - 2.9
+    door_x = east_interior_face - 2.6
     add_window("MainDwelling_GroundFloor_GuestBedroomSouthWall", (door_x, south_partition_y - INTERIOR_WALL_THICKNESS/2, oz + 1.0), 
-               width=0.9, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+               width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     
     # === CUPBOARD IN GUEST BEDROOM ===
     # Create a cupboard in NW corner of guest bedroom: 600mm (E-W) × 2000mm (N-S)
     CUPBOARD_WIDTH = 0.6    # E-W dimension (600mm)
-    CUPBOARD_DEPTH = 2.0    # N-S dimension (2000mm)
+    CUPBOARD_DEPTH = 2.2    # N-S dimension (2200mm)
     
     # West N-S partition of cupboard - 600mm west of guest bedroom west wall
     # Current west wall outer (west) face is at: west_partition_x - INTERIOR_WALL_THICKNESS/2
@@ -619,14 +620,14 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     
     # === KING BED IN GUEST BEDROOM ===
     # Same dimensions as master bedroom bed (1.8m wide × 2.0m long)
-    BED_WIDTH = 1.8  # E-W dimension
+    BED_WIDTH = 1.6  # E-W dimension
     BED_LENGTH = 2.0  # N-S dimension
     BED_HEIGHT = 0.6  # Total height (base + mattress)
     
     bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
     
     # Position bed with headboard (pillow side) against south partition, centered E-W in bedroom
-    guest_bed_x = east_interior_face - GUEST_BEDROOM_WIDTH/2
+    guest_bed_x = east_interior_face - GUEST_BEDROOM_WIDTH/2 + 0.3
     guest_bed_y = south_partition_y + INTERIOR_WALL_THICKNESS/2 + BED_LENGTH/2
     guest_bed_z = oz + BED_HEIGHT/2
     
@@ -683,7 +684,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Position: centered on cupboard E-W, 0.3m south of cupboard south wall
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
     log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS/2 - CUPBOARD_WIDTH/2 - 0.10
-    log_burner_y = cupboard_south_edge_y - 0.6 - LOG_BURNER_DEPTH/2
+    log_burner_y = cupboard_south_edge_y - 0.3 - LOG_BURNER_DEPTH/2
     
     FLOOR_TOP = oz + 0.1  # Ground floor top surface (100mm thick slab)
     HEARTH_THICKNESS = 0.03  # 30mm thick
@@ -1032,6 +1033,70 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     bed.data.materials.append(bed_mat)
 
 
+def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
+    #Furnish main bathroom with shower, toilet, and vanity
+
+    # Calculate bathroom boundaries
+    east_interior_face = ox + LENGTH/2 - EXTERIOR_WALL_THICKNESS
+    south_interior_face = oy - WIDTH/2 + EXTERIOR_WALL_THICKNESS
+    
+    # Bathroom corners
+    bathroom_west = east_interior_face - 2
+    bathroom_north = south_interior_face + 2.3
+    
+    # Materials
+    white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
+    chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
+    
+    # === SHOWER IN NW CORNER (stepping in from east) ===
+
+    WALL_THICKNESS = 0.1  # 100mm thick walls
+    WALL_HEIGHT = 2.0
+    
+    # Position shower in NW corner - back walls align with room walls
+    shower_x_center = (bathroom_west + bathroom_west + 1) / 2
+    shower_y_center = (bathroom_north + bathroom_north - 1) / 2
+    
+    # Shower tray (raised platform) - sits on top of floor slab
+
+    create_shower_tray(
+        x_center=shower_x_center,
+        y_center=shower_y_center,
+        z_bottom=0,  # Assuming floor slab is at z=0
+        size=1.0,  # 1000mm square tray
+        height=0.15,  # 150mm high tray
+        material=white_mat,
+        name_prefix="GroundFloor_Bathroom"
+    )   
+    
+    # Shower walls (tile/panel material)
+    #tile_mat = create_material("ShowerTile", (0.9, 0.9, 0.88, 1))
+
+    # Path to granite texture
+    granite_path = os.path.abspath("textures/granite_tile_03/granite_tile_03_diff_1k.jpg")
+
+    # Call the refactored function with settings optimized for tile walls
+    tile_mat = create_textured_material2(
+        name="ShowerTile", 
+        texture_path=granite_path, 
+        rotation_z=0,                 # No rotation needed for the tile
+        scale=(1.5, 1.5, 1.5),        # Adjust these numbers to size your tiles up/down
+        roughness=0.2,                # Lower roughness = shinier, polished granite look
+        projection='BOX'              # BOX mapping means no UV stretching on the cube walls!
+    )
+
+
+    
+    # West wall (back wall against ensuite west wall)
+    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west, bathroom_north -0.5, 1))
+    west_wall = bpy.context.active_object
+    west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
+    west_wall.scale = (WALL_THICKNESS/4, 0.5, WALL_HEIGHT/2)
+    bpy.ops.object.transform_apply(scale=True)
+    west_wall.data.materials.append(tile_mat)
+    
+
+
 def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS):
     """Furnish master bedroom ensuite with shower, toilet, and vanity
     
@@ -1080,13 +1145,18 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     shower_y_center = (shower_north_edge + shower_south_edge) / 2
     
     # Shower tray (raised platform) - sits on top of first floor slab
-    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT/2))
-    shower_tray = bpy.context.active_object
-    shower_tray.name = "MainDwelling_Ensuite_ShowerTray"
-    shower_tray.scale = (SHOWER_SIZE/2, SHOWER_SIZE/2, SHOWER_TRAY_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    shower_tray.data.materials.append(white_mat)
-    
+    # Floor 1 Setup
+    first_floor_top = 2.7  # Adjust this if your first floor slab thickness or height changes
+    create_shower_tray(
+        x_center=shower_x_center,
+        y_center=shower_y_center,
+        z_bottom=first_floor_top,
+        size=SHOWER_SIZE,
+        height=SHOWER_TRAY_HEIGHT,
+        material=white_mat,
+        name_prefix="FirstFloor_Ensuite"
+    )
+
     # Shower walls (tile/panel material)
     #tile_mat = create_material("ShowerTile", (0.9, 0.9, 0.88, 1))
 
@@ -1253,6 +1323,31 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     tap.data.materials.append(chrome_mat)
 
 
+
+def create_shower_tray(x_center, y_center, z_bottom, size, height, material, name_prefix="MainDwelling"):
+    """
+    Creates a shower tray at a specific X, Y, and Z-bottom coordinate.
+    """
+    # Calculate the actual Z center based on the bottom floor level and half the height
+    z_center = z_bottom + height / 2
+    
+    # 1. Create the cube
+    bpy.ops.mesh.primitive_cube_add(location=(x_center, y_center, z_center))
+    shower_tray = bpy.context.active_object
+    
+    # 2. Name and Scale
+    shower_tray.name = f"{name_prefix}_ShowerTray"
+    shower_tray.scale = (size / 2, size / 2, height / 2)
+    
+    # 3. Apply transformations and assign material
+    bpy.ops.object.transform_apply(scale=True)
+    if material:
+        shower_tray.data.materials.append(material)
+        
+    return shower_tray
+
+
+
 def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
     """Add all windows and doors to exterior walls
     
@@ -1276,13 +1371,13 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     south_spacing = LENGTH / 4
     
     # GROUND FLOOR - NORTH WALL (recessed) - position at outer face
-    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_outer_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox - spacing, north_wall_outer_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     #add_window("MainDwelling_NorthWall_Ground", (ox, north_wall_outer_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_outer_face, window_z_ground), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_Ground", (ox + spacing, north_wall_outer_face, window_z_ground), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # FIRST FLOOR - NORTH WALL (recessed) - position at outer face
-    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_outer_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_outer_face, window_z_first), width=2.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+    add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     
     # GROUND FLOOR - EAST WALL (spans full 7m)
     add_window("MainDwelling_EastWall_Ground", (ox + LENGTH/2, oy + 1.5, oz + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
@@ -1302,7 +1397,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     
     # GROUND FLOOR - SOUTH WALL (full width)
     add_window("MainDwelling_SouthWall_Ground", (ox + 3, south_wall_y, oz + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox + 1.5, south_wall_y, oz + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox + 1.5, south_wall_y, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_Ground", (ox - 0.7, south_wall_y, oz + 1.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     # Double-height window at stair landing - ground floor portion
     add_window("MainDwelling_SouthWall_Ground", (ox - 3.3, south_wall_y, oz + 2.15), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
@@ -1644,192 +1739,6 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
     print(f"North Deck built at origin {origin}, extending {DECK_EXTENSION}m north")
 
 
-def build_main_dwelling(origin=(0, 0, 0), show_roof=True, roof_style="traditional"):
-    """
-    Build the main dwelling structure with ENCLOSED GABLE PORCH:
-    - 7m × 9m base (9m runs east-west, 7m north-south)
-    - North wall recessed 1m to create patio (ground) and covered balcony (first floor)
-    - Two stories: ground floor 2.5m ceiling, first floor 2.4m ceiling
-    - Potius residential system with 200mm exterior walls
-    - Interior walls 110mm
-    - Gable roof, 35° pitch, ridge runs east-west
-    - 2.5m × 2.5m enclosed porch with gable roof, door in west porch wall
-    - Windows/doors on north and east walls
-    
-    Args:
-        origin: (x, y, z) tuple for building location
-        show_roof: Boolean to show/hide roof for interior viewing
-        roof_style: "traditional" (overhang on all sides, separate gable ends) or 
-                    "flush" (flush with building edges, covers recessed north balcony)
-    """
-    ox, oy, oz = origin
-    
-    # Dimensions from specifications
-    WIDTH = 7.0  # Total north-south dimension (roof span)
-    ENCLOSED_WIDTH = 6.0  # Enclosed building width (north wall recessed 1m)
-    LENGTH = 9.0
-    GROUND_FLOOR_HEIGHT = 2.5
-    FIRST_FLOOR_HEIGHT = 2.4
-    TOTAL_HEIGHT = GROUND_FLOOR_HEIGHT + FIRST_FLOOR_HEIGHT
-    EXTERIOR_WALL_THICKNESS = 0.20
-    INTERIOR_WALL_THICKNESS = 0.11
-    ROOF_PITCH = 35
-    ROOF_OVERHANG = 0.6
-    NORTH_RECESS = 1.0  # North wall recessed to create patio/balcony
-    
-    # Materials
-    import os
-    texture_path = os.path.join(os.path.dirname(__file__), "textures", "thermal-redwood--shou-sugi-ban--char--brushed--black-rainscreen-117-1235-mm-architextures.jpg")
-    potius_mat = create_textured_material("PotiusExterior", texture_path)
-    floor_mat = get_floor_wood_material()
-    
-    # === CREATE SHARED COMPONENTS ===
-    _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
-    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
-    
-    # === ENTRANCE PORCH (WEST SIDE) - ENCLOSED WITH GABLE ROOF ===
-    
-    # Porch dimensions: 2.5m Ã— 2.5m floor, walls wrap 2.5m width Ã— 1.5m depth
-    # Remaining 1m is open but covered by porch roof
-    PORCH_WIDTH = 2.5   # North-south dimension
-    PORCH_TOTAL_DEPTH = 2.5   # Total east-west depth
-    PORCH_WALL_DEPTH = 1.5    # Depth covered by walls
-    PORCH_OPEN_DEPTH = 1.0    # Open covered area (2.5 - 1.5)
-    PORCH_HEIGHT = GROUND_FLOOR_HEIGHT  # Same height as ground floor
-    PORCH_WALL_THICKNESS = EXTERIOR_WALL_THICKNESS
-    
-    porch_mat = potius_mat  # Use same material as main building
-    
-    # Porch floor/deck - positioned west of west wall, centered
-    porch_center_x = ox - LENGTH/2 - PORCH_TOTAL_DEPTH/2
-    porch_center_y = oy  # Centered on building
-    
-    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz + 0.05))
-    porch_floor = bpy.context.active_object
-    porch_floor.name = "MainDwelling_PorchFloor"
-    porch_floor.scale = (PORCH_TOTAL_DEPTH/2, PORCH_WIDTH/2, 0.05)
-    bpy.ops.object.transform_apply(scale=True)
-    porch_floor.data.materials.append(floor_mat)
-    
-    # Porch walls - wrap the 2.5m width and first 1.5m of depth
-    
-    # North porch wall (runs E-W for 1.5m)
-    porch_wall_x = ox - LENGTH/2 - PORCH_WALL_DEPTH/2
-    north_porch_wall_y = oy + PORCH_WIDTH/2 - PORCH_WALL_THICKNESS/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(porch_wall_x, north_porch_wall_y, oz + PORCH_HEIGHT/2))
-    north_porch_wall = bpy.context.active_object
-    north_porch_wall.name = "MainDwelling_PorchWall_North"
-    north_porch_wall.scale = (PORCH_WALL_DEPTH/2, PORCH_WALL_THICKNESS/2, PORCH_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    north_porch_wall.data.materials.append(porch_mat)
-    
-    # South porch wall (runs E-W for 1.5m)
-    south_porch_wall_y = oy - PORCH_WIDTH/2 + PORCH_WALL_THICKNESS/2
-    
-    bpy.ops.mesh.primitive_cube_add(location=(porch_wall_x, south_porch_wall_y, oz + PORCH_HEIGHT/2))
-    south_porch_wall = bpy.context.active_object
-    south_porch_wall.name = "MainDwelling_PorchWall_South"
-    south_porch_wall.scale = (PORCH_WALL_DEPTH/2, PORCH_WALL_THICKNESS/2, PORCH_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    south_porch_wall.data.materials.append(porch_mat)
-    
-    # West porch wall (partial - connects north and south walls at 1.5m mark)
-    west_porch_wall_x = ox - LENGTH/2 - PORCH_WALL_DEPTH + PORCH_WALL_THICKNESS/2
-    porch_wall_span = PORCH_WIDTH - 2*PORCH_WALL_THICKNESS  # Between north and south walls
-    
-    bpy.ops.mesh.primitive_cube_add(location=(west_porch_wall_x, oy, oz + PORCH_HEIGHT/2))
-    west_porch_wall = bpy.context.active_object
-    west_porch_wall.name = "MainDwelling_PorchWall_West"
-    west_porch_wall.scale = (PORCH_WALL_THICKNESS/2, porch_wall_span/2, PORCH_HEIGHT/2)
-    bpy.ops.object.transform_apply(scale=True)
-    west_porch_wall.data.materials.append(porch_mat)
-    
-    # Porch entrance door on west wall
-    # Position needs to be on OUTER face of wall (west side)
-    porch_door_x = ox - LENGTH/2 - PORCH_WALL_DEPTH  # Outer face, not center
-    print(f"Adding porch door at x={porch_door_x}, y={oy}, z={oz + 1.0}")
-    add_window("MainDwelling_PorchWall_West", (porch_door_x, oy, oz + 1.0), 
-               width=0.9, height=2.0, depth=PORCH_WALL_THICKNESS, axis='X', inward_offset='+X')
-    print("Porch door window call completed")
-    
-    # Porch gable roof - 35Â° pitch, ridge running E-W like main roof
-    PORCH_ROOF_PITCH = 35
-    PORCH_ROOF_OVERHANG = 0.3  # Small overhang
-    
-    porch_roof_height_from_eaves = (PORCH_WIDTH / 2) * math.tan(math.radians(PORCH_ROOF_PITCH))
-    porch_eave_height = oz + PORCH_HEIGHT
-    porch_ridge_height = porch_eave_height + porch_roof_height_from_eaves
-    
-    # Create porch roof mesh
-    porch_roof_mesh = bpy.data.meshes.new("MainDwelling_PorchRoofMesh")
-    porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof", porch_roof_mesh)
-    bpy.context.collection.objects.link(porch_roof_obj)
-    
-    # Porch roof vertices with overhang
-    porch_roof_length = PORCH_TOTAL_DEPTH + 2 * PORCH_ROOF_OVERHANG
-    porch_roof_west = ox - LENGTH/2 - PORCH_TOTAL_DEPTH - PORCH_ROOF_OVERHANG
-    porch_roof_east = ox - LENGTH/2 + PORCH_ROOF_OVERHANG
-    porch_roof_north = oy + PORCH_WIDTH/2 + PORCH_ROOF_OVERHANG
-    porch_roof_south = oy - PORCH_WIDTH/2 - PORCH_ROOF_OVERHANG
-    
-    porch_verts = [
-        # North eave edge
-        (porch_roof_east, porch_roof_north, porch_eave_height),
-        (porch_roof_west, porch_roof_north, porch_eave_height),
-        # Ridge line (center)
-        (porch_roof_east, oy, porch_ridge_height),
-        (porch_roof_west, oy, porch_ridge_height),
-        # South eave edge
-        (porch_roof_east, porch_roof_south, porch_eave_height),
-        (porch_roof_west, porch_roof_south, porch_eave_height),
-    ]
-    
-    porch_faces = [
-        (0, 1, 3, 2),  # North roof slope
-        (2, 3, 5, 4),  # South roof slope
-    ]
-    
-    porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
-    porch_roof_mesh.update()
-    porch_roof_obj.data.materials.append(get_metal_roof_material())
-    
-    # UV unwrap for texture display
-    bpy.context.view_layer.objects.active = porch_roof_obj
-    porch_roof_obj.select_set(True)
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
-    bpy.ops.object.mode_set(mode='OBJECT')
-    porch_roof_obj.select_set(False)
-    
-    # Large opening in main building's west wall connecting to porch
-    add_window("MainDwelling_WestWall_Ground", (ox - LENGTH/2, oy, oz + 1.1), 
-               width=2.0, height=2.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
-    
-    # === INTERIOR PARTITIONS ===
-    _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
-    _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS)
-    
-    # === ENSUITE FURNITURE ===
-    _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
-    
-    # === KITCHEN BENCH ===
-    _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-    
-    # === DINING TABLE ===
-    _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-    
-    # === WINDOWS AND DOORS ===
-    _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS)
-    
-    # === GABLE ROOF ===
-    if show_roof:
-        _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat)
-    
-    print(f"Main Dwelling built at origin {origin}")
-
-
 def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional"):
     """
     Build the main dwelling with a SIMPLE OPEN PORCH entrance option:
@@ -2078,7 +1987,8 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === ENSUITE FURNITURE ===
     _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS)
-    
+    _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)   
+
     # === KITCHEN BENCH ===
     _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
     
