@@ -66,22 +66,33 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     south_wall_south_face_y = south_partition_y - INTERIOR_WALL_THICKNESS / 2
     south_wall_return_center_y = south_wall_south_face_y - WEST_WALL_EXTENSION / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(south_wall_extension_west_x, south_wall_return_center_y, oz + ground_floor_wall_height / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(south_wall_extension_west_x+0.05, south_wall_return_center_y, oz + ground_floor_wall_height / 2))
     south_wall_return = bpy.context.active_object
     south_wall_return.name = "MainDwelling_GroundFloor_GuestBedroomSouthWall_WestReturn"
     south_wall_return.scale = (INTERIOR_WALL_THICKNESS / 2, WEST_WALL_EXTENSION / 2, ground_floor_wall_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     south_wall_return.data.materials.append(interior_wall_mat)
 
-    add_window(
-        "MainDwelling_GroundFloor_GuestBedroomSouthWall_WestExtension",
-        (south_wall_extension_center_x, south_wall_south_face_y, oz + 1.0),
-        width=0.75,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='Y',
-        inward_offset='+Y',
+    # Add a physical door leaf to close the new small cupboard on the south face.
+    SMALL_CUPBOARD_DOOR_THICKNESS = 0.04
+    SMALL_CUPBOARD_DOOR_SOUTH_OFFSET = 0.7
+    small_cupboard_opening_width = abs(west_partition_x - south_wall_extension_west_x) - INTERIOR_WALL_THICKNESS
+    small_cupboard_door_width = max(0.2, small_cupboard_opening_width)
+    door_hinge_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2
+    small_cupboard_door_x = door_hinge_x - small_cupboard_door_width / 2
+    small_cupboard_door_y = south_wall_south_face_y - SMALL_CUPBOARD_DOOR_THICKNESS / 2 - SMALL_CUPBOARD_DOOR_SOUTH_OFFSET
+    small_cupboard_door_height = 2.0
+
+    bpy.ops.mesh.primitive_cube_add(location=(small_cupboard_door_x, small_cupboard_door_y, oz + small_cupboard_door_height / 2))
+    small_cupboard_door = bpy.context.active_object
+    small_cupboard_door.name = "MainDwelling_GroundFloor_GuestBedroomSmallCupboardSouthDoor"
+    small_cupboard_door.scale = (
+        small_cupboard_door_width / 2,
+        SMALL_CUPBOARD_DOOR_THICKNESS / 2,
+        small_cupboard_door_height / 2,
     )
+    bpy.ops.object.transform_apply(scale=True)
+    small_cupboard_door.data.materials.append(interior_wall_mat)
 
     CUPBOARD_WIDTH = 0.6
     CUPBOARD_DEPTH = 2.2
@@ -124,7 +135,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     guest_bed.data.materials.append(bed_mat)
 
     STAIRWELL_WIDTH = 2.0
-    PARTITION_LENGTH = 2.5
+    PARTITION_LENGTH = 2.6
 
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS

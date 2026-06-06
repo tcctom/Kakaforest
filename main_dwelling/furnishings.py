@@ -11,7 +11,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     BENCH_DEPTH = 0.6
     BENCH_HEIGHT = 0.9
     BENCH_THICKNESS = 0.05
-    L_SECTION_LENGTH = 2.0
+    L_SECTION_LENGTH = 1.8
 
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
