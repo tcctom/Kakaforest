@@ -8,6 +8,25 @@ dir = os.path.dirname(bpy.data.filepath)
 if dir not in sys.path:
     sys.path.append(dir)
 
+# Clear cached dwelling modules so failed/partial imports do not persist across runs.
+for mod_name in [
+    "main_dwelling_module",
+    "main_dwelling.config",
+    "main_dwelling.furnishings",
+    "main_dwelling.interiors",
+    "main_dwelling.structure",
+    "main_dwelling.deck",
+    "main_dwelling.materials_nodes",
+    "main_dwelling.envelope",
+    "main_dwelling.exterior_details",
+    "main_dwelling.porch",
+    "main_dwelling.material_setup",
+    "main_dwelling.build_context",
+    "main_dwelling.runtime_context",
+    "main_dwelling.build_pipeline",
+]:
+    sys.modules.pop(mod_name, None)
+
 import björken_module
 import ww1_module
 import ww1_furniture
@@ -16,6 +35,19 @@ import wet_wing_upper1
 import ground_module
 import outdoor_structures
 import main_dwelling_module
+import main_dwelling.config as main_dwelling_config
+import main_dwelling.furnishings as main_dwelling_furnishings
+import main_dwelling.interiors as main_dwelling_interiors
+import main_dwelling.structure as main_dwelling_structure
+import main_dwelling.deck as main_dwelling_deck
+import main_dwelling.materials_nodes as main_dwelling_materials_nodes
+import main_dwelling.envelope as main_dwelling_envelope
+import main_dwelling.exterior_details as main_dwelling_exterior_details
+import main_dwelling.porch as main_dwelling_porch
+import main_dwelling.material_setup as main_dwelling_material_setup
+import main_dwelling.build_context as main_dwelling_build_context
+import main_dwelling.runtime_context as main_dwelling_runtime_context
+import main_dwelling.build_pipeline as main_dwelling_build_pipeline
 import materials
 import utils
 
@@ -29,6 +61,19 @@ reload(wet_wing_lower1)
 reload(wet_wing_upper1)
 reload(ground_module)
 reload(outdoor_structures)
+reload(main_dwelling_config)
+reload(main_dwelling_materials_nodes)
+reload(main_dwelling_deck)
+reload(main_dwelling_structure)
+reload(main_dwelling_interiors)
+reload(main_dwelling_furnishings)
+reload(main_dwelling_envelope)
+reload(main_dwelling_exterior_details)
+reload(main_dwelling_porch)
+reload(main_dwelling_material_setup)
+reload(main_dwelling_build_context)
+reload(main_dwelling_runtime_context)
+reload(main_dwelling_build_pipeline)
 reload(main_dwelling_module)
 
 def cleanup():
