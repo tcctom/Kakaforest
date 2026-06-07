@@ -136,12 +136,12 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
     landing_y = stairwell_south_y + LANDING_DEPTH / 2
     landing_top_z = ground_floor_top + LANDING_HEIGHT
-    landing_z = landing_top_z - 0.05
+    landing_z = landing_top_z - 0.075
 
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
     landing.name = "MainDwelling_Stairs_Landing"
-    landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.05)
+    landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.1)
     bpy.ops.object.transform_apply(scale=True)
     landing.data.materials.append(landing_mat)
 
