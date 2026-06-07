@@ -89,7 +89,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
 
 def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, first_floor_slab, floor_mat):
     """Create 180-degree dog-legged staircase in southwest corner with clockwise turn."""
-    TOTAL_RISE = 2.7
+    GROUND_FLOOR_SLAB_THICKNESS = 0.1
+    FIRST_FLOOR_SLAB_THICKNESS = 0.2
+    ground_floor_top = oz + GROUND_FLOOR_SLAB_THICKNESS
+    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
+    TOTAL_RISE = first_floor_top - ground_floor_top
     STAIRWELL_WIDTH = 2.0
     STAIRWELL_LENGTH = 3.0
     FLIGHT_WIDTH = 0.9
@@ -99,6 +103,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     STEPS_PER_FLIGHT = 7
     STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)
     STEP_TREAD = 0.285
+    MODELED_STEPS_PER_FLIGHT = STEPS_PER_FLIGHT - 1
 
     LANDING_HEIGHT = TOTAL_RISE / 2
 
@@ -114,10 +119,11 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     landing_mat = floor_mat
 
     flight1_x = stairwell_east_x - FLIGHT_WIDTH / 2 - 0.05
-    flight1_start_y = stairwell_north_y - STEP_TREAD / 2 - 0.05
+    landing_north_y = stairwell_south_y + LANDING_DEPTH
+    flight1_start_y = landing_north_y + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) - (STEP_TREAD / 2)
 
-    for i in range(STEPS_PER_FLIGHT):
-        step_height = oz + STEP_RISE * (i + 0.5)
+    for i in range(MODELED_STEPS_PER_FLIGHT):
+        step_height = ground_floor_top + STEP_RISE * (i + 0.5)
         step_y = flight1_start_y - (i * STEP_TREAD)
 
         bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
@@ -129,7 +135,8 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
 
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
     landing_y = stairwell_south_y + LANDING_DEPTH / 2
-    landing_z = oz + LANDING_HEIGHT - 0.05
+    landing_top_z = ground_floor_top + LANDING_HEIGHT
+    landing_z = landing_top_z - 0.05
 
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
@@ -145,9 +152,8 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
 
     flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2 + 0.05
     flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD / 2
-    landing_top_z = landing_z + 0.05
 
-    for i in range(STEPS_PER_FLIGHT):
+    for i in range(MODELED_STEPS_PER_FLIGHT):
         step_height = landing_top_z + STEP_RISE * (i + 0.5)
         step_y = flight2_start_y + (i * STEP_TREAD)
 
@@ -159,13 +165,11 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
         step.data.materials.append(stairs_mat)
 
     opening_x = (stairwell_west_x + stairwell_east_x) / 2
-    opening_y = stairwell_south_y + LANDING_DEPTH / 2 + (STEPS_PER_FLIGHT * STEP_TREAD) / 2
+    opening_y = stairwell_south_y + LANDING_DEPTH / 2 + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) / 2
     opening_width = STAIRWELL_WIDTH + 0.1
-    opening_length = LANDING_DEPTH + (STEPS_PER_FLIGHT * STEP_TREAD) + 0.1
+    opening_length = LANDING_DEPTH + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) + 0.1
 
-    first_floor_z = oz + GROUND_FLOOR_HEIGHT
-
-    bpy.ops.mesh.primitive_cube_add(location=(opening_x, opening_y, first_floor_z + 0.1))
+    bpy.ops.mesh.primitive_cube_add(location=(opening_x, opening_y, first_floor_top))
     stairwell_cutter = bpy.context.active_object
     stairwell_cutter.name = "MainDwelling_StairwellCutter_180deg"
     stairwell_cutter.scale = (opening_width / 2, opening_length / 2, 0.1)
@@ -180,9 +184,9 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     stairwell_cutter.hide_render = True
 
     print("180-degree staircase created in southwest corner")
-    print(f"  Flight 1 (EAST edge): {STEPS_PER_FLIGHT} steps, North→South")
+    print(f"  Flight 1 (EAST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
     print(f"  Landing (SOUTH edge): {LANDING_HEIGHT}m height, spans East-West")
-    print(f"  Flight 2 (WEST edge): {STEPS_PER_FLIGHT} steps, South→North (clockwise)")
+    print(f"  Flight 2 (WEST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + floor as final tread")
     print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
     print(f"  Step rise: {STEP_RISE * 1000:.1f}mm, tread: {STEP_TREAD * 1000:.0f}mm")
 

@@ -91,7 +91,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
 
 def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
-    """Create dining table north of stairs on ground floor."""
+    """Create dining table on ground floor."""
     TABLE_LENGTH = 1.8
     TABLE_WIDTH = 0.8
     TABLE_HEIGHT = 0.75
