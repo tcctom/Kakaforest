@@ -18,10 +18,11 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
     STAIRWELL_WIDTH = 2.0
     stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
+    FLOOR_TOP = oz + 0.1
 
     bench_center_x = west_interior_x + BENCH_LENGTH / 2 + 2.1
     bench_center_y = south_interior_y + BENCH_DEPTH / 2
-    bench_top_z = oz + BENCH_HEIGHT
+    bench_top_z = FLOOR_TOP + BENCH_HEIGHT
 
     main_bench_east_end = west_interior_x + 2.1
     l_section_x = main_bench_east_end + BENCH_DEPTH / 2
@@ -32,7 +33,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
     cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
 
-    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, oz + cabinet_height / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, FLOOR_TOP + cabinet_height / 2))
     cabinets_main = bpy.context.active_object
     cabinets_main.name = "MainDwelling_KitchenBench_Cabinets_Main"
     cabinets_main.scale = (BENCH_LENGTH / 2, BENCH_DEPTH / 2, cabinet_height / 2)
@@ -51,7 +52,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, oz + cabinet_height / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, FLOOR_TOP + cabinet_height / 2))
     cabinets_l = bpy.context.active_object
     cabinets_l.name = "MainDwelling_KitchenBench_Cabinets_LSection"
     cabinets_l.scale = (BENCH_DEPTH / 2, L_SECTION_LENGTH / 2, cabinet_height / 2)
@@ -96,11 +97,12 @@ def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     TABLE_HEIGHT = 0.75
     LEG_SIZE = 0.08
     TOP_THICKNESS = 0.04
+    FLOOR_TOP = oz + 0.1
 
     CLEARANCE = 0.4
     table_x = ox - 1.0
     table_y = oy + 1.3
-    table_top_z = oz + TABLE_HEIGHT - TOP_THICKNESS / 2
+    table_top_z = FLOOR_TOP + TABLE_HEIGHT - TOP_THICKNESS / 2
 
     table_mat = create_material("DiningTableWood", (0.55, 0.35, 0.20, 1))
 
@@ -117,7 +119,7 @@ def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bpy.ops.object.mode_set(mode='OBJECT')
 
     leg_height = TABLE_HEIGHT - TOP_THICKNESS
-    leg_z = oz + leg_height / 2
+    leg_z = FLOOR_TOP + leg_height / 2
     leg_inset = 0.1
 
     leg_positions = [
@@ -148,6 +150,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
     white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
     chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
+    FLOOR_TOP = oz + 0.1
 
     WALL_THICKNESS = 0.1
     WALL_HEIGHT = 2.0
@@ -158,7 +161,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     create_shower_tray(
         x_center=shower_x_center,
         y_center=shower_y_center,
-        z_bottom=0,
+        z_bottom=FLOOR_TOP,
         size=1.0,
         height=0.15,
         material=white_mat,
@@ -175,7 +178,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         projection='BOX',
     )
 
-    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west, bathroom_north - 0.3, 1))
+    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west, bathroom_north - 0.3, FLOOR_TOP + WALL_HEIGHT / 2))
     west_wall = bpy.context.active_object
     west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
     west_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
@@ -215,7 +218,6 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     shower_x_center = (shower_west_edge + shower_east_edge) / 2
     shower_y_center = (shower_north_edge + shower_south_edge) / 2
 
-    first_floor_top = 2.7
     create_shower_tray(
         x_center=shower_x_center,
         y_center=shower_y_center,

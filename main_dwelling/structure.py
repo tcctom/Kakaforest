@@ -117,7 +117,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     flight1_start_y = stairwell_north_y - STEP_TREAD / 2 - 0.05
 
     for i in range(STEPS_PER_FLIGHT):
-        step_height = oz + STEP_RISE * (i + 1)
+        step_height = oz + STEP_RISE * (i + 0.5)
         step_y = flight1_start_y - (i * STEP_TREAD)
 
         bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
@@ -129,7 +129,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
 
     landing_x = (stairwell_west_x + stairwell_east_x) / 2
     landing_y = stairwell_south_y + LANDING_DEPTH / 2
-    landing_z = oz + LANDING_HEIGHT + STEP_RISE / 2 - 0.05
+    landing_z = oz + LANDING_HEIGHT - 0.05
 
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
@@ -145,9 +145,10 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
 
     flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2 + 0.05
     flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD / 2
+    landing_top_z = landing_z + 0.05
 
     for i in range(STEPS_PER_FLIGHT):
-        step_height = landing_z + STEP_RISE * (i + 1)
+        step_height = landing_top_z + STEP_RISE * (i + 0.5)
         step_y = flight2_start_y + (i * STEP_TREAD)
 
         bpy.ops.mesh.primitive_cube_add(location=(flight2_x, step_y, step_height))

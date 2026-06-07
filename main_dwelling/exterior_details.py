@@ -8,9 +8,10 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
     RAILING_RAIL_HEIGHT = 0.050  # 50mm high horizontal rails
     RAILING_RAIL_DEPTH = 0.040  # 40mm deep horizontal rails
     POST_SPACING = 1.5  # 1.5m between posts
+    FIRST_FLOOR_SLAB_THICKNESS = 0.2
 
     # Railing position - along north edge of first floor balcony
-    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
     railing_y = oy + WIDTH / 2  # At the north edge of the balcony (1m north of recessed wall)
     railing_west_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS  # Inside west wall
     railing_east_x = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS  # Inside east wall
@@ -25,7 +26,7 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
 
     for i in range(num_posts):
         post_x = railing_west_x + (i * actual_spacing)
-        post_z = first_floor_z + RAILING_HEIGHT / 2
+        post_z = first_floor_top + RAILING_HEIGHT / 2
 
         bpy.ops.mesh.primitive_cube_add(location=(post_x, railing_y, post_z))
         post = bpy.context.active_object
@@ -36,7 +37,7 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
 
     # Top rail (horizontal)
     top_rail_x = (railing_west_x + railing_east_x) / 2
-    top_rail_z = first_floor_z + RAILING_HEIGHT - RAILING_RAIL_HEIGHT / 2
+    top_rail_z = first_floor_top + RAILING_HEIGHT - RAILING_RAIL_HEIGHT / 2
 
     bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, top_rail_z))
     top_rail = bpy.context.active_object
@@ -46,7 +47,7 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
     top_rail.data.materials.append(railing_mat)
 
     # Middle rail (horizontal)
-    mid_rail_z = first_floor_z + RAILING_HEIGHT / 2
+    mid_rail_z = first_floor_top + RAILING_HEIGHT / 2
 
     bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, mid_rail_z))
     mid_rail = bpy.context.active_object
@@ -56,7 +57,7 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
     mid_rail.data.materials.append(railing_mat)
 
     # Bottom rail (horizontal)
-    bottom_rail_z = first_floor_z + 0.15  # 150mm above floor level
+    bottom_rail_z = first_floor_top + 0.15  # 150mm above floor level
 
     bpy.ops.mesh.primitive_cube_add(location=(top_rail_x, railing_y, bottom_rail_z))
     bottom_rail = bpy.context.active_object
