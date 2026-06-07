@@ -164,24 +164,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
         bpy.ops.object.transform_apply(scale=True)
         step.data.materials.append(stairs_mat)
 
-    opening_x = (stairwell_west_x + stairwell_east_x) / 2
-    opening_y = stairwell_south_y + LANDING_DEPTH / 2 + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) / 2
-    opening_width = STAIRWELL_WIDTH + 0.1
-    opening_length = LANDING_DEPTH + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) + 0.1
-
-    bpy.ops.mesh.primitive_cube_add(location=(opening_x, opening_y, first_floor_top))
-    stairwell_cutter = bpy.context.active_object
-    stairwell_cutter.name = "MainDwelling_StairwellCutter_180deg"
-    stairwell_cutter.scale = (opening_width / 2, opening_length / 2, 0.1)
-    bpy.ops.object.transform_apply(scale=True)
-
-    bool_mod = first_floor_slab.modifiers.new(name="Stairwell_Cut", type='BOOLEAN')
-    bool_mod.object = stairwell_cutter
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.solver = 'EXACT'
-
-    stairwell_cutter.hide_viewport = True
-    stairwell_cutter.hide_render = True
+    # Stairwell opening is now created directly in first-floor slab geometry in _create_floors.
 
     print("180-degree staircase created in southwest corner")
     print(f"  Flight 1 (EAST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
@@ -221,11 +204,61 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, first_floor_z + 0.1))
-    first_floor_slab = bpy.context.active_object
+    # Build first-floor slab with a built-in stairwell opening in the southwest corner.
+    first_floor_thickness = 0.2
+    first_floor_center_z = first_floor_z + first_floor_thickness / 2
+
+    stairwell_width = 2.0
+    stairwell_length = 3.0
+
+    west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    opening_east_x = west_interior_x + stairwell_width
+    opening_north_y = south_interior_y + stairwell_length
+
+    floor_west_x = ox - floor_length / 2
+    floor_east_x = ox + floor_length / 2
+    floor_south_y = floor_center_y - floor_width / 2
+    floor_north_y = floor_center_y + floor_width / 2
+
+    slab_parts = []
+
+    # North strip (full width) above stairwell opening.
+    north_strip_depth = floor_north_y - opening_north_y
+    if north_strip_depth > 0:
+        north_strip_center_y = (opening_north_y + floor_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(ox, north_strip_center_y, first_floor_center_z))
+        north_strip = bpy.context.active_object
+        north_strip.name = "MainDwelling_FirstFloor_NorthStrip"
+        north_strip.scale = (floor_length / 2, north_strip_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(north_strip)
+
+    # Southeast block below north strip and east of opening.
+    se_width = floor_east_x - opening_east_x
+    se_depth = opening_north_y - floor_south_y
+    if se_width > 0 and se_depth > 0:
+        se_center_x = (opening_east_x + floor_east_x) / 2
+        se_center_y = (floor_south_y + opening_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(se_center_x, se_center_y, first_floor_center_z))
+        southeast_block = bpy.context.active_object
+        southeast_block.name = "MainDwelling_FirstFloor_SouthEastBlock"
+        southeast_block.scale = (se_width / 2, se_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(southeast_block)
+
+    if not slab_parts:
+        raise RuntimeError("Failed to create first-floor slab parts for stairwell opening")
+
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in slab_parts:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = slab_parts[0]
+    if len(slab_parts) > 1:
+        bpy.ops.object.join()
+    first_floor_slab = bpy.context.view_layer.objects.active
     first_floor_slab.name = "MainDwelling_FirstFloor"
-    first_floor_slab.scale = (floor_length / 2, floor_width / 2, 0.1)
-    bpy.ops.object.transform_apply(scale=True)
 
     first_floor_slab.data.materials.append(floor_mat)
     first_floor_slab.data.materials.append(laminate_mat)
