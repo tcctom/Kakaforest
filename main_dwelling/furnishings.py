@@ -185,6 +185,23 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bpy.ops.object.transform_apply(scale=True)
     west_wall.data.materials.append(tile_mat)
 
+    create_toilet(
+        west_edge=bathroom_west,
+        south_edge=south_interior_face,
+        floor_top=FLOOR_TOP,
+        material=white_mat,
+        name_prefix="MainDwelling_MainBathroom",
+    )
+
+    create_vanity(
+        east_edge=east_interior_face,
+        south_edge=south_interior_face,
+        floor_top=FLOOR_TOP,
+        basin_material=white_mat,
+        chrome_material=chrome_mat,
+        name_prefix="MainDwelling_MainBathroom",
+    )
+
 
 def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS):
     """Furnish master bedroom ensuite with shower, toilet, and vanity."""
@@ -302,58 +319,22 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     shower_head.name = "MainDwelling_Ensuite_ShowerHead"
     shower_head.data.materials.append(chrome_mat)
 
-    TOILET_WIDTH = 0.4
-    TOILET_DEPTH = 0.6
-    TOILET_HEIGHT = 0.4
-    TOILET_TANK_HEIGHT = 0.8
+    create_toilet(
+        west_edge=ensuite_west,
+        south_edge=ensuite_south,
+        floor_top=first_floor_top,
+        material=white_mat,
+        name_prefix="MainDwelling_Ensuite",
+    )
 
-    toilet_east_edge = ensuite_west + TOILET_DEPTH
-    toilet_center_x = (ensuite_west + toilet_east_edge) / 2
-    toilet_center_y = ensuite_south + TOILET_WIDTH / 2 + 0.15
-
-    bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, first_floor_top + TOILET_HEIGHT / 2))
-    toilet_bowl = bpy.context.active_object
-    toilet_bowl.name = "MainDwelling_Ensuite_ToiletBowl"
-    toilet_bowl.scale = (TOILET_DEPTH / 2, TOILET_WIDTH / 2, TOILET_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    toilet_bowl.data.materials.append(white_mat)
-
-    tank_width = 0.15
-    bpy.ops.mesh.primitive_cube_add(location=(ensuite_west + tank_width / 2, toilet_center_y, first_floor_top + TOILET_TANK_HEIGHT / 2))
-    toilet_tank = bpy.context.active_object
-    toilet_tank.name = "MainDwelling_Ensuite_ToiletTank"
-    toilet_tank.scale = (tank_width / 2, TOILET_WIDTH / 2, TOILET_TANK_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    toilet_tank.data.materials.append(white_mat)
-
-    VANITY_WIDTH = 0.6
-    VANITY_DEPTH = 0.5
-    VANITY_HEIGHT = 0.85
-    BASIN_HEIGHT = 0.15
-
-    vanity_west_edge = ensuite_east - VANITY_DEPTH
-    vanity_center_x = (ensuite_east + vanity_west_edge) / 2
-    vanity_center_y = ensuite_south + VANITY_WIDTH / 2
-
-    cabinet_mat = create_material("VanityCabinet", (0.4, 0.3, 0.2, 1))
-    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, first_floor_top + VANITY_HEIGHT / 2))
-    vanity_cabinet = bpy.context.active_object
-    vanity_cabinet.name = "MainDwelling_Ensuite_VanityCabinet"
-    vanity_cabinet.scale = (VANITY_DEPTH / 2, VANITY_WIDTH / 2, VANITY_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    vanity_cabinet.data.materials.append(cabinet_mat)
-
-    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, first_floor_top + VANITY_HEIGHT + BASIN_HEIGHT / 2))
-    basin = bpy.context.active_object
-    basin.name = "MainDwelling_Ensuite_Basin"
-    basin.scale = ((VANITY_DEPTH - 0.1) / 2, (VANITY_WIDTH - 0.1) / 2, BASIN_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    basin.data.materials.append(white_mat)
-
-    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x - 0.15, vanity_center_y, first_floor_top + VANITY_HEIGHT + 0.15), radius=0.02, depth=0.2)
-    tap = bpy.context.active_object
-    tap.name = "MainDwelling_Ensuite_Tap"
-    tap.data.materials.append(chrome_mat)
+    create_vanity(
+        east_edge=ensuite_east,
+        south_edge=ensuite_south,
+        floor_top=first_floor_top,
+        basin_material=white_mat,
+        chrome_material=chrome_mat,
+        name_prefix="MainDwelling_Ensuite",
+    )
 
 
 def create_shower_tray(x_center, y_center, z_bottom, size, height, material, name_prefix="MainDwelling"):
@@ -367,3 +348,65 @@ def create_shower_tray(x_center, y_center, z_bottom, size, height, material, nam
     if material:
         shower_tray.data.materials.append(material)
     return shower_tray
+
+
+def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MainDwelling"):
+    """Create a simple toilet fixture with bowl and tank from west/south room edges."""
+    toilet_width = 0.4
+    toilet_depth = 0.6
+    toilet_height = 0.4
+    toilet_tank_height = 0.8
+    toilet_tank_width = 0.15
+    south_offset = 0.15
+
+    toilet_center_x = west_edge + toilet_depth / 2
+    toilet_center_y = south_edge + toilet_width / 2 + south_offset
+
+    bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, floor_top + toilet_height / 2))
+    toilet_bowl = bpy.context.active_object
+    toilet_bowl.name = f"{name_prefix}_ToiletBowl"
+    toilet_bowl.scale = (toilet_depth / 2, toilet_width / 2, toilet_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    toilet_bowl.data.materials.append(material)
+
+    bpy.ops.mesh.primitive_cube_add(location=(west_edge + toilet_tank_width / 2, toilet_center_y, floor_top + toilet_tank_height / 2))
+    toilet_tank = bpy.context.active_object
+    toilet_tank.name = f"{name_prefix}_ToiletTank"
+    toilet_tank.scale = (toilet_tank_width / 2, toilet_width / 2, toilet_tank_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    toilet_tank.data.materials.append(material)
+
+    return toilet_bowl, toilet_tank
+
+
+def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_material, name_prefix="MainDwelling"):
+    """Create a vanity cabinet, basin, and tap from east/south room edges."""
+    vanity_width = 0.6
+    vanity_depth = 0.5
+    vanity_height = 0.85
+    basin_height = 0.15
+
+    vanity_center_x = east_edge - vanity_depth / 2
+    vanity_center_y = south_edge + vanity_width / 2
+
+    cabinet_mat = create_material("VanityCabinet", (0.4, 0.3, 0.2, 1))
+    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, floor_top + vanity_height / 2))
+    vanity_cabinet = bpy.context.active_object
+    vanity_cabinet.name = f"{name_prefix}_VanityCabinet"
+    vanity_cabinet.scale = (vanity_depth / 2, vanity_width / 2, vanity_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    vanity_cabinet.data.materials.append(cabinet_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, floor_top + vanity_height + basin_height / 2))
+    basin = bpy.context.active_object
+    basin.name = f"{name_prefix}_Basin"
+    basin.scale = ((vanity_depth - 0.1) / 2, (vanity_width - 0.1) / 2, basin_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    basin.data.materials.append(basin_material)
+
+    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x - 0.15, vanity_center_y, floor_top + vanity_height + 0.15), radius=0.02, depth=0.2)
+    tap = bpy.context.active_object
+    tap.name = f"{name_prefix}_Tap"
+    tap.data.materials.append(chrome_material)
+
+    return vanity_cabinet, basin, tap

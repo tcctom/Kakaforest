@@ -13,6 +13,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     GUEST_BEDROOM_DEPTH = 3.6
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
+    south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
 
     FLOOR_SLAB_THICKNESS = 0.1
@@ -39,6 +40,31 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     south_partition.scale = (GUEST_BEDROOM_WIDTH / 2, INTERIOR_WALL_THICKNESS / 2, ground_floor_wall_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     south_partition.data.materials.append(interior_wall_mat)
+
+    # Bathroom partition: runs south-to-north and ties into GuestBedroomSouthWall.
+    bathroom_partition_x = east_interior_face - 2.0 - INTERIOR_WALL_THICKNESS / 2
+    bathroom_partition_length = south_partition_y - south_interior_face
+    bathroom_partition_center_y = south_interior_face + bathroom_partition_length / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(bathroom_partition_x, bathroom_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2))
+    bathroom_partition = bpy.context.active_object
+    bathroom_partition.name = "MainDwelling_GroundFloor_BathroomPartitionWall"
+    bathroom_partition.scale = (INTERIOR_WALL_THICKNESS / 2, bathroom_partition_length / 2, ground_floor_wall_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    bathroom_partition.data.materials.append(interior_wall_mat)
+
+    # Door opening center is 700 mm from the southern edge to the start of the opening.
+    bathroom_door_width = 0.8
+    bathroom_door_center_y = south_interior_face + 0.7 + bathroom_door_width / 2
+    add_window(
+        "MainDwelling_GroundFloor_BathroomPartitionWall",
+        (bathroom_partition_x - INTERIOR_WALL_THICKNESS / 2, bathroom_door_center_y, FLOOR_TOP + 1.0),
+        width=bathroom_door_width,
+        height=2.0,
+        depth=INTERIOR_WALL_THICKNESS,
+        axis='X',
+        inward_offset='+X',
+    )
 
     door_x = east_interior_face - 2.6
     add_window(
@@ -139,7 +165,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     PARTITION_LENGTH = 2.6
 
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
-    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = south_interior_face
 
     stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
 
