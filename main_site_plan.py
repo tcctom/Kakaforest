@@ -95,8 +95,70 @@ def setup_blue_sky():
         bg_node.inputs[0].default_value = (0.2, 0.4, 0.7, 1.0)
         bg_node.inputs[1].default_value = 1.0  # Strength
 
+def set_hdri_sky(image_path):
+    """
+    Sets the background world environment to use an HDRI image
+    for realistic sky and ambient lighting.
+    """
+    if not os.path.exists(image_path):
+        print(f"Error: HDRI file not found at {image_path}")
+        return None
+
+    # Ensure the World settings are using nodes
+    world = bpy.context.scene.world
+    if not world:
+        # Create a world if somehow one doesn't exist
+        world = bpy.data.worlds.new("World")
+        bpy.context.scene.world = world
+        
+    world.use_nodes = True
+    node_tree = world.node_tree
+    nodes = node_tree.nodes
+    links = node_tree.links
+    
+    # Clean up existing background/environment nodes to prevent overlapping
+    for node in list(nodes):
+        if node.type in ['BACKGROUND', 'TEX_ENVIRONMENT']:
+            nodes.remove(node)
+            
+    # Find the World Output node (it's always there by default)
+    output_node = next((n for n in nodes if n.type == 'OUTPUT_WORLD'), None)
+    if not output_node:
+        output_node = nodes.new(type='ShaderNodeOutputWorld')
+        output_node.location = (400, 0)
+
+    # 1. Create a Background Shader node
+    bg_node = nodes.new(type='ShaderNodeBackground')
+    bg_node.location = (200, 0)
+    bg_node.inputs['Strength'].default_value = 1.0  # Control sky brightness here
+    
+    # 2. Create an Environment Texture node
+    env_node = nodes.new(type='ShaderNodeTexEnvironment')
+    env_node.location = (0, 0)
+    
+    # 3. Load the actual .hdr or .exr image file
+    try:
+        hdr_image = bpy.data.images.load(image_path)
+        env_node.image = hdr_image
+    except Exception as e:
+        print(f"Failed to load HDRI image data: {e}")
+        return None
+        
+    # 4. Link everything together
+    links.new(env_node.outputs['Color'], bg_node.inputs['Color'])
+    links.new(bg_node.outputs['Background'], output_node.inputs['Surface'])
+    
+    print("HDRI Sky successfully applied!")
+    return world
+
+
 cleanup()
-setup_blue_sky()
+#setup_blue_sky()
+# Path to the actual HDR panorama map file from your download folder
+hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
+
+# Set the sky
+set_hdri_sky(hdri_path)
 
 # Toggle features on/off
 SHOW_GROUND = True  # Set to False to hide ground terrain
