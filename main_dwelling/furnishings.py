@@ -92,16 +92,16 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
 def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     """Create dining table on ground floor."""
-    TABLE_LENGTH = 1.8
-    TABLE_WIDTH = 0.8
+    TABLE_LENGTH = 0.8
+    TABLE_WIDTH = 1.8
     TABLE_HEIGHT = 0.75
     LEG_SIZE = 0.08
     TOP_THICKNESS = 0.04
     FLOOR_TOP = oz + 0.1
 
     CLEARANCE = 0.4
-    table_x = ox - 1.0
-    table_y = oy + 1.3
+    table_x = ox - 3.0
+    table_y = oy + 1.6
     table_top_z = FLOOR_TOP + TABLE_HEIGHT - TOP_THICKNESS / 2
 
     table_mat = create_material("DiningTableWood", (0.55, 0.35, 0.20, 1))
@@ -156,7 +156,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     WALL_HEIGHT = 2.0
 
     shower_x_center = (bathroom_west + bathroom_west + 1) / 2
-    shower_y_center = (bathroom_north + bathroom_north - 0.8) / 2
+    shower_y_center = (bathroom_north + bathroom_north - 0.6) / 2
 
     create_shower_tray(
         x_center=shower_x_center,

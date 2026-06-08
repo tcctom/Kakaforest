@@ -10,7 +10,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     interior_wall_mat = get_interior_wall_material()
 
     GUEST_BEDROOM_WIDTH = 3.30
-    GUEST_BEDROOM_DEPTH = 3.6
+    GUEST_BEDROOM_DEPTH = 3.4
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
@@ -122,7 +122,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     small_cupboard_door.data.materials.append(interior_wall_mat)
 
     CUPBOARD_WIDTH = 0.6
-    CUPBOARD_DEPTH = 2.2
+    CUPBOARD_DEPTH = 2.0
 
     cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH - INTERIOR_WALL_THICKNESS / 2
     cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH / 2
