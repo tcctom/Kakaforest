@@ -13,7 +13,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     interior_wall_mat = get_interior_wall_material()
 
     GUEST_BEDROOM_WIDTH = 3.30
-    GUEST_BEDROOM_DEPTH = 3.4
+    GUEST_BEDROOM_DEPTH = 3.35
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
@@ -125,7 +125,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     small_cupboard_door.data.materials.append(interior_wall_mat)
 
     CUPBOARD_WIDTH = 0.6
-    CUPBOARD_DEPTH = 2.0
+    CUPBOARD_DEPTH = 1.95
 
     cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH - INTERIOR_WALL_THICKNESS / 2
     cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH / 2
@@ -189,20 +189,39 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Create wall behind log burner (East)
     create_fireplace_wall(
         name="MainDwelling_HeartyhWallEast",
-        location=(0.85, 0.05, 0.6),
+        location=(0.85, 0.0, 0.6),
         size=(0.1, 1.3, 1.2)
     )
 
     # Create wall south of log burner
     create_fireplace_wall(
         name="MainDwelling_HeartyhWallSouth",
-        location=(0.5, -0.65, 0.6),
+        location=(0.5, -0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
+    # Create wall north of log burner
+    create_fireplace_wall(
+        name="MainDwelling_HeartyhWallNorth",
+        location=(0.5, 0.6, 0.6),
+        size=(0.6, 0.1, 1.2)
+    )
+
+    # --- 2. Place Candlestick on top of South Wall ---
+    # Radius = 0.04m (8cm total diameter base)
+    # Height = 0.3m (30cm tall)
+    # Location matches the wall's X and Y, with Z calculated to rest perfectly on top.
+    #create_candlestick( name="Prop_WoodenCandlestick_01", location=(0.5, -0.6, 1.35), radius=0.04, height=0.3    )
+
+    # Place your real 3D candlestick asset onto the South wall
+    import_candlestick(
+        name="Prop_RealCandlestick_01",
+        location=(0.5, -0.6, 1.2), 
+        scale=(1.0, 1.0, 1.0)
+    )
 
 
-
+    #create hearth and log burner
     LOG_BURNER_WIDTH = 0.5
     LOG_BURNER_DEPTH = 0.65
     LOG_BURNER_HEIGHT = 0.7
@@ -220,7 +239,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
     log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2 - 0.20
-    log_burner_y = cupboard_south_edge_y - 0.3 - LOG_BURNER_DEPTH / 2
+    log_burner_y = 0
 
     FLOOR_TOP = oz + 0.1
     HEARTH_THICKNESS = 0.03
@@ -417,6 +436,33 @@ def create_fireplace_wall(name, location, size):
     # 2. Pass everything down to the generic wall creator
     return create_wall(name, location, size, material=hearth_wall_mat)
 
+def create_candlestick(name, location, radius, height):
+    """
+    High-level wrapper that loads the wooden candlestick material 
+    and handles the generation of the prop.
+    """
+    # 1. Look for or create the wooden material
+    wood_mat = bpy.data.materials.get("WoodenCandlestickMat")
+    
+    if wood_mat is None:
+        diffuse_path = os.path.abspath("models/textures/wooden_candlestick_diff_1k.jpg")
+        rough_path = os.path.abspath("models/textures/wooden_candlestick_rough_1k.exr")
+        
+        # Reusing your custom textured material function. 
+        # Note: If your function doesn't support roughness maps yet, 
+        # you can pass rough_path into it or tweak it to handle EXR files.
+        wood_mat = create_textured_material2(
+            name="WoodenCandlestickMat",
+            texture_path=diffuse_path,
+            rotation_z=0,
+            scale=(1.0, 1.0, 1.0),
+            roughness=0.4,  # Fallback if your function doesn't parse the EXR map yet
+            projection='BOX'
+        )
+        
+    # 2. Pass dimensions and material to our generic cylinder engine
+    return create_cylinder(name, location, radius, height, material=wood_mat)
+
 def create_wall(name, location, size, material):
     """
     Low-level utility to spawn a wall primitive, scale it to real-world
@@ -438,3 +484,101 @@ def create_wall(name, location, size, material):
         wall_obj.data.materials.append(material)
         
     return wall_obj
+
+def create_cylinder(name, location, radius, height, material=None):
+    """
+    Low-level utility to spawn a cylinder, scale it to real-world
+    dimensions, apply transforms, and attach a material.
+    """
+    # 1. Spawn a default cylinder (Blender default is radius=1m, depth/height=2m)
+    # We set vertices=32 for a smooth, clean round look.
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=32, 
+        radius=1.0, 
+        depth=2.0, 
+        location=location
+    )
+    
+    obj = bpy.context.active_object
+    obj.name = name
+    
+    # 2. Scale from center (Target / Default)
+    # Default radius is 1, so scale factor is just the target radius.
+    # Default height is 2, so scale factor is target height / 2.
+    obj.scale = (radius, radius, height / 2)
+    
+    # 3. Apply scale transform so textures don't warp
+    bpy.ops.object.transform_apply(scale=True)
+    
+    # 4. Attach material if provided
+    if material:
+        obj.data.materials.append(material)
+        
+    return obj
+
+def append_prop(blend_filepath, object_name, location, scale=(1.0, 1.0, 1.0)):
+    """
+    Low-level utility to append an object from an external .blend file,
+    properly catch it in the current scene, scale it, and position it.
+    """
+    if not os.path.exists(blend_filepath):
+        print(f"Error: Blend file not found at {blend_filepath}")
+        return None
+
+    # 1. Take a snapshot of all object names *before* the append operation
+    existing_objects = set(bpy.data.objects.keys())
+    
+    # 2. Path inside the blend file pointing to the Object directory
+    inner_dir = os.path.join(blend_filepath, "Object")
+    
+    # 3. Append the specific object
+    bpy.ops.wm.append(
+        filepath=os.path.join(inner_dir, object_name),
+        directory=inner_dir,
+        filename=object_name
+    )
+    
+    # 4. Compare snapshots to find the exact object that was just added
+    # This completely bypasses the unpredictable 'active_object' quirk
+    new_objects = set(bpy.data.objects.keys()) - existing_objects
+    
+    if not new_objects:
+        print(f"Error: Could not find appended object '{object_name}' in scene data.")
+        return None
+        
+    # Grab the newly appended object from our set
+    prop_obj = bpy.data.objects[list(new_objects)[0]]
+    
+    # 5. Position and scale it correctly
+    prop_obj.location = location
+    prop_obj.scale = scale
+    
+    # 6. Make it the active/selected object so we can cleanly apply the scale transform
+    bpy.context.view_layer.objects.active = prop_obj
+    prop_obj.select_set(True)
+    bpy.ops.object.transform_apply(scale=True)
+    
+    return prop_obj
+
+def import_candlestick(name, location, scale=(1.0, 1.0, 1.0)):
+    """
+    High-level wrapper to append the true 3D candlestick mesh 
+    from its source .blend file.
+    """
+    # 1. Update this path to where your asset .blend file is located
+    blend_path = os.path.abspath("models/wooden_candlestick_1k.blend")
+    
+    # 2. Update this to the exact name of the object inside that .blend file
+    object_name_inside_blend = "wooden_candlestick" 
+    
+    # 3. Append the object using our utility
+    prop = append_prop(blend_path, object_name_inside_blend, location, scale)
+    
+    if prop:
+        prop.name = name
+        # The blend file likely already has the material assigned natively!
+        # If the material loses its textures, we can use your custom 
+        # material creator to re-link 'wooden_candlestick_diff_1k.jpg'.
+        
+    return prop
+
