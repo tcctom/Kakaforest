@@ -1,8 +1,11 @@
+import os
+
 import bpy  # type: ignore
 
 from materials import get_interior_wall_material, get_kitchen_bench_material
-from main_dwelling.materials_nodes import create_material
+from main_dwelling.materials_nodes import create_material, create_textured_material2
 from utils import add_window
+
 
 
 def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -181,6 +184,25 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bpy.ops.object.transform_apply(scale=True)
     stair_partition.data.materials.append(interior_wall_mat)
 
+
+
+    # Create wall behind log burner (East)
+    create_fireplace_wall(
+        name="MainDwelling_HeartyhWallEast",
+        location=(0.85, 0.05, 0.6),
+        size=(0.1, 1.3, 1.2)
+    )
+
+    # Create wall south of log burner
+    create_fireplace_wall(
+        name="MainDwelling_HeartyhWallSouth",
+        location=(0.5, -0.65, 0.6),
+        size=(0.6, 0.1, 1.2)
+    )
+
+
+
+
     LOG_BURNER_WIDTH = 0.5
     LOG_BURNER_DEPTH = 0.65
     LOG_BURNER_HEIGHT = 0.7
@@ -194,8 +216,10 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     granite_mat = get_kitchen_bench_material()
     glass_mat = create_material("LogBurnerGlass", (0.1, 0.1, 0.1, 0.3))
 
+
+
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
-    log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2 - 0.10
+    log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2 - 0.20
     log_burner_y = cupboard_south_edge_y - 0.3 - LOG_BURNER_DEPTH / 2
 
     FLOOR_TOP = oz + 0.1
@@ -207,6 +231,9 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     HEARTH_DEPTH = 1.3
     hearth_south_edge = hearth_north_edge - HEARTH_DEPTH
     hearth_y = (hearth_north_edge + hearth_south_edge) / 2
+
+
+
 
     bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, hearth_y, FLOOR_TOP + HEARTH_THICKNESS / 2))
     hearth = bpy.context.active_object
@@ -365,3 +392,49 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     bed.scale = (BED_WIDTH / 2, BED_LENGTH / 2, BED_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     bed.data.materials.append(bed_mat)
+
+
+def create_fireplace_wall(name, location, size):
+    """
+    High-level wrapper that automatically loads the specific stone 
+    material and builds a fireplace wall.
+    """
+    # 1. Look for or create the specific HearthWall material
+    # (Using .get() prevents creating duplicate materials in Blender if run multiple times)
+    hearth_wall_mat = bpy.data.materials.get("HearthWall")
+    
+    if hearth_wall_mat is None:
+        stone_path = os.path.abspath("textures/stone_wall_05/stone_wall_05_ao_1k.jpg")
+        hearth_wall_mat = create_textured_material2(
+            name="HearthWall",
+            texture_path=stone_path,
+            rotation_z=0,
+            scale=(1.5, 1.5, 1.5),
+            roughness=0.2,
+            projection='BOX',
+        )
+    
+    # 2. Pass everything down to the generic wall creator
+    return create_wall(name, location, size, material=hearth_wall_mat)
+
+def create_wall(name, location, size, material):
+    """
+    Low-level utility to spawn a wall primitive, scale it to real-world
+    dimensions, apply transforms, and attach a material.
+    """
+    # Spawn the initial default 2m x 2m x 2m cube
+    bpy.ops.mesh.primitive_cube_add(location=location)
+    wall_obj = bpy.context.active_object
+    wall_obj.name = name
+    
+    # Scale from center (Target_Size / 2)
+    wall_obj.scale = (size[0] / 2, size[1] / 2, size[2] / 2)
+    
+    # Apply scale so textures don't stretch
+    bpy.ops.object.transform_apply(scale=True)
+    
+    # Attach material if one was provided
+    if material:
+        wall_obj.data.materials.append(material)
+        
+    return wall_obj
