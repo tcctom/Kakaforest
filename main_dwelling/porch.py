@@ -77,9 +77,18 @@ def build_simple_open_porch(
     PORCH_ROOF_PITCH = 15
     PORCH_ROOF_OVERHANG = 0.3
 
+    # Define roof boundaries early to calculate the true span
+    porch_roof_building = ox - LENGTH / 2
+    porch_roof_outer = ox - LENGTH / 2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG
+    porch_roof_span = abs(porch_roof_outer - porch_roof_building)
+
+    # Base the vertical drop on the full span to maintain a true 15-degree angle
     porch_roof_high_height = oz + GROUND_FLOOR_HEIGHT
-    porch_roof_drop = PORCH_DEPTH * math.tan(math.radians(PORCH_ROOF_PITCH))
+    porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
     porch_roof_low_height = porch_roof_high_height - porch_roof_drop
+    
+    # Track the exact dynamic angle in radians for the fascia boards
+    actual_roof_pitch_rad = math.radians(PORCH_ROOF_PITCH)
 
     # Support posts on west edge of porch
     POST_SIZE = 0.15
@@ -107,12 +116,8 @@ def build_simple_open_porch(
     porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof_Simple", porch_roof_mesh)
     bpy.context.collection.objects.link(porch_roof_obj)
 
-    porch_roof_building = ox - LENGTH / 2
-    porch_roof_outer = ox - LENGTH / 2 - PORCH_DEPTH - PORCH_ROOF_OVERHANG
     porch_roof_north = oy + PORCH_WIDTH / 2 + PORCH_ROOF_OVERHANG
     porch_roof_south = oy - PORCH_WIDTH / 2 - PORCH_ROOF_OVERHANG
-
-    porch_roof_span = abs(porch_roof_outer - porch_roof_building)
 
     porch_verts = [
         (porch_roof_building, porch_roof_north, porch_roof_high_height),
@@ -164,7 +169,7 @@ def build_simple_open_porch(
     fascia_north = bpy.context.active_object
     fascia_north.name = "MainDwelling_PorchRoof_FasciaNorth"
     fascia_north.scale = (fascia_north_length / 2, FASCIA_THICKNESS / 2, FASCIA_HEIGHT / 2)
-    fascia_north.rotation_euler[1] = math.radians(-PORCH_ROOF_PITCH)
+    fascia_north.rotation_euler[1] = -actual_roof_pitch_rad
     bpy.ops.object.transform_apply(scale=True, rotation=True)
     fascia_north.data.materials.append(floor_mat)
 
@@ -174,7 +179,7 @@ def build_simple_open_porch(
     fascia_south = bpy.context.active_object
     fascia_south.name = "MainDwelling_PorchRoof_FasciaSouth"
     fascia_south.scale = (fascia_north_length / 2, FASCIA_THICKNESS / 2, FASCIA_HEIGHT / 2)
-    fascia_south.rotation_euler[1] = math.radians(-PORCH_ROOF_PITCH)
+    fascia_south.rotation_euler[1] = -actual_roof_pitch_rad
     bpy.ops.object.transform_apply(scale=True, rotation=True)
     fascia_south.data.materials.append(floor_mat)
 

@@ -306,13 +306,38 @@ def build_water_tank(origin=(0, 0, 0), diameter=3.5, height=2.5):
     water_tank = bpy.context.active_object
     water_tank.name = "WaterTank_25000L"
     
-    # Create metal tank material
-    tank_mat = bpy.data.materials.get("TankMetal") or bpy.data.materials.new(name="TankMetal")
+    # 1. Get or create the material cleanly
+    tank_mat = bpy.data.materials.get("TankPlastic") or bpy.data.materials.new(name="TankPlastic")
     tank_mat.use_nodes = True
-    principled = tank_mat.node_tree.nodes["Principled BSDF"]
-    principled.inputs[0].default_value = (0.7, 0.7, 0.75, 1)  # Light gray metallic color
-    principled.inputs[4].default_value = 0.8  # Metallic
-    principled.inputs[7].default_value = 0.3  # Roughness
-    water_tank.data.materials.append(tank_mat)
     
+    # Clear any weird blending modes that cause transparency glitches
+    if hasattr(tank_mat, "blend_method"):
+        tank_mat.blend_method = 'OPAQUE'
+        
+    nodes = tank_mat.node_tree.nodes
+    links = tank_mat.node_tree.links
+    
+    # 2. Safely grab the nodes
+    principled = nodes.get("Principled BSDF")
+    output_node = nodes.get("Material Output")
+    
+    # If Blender used a non-standard template, ensure they exist
+    if not principled:
+        principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    if not output_node:
+        output_node = nodes.new(type='ShaderNodeOutputMaterial')
+        
+    # 3. Explicitly link BSDF to the Material Output Surface
+    links.new(principled.outputs['BSDF'], output_node.inputs['Surface'])
+    
+    # 4. Apply MDPE Plastic Settings
+    principled.inputs['Base Color'].default_value = (0.02, 0.02, 0.02, 1.0) # Explicit Alpha 1.0
+    principled.inputs['Subsurface Weight'].default_value = 0.0              # Ensure no bleeding
+    principled.inputs['Metallic'].default_value = 0.0                       # Plastic
+    principled.inputs['Roughness'].default_value = 0.45                     # Matte sheen
+    
+    # 5. Nuclear option for the object material slot
+    water_tank.data.materials.clear() # Wipe any old dead slots
+    water_tank.data.materials.append(tank_mat) # Apply fresh slot
+
     return water_tank

@@ -253,6 +253,7 @@ if SHOW_GROUND:
     
     ground_module.forest_plane(main_dwelling_forest_north)
     ground_module.forest_plane(flat_grass_play_area)
+    ground_module.forest_plane(grid_points((14, -28, 2), (11, -8, 1), x_spacing=0.5, slope_direction='y'))
     ground_module.forest_plane(main_dwelling_forest_east)
     ground_module.gravel_plane(main_dwelling_forest_west)
     ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
