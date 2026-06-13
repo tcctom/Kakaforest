@@ -1,6 +1,7 @@
 import bpy  # type: ignore
 import sys
 import os
+import mathutils
 from importlib import reload
 
 
@@ -316,9 +317,44 @@ outdoor_structures.build_water_tank(origin=(-23.0, -5.5, -0.5))
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/1000-ltr-tank-2/
 outdoor_structures.build_water_tank(origin=(-2.2, -4.1, -0.0), diameter=0.9, height=2.0)
 
+path_points_1 = [
+        mathutils.Vector((-12, 5, -1)),       
+        mathutils.Vector((-25, 10, -1.5)),   
+        mathutils.Vector((-30, 25, -2.0)),  
+        mathutils.Vector((-25, 40, -2.5))   
+    ]
+
+path_points_2 = [
+        mathutils.Vector((-30, -10, -1)),       
+        mathutils.Vector((-28, -20, 0)),   
+        mathutils.Vector((-26, -30, 0)),  
+        mathutils.Vector((-24, -40, 1.5))   
+    ]
+
 
 from driveway import create_sloping_driveway  
-driveway.create_sloping_driveway(width=4.0, thickness=0.15)
+create_sloping_driveway(name="Main_Drivewayv1", width=4.0, thickness=0.15, path_points=path_points_1)
+create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, path_points=path_points_2)
+
+#Would you be able to analyse the attached image and give me a set of path points in meters? 
+#Just the x, y is fine (put z to 0 on all). the red dot just north of center is the origin. North of that is plus Y and east of that is plus X. 
+#Can you also see the 10 meter scale bottom right?
+
+# The origin (0, 0, 0) is the red dot north of center
+path_points_main_drive = [
+    mathutils.Vector((-4.0, 48.0, 0.0)),   # Top entrance at the public road boundary
+    mathutils.Vector((-4.0, 35.0, 0.0)),   # Heading straight south along the top ridge
+    mathutils.Vector((-7.0, 20.0, 0.0)),   # Shifting slightly west past the northern red pin
+    mathutils.Vector((-11.0, 4.0, 0.0)),   # Continuing south down the western flank
+    mathutils.Vector((-12.0, -11.0, 0.0)), # Passing perfectly west of your center origin dot
+    mathutils.Vector((-9.0, -26.0, 0.0)),  # Winding lower down the western track
+    mathutils.Vector((-4.0, -38.0, 0.0)),  # Straightening south toward the bottom turn
+    mathutils.Vector((0.0, -45.0, 0.0)),   # Sweeping around the bottom bend (crossing X axis)
+    mathutils.Vector((8.0, -46.0, 0.0))    # Terminating near the bottom right building clearing
+]
+
+create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive)
+
 
 
 print("Modular Site Build Complete.")
