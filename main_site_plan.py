@@ -3,6 +3,7 @@ import sys
 import os
 from importlib import reload
 
+
 # Add current directory to sys.path so Blender can find your modules
 dir = os.path.dirname(bpy.data.filepath)
 if dir not in sys.path:
@@ -33,6 +34,7 @@ import ww1_furniture
 import wet_wing_lower1
 import wet_wing_upper1
 import ground_module
+import driveway
 import outdoor_structures
 import main_dwelling_module
 import main_dwelling.config as main_dwelling_config
@@ -60,6 +62,7 @@ reload(ww1_furniture)
 reload(wet_wing_lower1)
 reload(wet_wing_upper1)
 reload(ground_module)
+reload(driveway)
 reload(outdoor_structures)
 reload(main_dwelling_config)
 reload(main_dwelling_materials_nodes)
@@ -167,7 +170,7 @@ SHOW_GROUND = True  # Set to False to hide ground terrain
 if SHOW_GROUND:
     # Import helper functions for easier point generation
     from ground_module import line_points, grid_points, combine_points, point
-    
+
     north_björken = grid_points((6, -57.5, 4.5), (-3, -52, 4.5), x_spacing=0.4)
     
     # South of cottage - upward slope
@@ -247,14 +250,16 @@ if SHOW_GROUND:
     
     # Forest surrounds on all sides of main dwelling
     main_dwelling_forest_north = grid_points((18, 32, 0), (-8, 3.5, -4.2), x_spacing=0.5, slope_direction='y')
-    flat_grass_play_area = grid_points((10, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')
-    main_dwelling_forest_east = grid_points((30, 3.5, -0.2), (6, -8, -0.1), x_spacing=0.5)
+
     main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -3.5, -3.1), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
-    ground_module.forest_plane(flat_grass_play_area)
-    ground_module.forest_plane(grid_points((14, -28, 2), (11, -8, 1), x_spacing=0.5, slope_direction='y'))
-    ground_module.forest_plane(main_dwelling_forest_east)
+    ground_module.forest_plane(grid_points((2, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')) #flat_grass_play_area
+    ground_module.forest_plane(grid_points((2, -15, 0.5), (5, -8, 1), x_spacing=0.5, slope_direction='x')) 
+    ground_module.forest_plane(grid_points((9, -15, 1  ), (5, -8, 1), x_spacing=0.5, slope_direction='y'))
+    ground_module.forest_plane(grid_points((9, -15, 1  ), (13, -8, -2), x_spacing=0.5, slope_direction='x'))
+    ground_module.forest_plane(grid_points((10, 3.5, -0.2), (6.5, -8, -0.2), x_spacing=0.5)) #main dwelling east 1
+    ground_module.forest_plane(grid_points((10, -8, -0.2), (20, 3.5, -6), x_spacing=0.5, slope_direction='x')) #main dwelling east 2
     ground_module.gravel_plane(main_dwelling_forest_west)
     ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
     ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
@@ -312,6 +317,8 @@ outdoor_structures.build_water_tank(origin=(-23.0, -5.5, -0.5))
 outdoor_structures.build_water_tank(origin=(-2.2, -4.1, -0.0), diameter=0.9, height=2.0)
 
 
+from driveway import create_sloping_driveway  
+driveway.create_sloping_driveway(width=4.0, thickness=0.15)
 
 
 print("Modular Site Build Complete.")
