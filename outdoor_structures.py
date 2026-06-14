@@ -3,6 +3,8 @@ import os
 import random
 import math
 
+from main_dwelling.materials_nodes import create_textured_material2
+
 def create_boulder_material():
     """Create or get the boulder material with namaqualand texture"""
     mat = bpy.data.materials.get("BoulderMaterial")
@@ -341,3 +343,65 @@ def build_water_tank(origin=(0, 0, 0), diameter=3.5, height=2.5):
     water_tank.data.materials.append(tank_mat) # Apply fresh slot
 
     return water_tank
+
+
+def create_cylinder(name, location, radius, height, material=None):
+    """
+    Low-level utility to spawn a cylinder, scale it to real-world
+    dimensions, apply transforms, and attach a material.
+    """
+    # 1. Spawn a default cylinder (Blender default is radius=1m, depth/height=2m)
+    # We set vertices=32 for a smooth, clean round look.
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=32, 
+        radius=1.0, 
+        depth=2.0, 
+        location=location
+    )
+    
+    obj = bpy.context.active_object
+    obj.name = name
+    
+    # 2. Scale from center (Target / Default)
+    # Default radius is 1, so scale factor is just the target radius.
+    # Default height is 2, so scale factor is target height / 2.
+    obj.scale = (radius, radius, height / 2)
+    
+    # 3. Apply scale transform so textures don't warp
+    bpy.ops.object.transform_apply(scale=True)
+    
+    # 4. Attach material if provided
+    if material:
+        obj.data.materials.append(material)
+        
+    return obj
+
+
+def create_beech_trunk(name, location, radius, height):
+    """
+    High-level wrapper that loads the bark material 
+    and handles the generation of the prop.
+    """
+    # 1. Look for or create the bark material
+    bark_mat = bpy.data.materials.get("BarkMat")
+    
+    if bark_mat is None:
+        diffuse_path = os.path.abspath("models/textures/jolcham_oak_bark/jolcham_oak_bark_01_diff_1k.jpg")
+        rough_path = os.path.abspath("models/textures/jolcham_oak_bark/jolcham_oak_bark_01_rough_1k.exr")
+        
+        # Reusing your custom textured material function. 
+        # Note: If your function doesn't support roughness maps yet, 
+        # you can pass rough_path into it or tweak it to handle EXR files.
+        bark_mat = create_textured_material2(
+            name="BarkMat",
+            texture_path=diffuse_path,
+            rotation_z=0,
+            scale=(1.0, 1.0, 1.0),
+            roughness=0.4,  # Fallback if your function doesn't parse the EXR map yet
+            projection='BOX'
+        )
+        
+    # 2. Pass dimensions and material to our generic cylinder engine
+    return create_cylinder(name, location, radius, height, material=bark_mat)
+
+

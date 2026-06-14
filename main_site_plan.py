@@ -170,7 +170,7 @@ SHOW_GROUND = True  # Set to False to hide ground terrain
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
     # Import helper functions for easier point generation
-    from ground_module import line_points, grid_points, combine_points, point
+    from ground_module import line_points, grid_points,vector_grid_points, combine_points, point
 
     north_björken = grid_points((6, -57.5, 4.5), (-3, -52, 4.5), x_spacing=0.4)
     
@@ -255,7 +255,10 @@ if SHOW_GROUND:
     main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -3.5, -3.1), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
-    ground_module.forest_plane(grid_points((2, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')) #flat_grass_play_area
+
+    ground_module.build_off_axis_plane((5, -6, 0.5), (8, -22, 0.5), length=-32, spacing=0.5, name="Flat_Grass_Play_Area", material_type='grass')
+
+    #ground_module.forest_plane(grid_points((2, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')) #flat_grass_play_area
     ground_module.forest_plane(grid_points((2, -15, 0.5), (5, -8, 1), x_spacing=0.5, slope_direction='x')) 
     ground_module.forest_plane(grid_points((9, -15, 1  ), (5, -8, 1), x_spacing=0.5, slope_direction='y'))
     ground_module.forest_plane(grid_points((9, -15, 1  ), (13, -8, -2), x_spacing=0.5, slope_direction='x'))
@@ -355,6 +358,6 @@ path_points_main_drive = [
 
 create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive)
 
-
+outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1, -10, 4), radius=0.4, height=7.0 )  
 
 print("Modular Site Build Complete.")

@@ -1,5 +1,6 @@
 import bpy  # type: ignore
 import math
+import mathutils
 
 # ============================================================================
 # SURVEY POINT GENERATOR FUNCTIONS
@@ -116,6 +117,69 @@ def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None, slope_direction
         x += x_spacing
     
     return points
+
+
+
+def vector_grid_points(pt1, pt2, length, width_spacing=1.0, length_spacing=None, slope_direction='length'):
+    """
+    Generate a sloped, rectangular grid of points starting from an arbitrary width edge line.
+    Supports both positive (forward) and negative (backward) projection lengths.
+    """
+    if length_spacing is None:
+        length_spacing = width_spacing
+        
+    v1 = mathutils.Vector(pt1)
+    v2 = mathutils.Vector(pt2)
+    
+    # 1. LOCAL WIDTH DIRECTION
+    width_vec = v2 - v1
+    total_width = width_vec.length
+    if total_width < 0.001:
+        raise ValueError("pt1 and pt2 cannot be the exact same coordinate.")
+        
+    u_width = width_vec.normalized()
+    
+    # 2. PERPENDICULAR LENGTH DIRECTION
+    u_length_base = mathutils.Vector((-u_width.y, u_width.x, 0.0)).normalized()
+    
+    # FIX: Determine the true direction multiplier (1.0 or -1.0) based on length sign
+    length_sign = 1.0 if length >= 0 else -1.0
+    u_length = u_length_base * length_sign
+    
+    # Use the absolute value for calculating total distance spans in the loop
+    total_length = abs(length)
+    
+    # 3. INTERPOLATE GRID POINT STEP LOOPS
+    points = []
+    
+    w_dist = 0.0
+    while w_dist <= total_width + 0.001:
+        l_dist = 0.0
+        while l_dist <= total_length + 0.001: # FIX: use total_length (always positive)
+            
+            tw = w_dist / total_width if total_width > 0 else 0
+            tl = l_dist / total_length if total_length > 0 else 0
+            
+            # Position offset calculation handles direction automatically via updated u_length
+            pos_offset = (u_width * w_dist) + (u_length * l_dist)
+            target_pt = v1 + pos_offset
+            
+            if slope_direction == 'width':
+                t = tw
+            elif slope_direction == 'length':
+                t = tl
+            else:
+                t = (tw + tl) / 2.0
+                
+            z_val = v1.z + t * (v2.z - v1.z)
+            
+            points.append((target_pt.x, target_pt.y, z_val))
+            
+            l_dist += length_spacing
+        w_dist += width_spacing
+        
+    return points
+
 
 def rectangle_points(corner1, corner2, z_height, spacing=1.0):
     """
@@ -604,4 +668,88 @@ def forest_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, exte
         name_suffix='_Forest',
         use_planar=use_planar,
         extension=extension
+    )
+
+def build_off_axis_rect_mesh(name_suffix="Driveway_Pad", grid_points=None, width_steps=0, length_steps=0, material_type='forest'):
+    """
+    Creates a sloped rectangular mesh terrain structure that is completely un-snapped 
+    from the global X/Y axes by utilizing raw point array sequence matrix data.
+    """
+    if not grid_points or width_steps < 2 or length_steps < 2:
+        print("CRITICAL: Invalid grid point steps passed to off-axis generator.")
+        return None
+
+    mesh_name = f"OffAxisMesh_{name_suffix}"
+    obj_name = f"OffAxis_Terrain_{name_suffix}"
+    
+    # Clean up old object if it exists to allow fresh re-runs
+    if obj_name in bpy.data.objects:
+        bpy.data.objects.remove(bpy.data.objects[obj_name], do_unlink=True)
+        
+    mesh = bpy.data.meshes.new(mesh_name)
+    obj = bpy.data.objects.new(obj_name, mesh)
+    bpy.context.collection.objects.link(obj)
+    
+    # Connect the grid row and column indices into clean quad faces
+    faces = []
+    for w in range(width_steps - 1):
+        for l in range(length_steps - 1):
+            p0 = w * length_steps + l
+            p1 = w * length_steps + (l + 1)
+            p2 = (w + 1) * length_steps + (l + 1)
+            p3 = (w + 1) * length_steps + l
+            faces.append((p0, p1, p2, p3))
+            
+    mesh.from_pydata(grid_points, [], faces)
+    mesh.update()
+    
+    # Assign material types natively matching your setup
+    if material_type == 'grass':
+        mat = create_grass_material()
+    elif material_type == 'gravel':
+        mat = create_gravel_material()
+    else:
+        mat = create_forest_material()
+        
+    obj.data.materials.append(mat)
+    
+    return obj
+
+def build_off_axis_plane(pt1, pt2, length, spacing=0.5, name="Play_Area", material_type='forest'):
+    """
+    High-level wrapper to generate and build a sloped, rectangular grid plane 
+    that is completely un-snapped from the global X/Y axes.
+    
+    Args:
+        pt1: (x, y, z) Left coordinate of the width baseline
+        pt2: (x, y, z) Right coordinate of the width baseline
+        length: Total distance to project the grid perpendicular (can be negative)
+        spacing: Grid step resolution for the terrain mesh (default 0.5m)
+        name: Name suffix for the generated Blender object
+        material_type: Type of material ('forest', 'grass', or 'gravel')
+    """
+    import math
+
+    # 1. Calculate how many physical matrix steps the loops will require
+    # (Adding +1 handles the baseline edge termination steps correctly)
+    width_vec_len = math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
+    num_w_steps = int(width_vec_len / spacing) + 1
+    num_l_steps = int(abs(length) / spacing) + 1
+
+    # 2. Generate the un-snapped raw vector coordinate array
+    grid_points_list = vector_grid_points(
+        pt1=pt1, 
+        pt2=pt2, 
+        length=length, 
+        width_spacing=spacing, 
+        length_spacing=spacing
+    )
+
+    # 3. Call the mesh builder to connect the coordinates by index mapping
+    return build_off_axis_rect_mesh(
+        name_suffix=name,
+        grid_points=grid_points_list,
+        width_steps=num_w_steps,
+        length_steps=num_l_steps,
+        material_type=material_type
     )
