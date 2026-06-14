@@ -240,7 +240,7 @@ if SHOW_GROUND:
     # Forest surrounds on all sides of main dwelling
     main_dwelling_forest_north = grid_points((18, 32, 0), (-8, 3.5, -4.2), x_spacing=0.5, slope_direction='y')
 
-    main_dwelling_forest_west = grid_points((-6, 18, -0.5), (-30, -3.5, -3.1), x_spacing=0.5, slope_direction='y')
+    main_dwelling_forest_west = grid_points((-6, 18, -1.5), (-30, -3.5, -4.1), x_spacing=0.5, slope_direction='y')
     
     ground_module.forest_plane(main_dwelling_forest_north)
 
@@ -253,12 +253,11 @@ if SHOW_GROUND:
     ground_module.forest_plane(grid_points((10, 3.5, -0.2), (6.5, -8, -0.2), x_spacing=0.5)) #main dwelling east 1
     ground_module.forest_plane(grid_points((10, -8, -0.2), (20, 3.5, -6), x_spacing=0.5, slope_direction='x')) #main dwelling east 2
     ground_module.gravel_plane(main_dwelling_forest_west)
-    #ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
-    #ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
+
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-#björken_module.build_red_cottage(origin=(0, -60, 5.0))
+björken_module.build_red_cottage(origin=(0, -60, 5.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
@@ -296,11 +295,15 @@ outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
 #wet_wing_lower1.build(origin=(-13.0, -65.0, 5.0))
 #wet_wing_lower1.furniture(origin=(-13.0, -65.0, 5.0), building_width=10.0, building_depth=4.0)
 
+
+ground_module.build_off_axis_plane((-14, -5.8, -0.5), (-13.2, -10, -0.5), length=-12, spacing=0.5, name="Tank_Pad", material_type='gravel',)
+
+
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-19.0, -8, -0.5))
-outdoor_structures.build_water_tank(origin=(-23.0, -9, -0.5))
+outdoor_structures.build_water_tank(origin=(-19.0, -8.5, -0.5))
+outdoor_structures.build_water_tank(origin=(-23.0, -9.3, -0.5))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -309,17 +312,17 @@ outdoor_structures.build_water_tank(origin=(-23.0, -9, -0.5))
 outdoor_structures.build_water_tank(origin=(-2.2, -4.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
-        mathutils.Vector((-4, -6, 0.0)),       
-        mathutils.Vector((-8, -4, 0.0)),       
-        mathutils.Vector((-10, -1, -0.5)),       
-        mathutils.Vector((-15, 1, -1)),       
+        mathutils.Vector((-4, -5.7, 0.0)),       
+        mathutils.Vector((-8, -4.5, 0.0)),       
+        mathutils.Vector((-12, -1, -0.5)),       
+        mathutils.Vector((-15, 0, -1)),       
         mathutils.Vector((-25, -2, -1.5)), 
-        mathutils.Vector((-30.0, 0, -1.5))
+        mathutils.Vector((-31.0, -1, -1.5))
     ]
 
 
 from driveway import create_sloping_driveway  
-create_sloping_driveway(name="Main_Drivewayv1", width=4.0, thickness=0.15, path_points=path_points_1)
+create_sloping_driveway(name="Main_Drivewayv1", width=3.5, thickness=0.15, path_points=path_points_1, debug_show_points=True)
 #create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, path_points=path_points_2)
 
 #Would you be able to analyse the attached image and give me a set of path points in meters? 
@@ -340,10 +343,10 @@ path_points_main_drive = [
     mathutils.Vector((-12.0, -46.0, 2.5))    # Terminating near the bottom right building clearing
 ]
 
-create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive)
+create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
 
 outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1, -10, 4), radius=0.4, height=7.0 )  
 outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 5, 2), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-15, -6, 3), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-15, -5.5, 2.5), radius=0.4, height=7.0 )  
 
 print("Modular Site Build Complete.")

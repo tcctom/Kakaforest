@@ -77,10 +77,12 @@ def create_sloping_driveway_v1(name="Driveway", width=4.0, thickness=0.15):
     
     return path_obj
 
-def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_path="",     path_points = [
-        mathutils.Vector((-10, 10, -1)),       
-        mathutils.Vector((-15, 20, -1.5))   
-    ]):
+def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_path="",   
+                            path_points = [
+                                mathutils.Vector((-10, 10, -1)),       
+                                mathutils.Vector((-15, 20, -1.5))   
+                            ],
+                            debug_show_points=False):  # <-- ADDED PARAMETER
     print("\n" + "="*50)
     print(f"STARTING TEXTURED DRIVEWAY RE-BUILD: '{name}'")
     print("="*50)
@@ -95,8 +97,18 @@ def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_pa
     if f"{name}_Profile" in bpy.data.objects:
         bpy.data.objects.remove(bpy.data.objects[f"{name}_Profile"], do_unlink=True)
 
+    # Clean up old debug collections/objects from previous runs
+    debug_col_name = f"{name}_Debug_Points"
+    if debug_col_name in bpy.data.collections:
+        debug_col = bpy.data.collections[debug_col_name]
+        # Remove all objects inside the old debug collection
+        for obj in list(debug_col.objects):
+            bpy.data.objects.remove(obj, do_unlink=True)
+        # Unlink the empty collection block
+        bpy.context.scene.collection.children.unlink(debug_col)
+        # Force remove collection data block
+        bpy.data.collections.remove(debug_col)
 
-    
     # ---------------------------------------------------------
     # 2. GENERATE THE GEOMETRY SWEEP (Fitted To Your Slopes)
     # ---------------------------------------------------------
@@ -142,7 +154,6 @@ def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_pa
     # 3. PROCEDURAL PBR IMAGE MATERIAL SETUP
     # ---------------------------------------------------------
     mat_name = f"{name}_Gravel_Material"
-    # If material already exists, grab it, otherwise make it fresh
     if mat_name in bpy.data.materials:
         mat = bpy.data.materials[mat_name]
     else:
@@ -151,32 +162,26 @@ def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_pa
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
-    nodes.clear() # Wipe clean
+    nodes.clear()
     
-    # Create required standard node blocks
     node_output = nodes.new(type='ShaderNodeOutputMaterial')
     node_output.location = (400, 0)
     
     node_bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
     node_bsdf.location = (100, 0)
-    node_bsdf.inputs['Roughness'].default_value = 0.95 # Matte stones
+    node_bsdf.inputs['Roughness'].default_value = 0.95
     
-    # Texture coordinate maps texture onto curve layout
     node_tex_coord = nodes.new(type='ShaderNodeTexCoord')
     node_tex_coord.location = (-600, 0)
     
-    # Mapping node handles tiling (prevents giant stretched rocks)
     node_mapping = nodes.new(type='ShaderNodeMapping')
     node_mapping.location = (-400, 0)
-    # SCALE CONTROL: Tells image to repeat 5 times over X/Y space
     node_mapping.inputs['Scale'].default_value[0] = 3.0
     node_mapping.inputs['Scale'].default_value[1] = 3.0
     
-    # Image node imports your specific jpg file
     node_image = nodes.new(type='ShaderNodeTexImage')
     node_image.location = (-150, 0)
     
-    # Load image file safely via Python API
     if os.path.exists(image_path):
         loaded_img = bpy.data.images.load(image_path, check_existing=True)
         node_image.image = loaded_img
@@ -185,20 +190,68 @@ def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_pa
         print(f"CRITICAL WARNING: Texture file path not found: {image_path}")
         print("Driveway mesh created but will appear magenta/pink until image link is fixed.")
         
-    # Hook everything up sequentially
     links.new(node_tex_coord.outputs['Object'], node_mapping.inputs['Vector'])
     links.new(node_mapping.outputs['Vector'], node_image.inputs['Vector'])
     links.new(node_image.outputs['Color'], node_bsdf.inputs['Base Color'])
     links.new(node_bsdf.outputs['BSDF'], node_output.inputs['Surface'])
     
-    # ---------------------------------------------------------
-    # 4. ASSIGN MATERIAL & PUSH TO VIEWPORT
-    # ---------------------------------------------------------
     if path_obj.data.materials:
         path_obj.data.materials[0] = mat
     else:
         path_obj.data.materials.append(mat)
+
+    # ---------------------------------------------------------
+    # NEW FEATURE: VISUAL DEBUG CUE FIELD
+    # ---------------------------------------------------------
+    if debug_show_points:
+        print(f"-> Debug Mode Enabled: Creating visual indicators in collection '{debug_col_name}'")
         
+        # 1. Setup a dedicated debug layer collection to stay organized
+        debug_collection = bpy.data.collections.new(debug_col_name)
+        bpy.context.scene.collection.children.link(debug_collection)
+        
+        # 2. Setup a bright, luminous emissive shader to spot points in any weather/sky condition
+        debug_mat_name = "Debug_Marker_Neon"
+        debug_mat = bpy.data.materials.get(debug_mat_name)
+        if debug_mat is None:
+            debug_mat = bpy.data.materials.new(name=debug_mat_name)
+            debug_mat.use_nodes = True
+            d_nodes = debug_mat.node_tree.nodes
+            d_links = debug_mat.node_tree.links
+            d_nodes.clear()
+            
+            out_node = d_nodes.new('ShaderNodeOutputMaterial')
+            # Use an emission shader so markers clearly pop in the 3D viewport
+            emit_node = d_nodes.new('ShaderNodeEmission')
+            emit_node.inputs['Color'].default_value = (1.0, 0.0, 0.1, 1.0) # Bright Magenta Neon
+            emit_node.inputs['Strength'].default_value = 3.0
+            
+            d_links.new(emit_node.outputs['Emission'], out_node.inputs['Surface'])
+            
+        # 3. Create a sphere mesh container blueprint data block
+        # Radius of 0.35m fits nicely over a 4.0m wide track without cluttering the scene
+        sphere_mesh = bpy.data.meshes.new(name="Debug_Sphere_Mesh")
+        
+        # Temporary mesh helper container via from_pydata to build a basic wire bounding gizmo
+        # Using a small box/diamond layout or basic data structures keeps file overhead tiny
+        import bmesh
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=2, radius=0.35)
+        bm.to_mesh(sphere_mesh)
+        bm.free()
+
+        # 4. Step down the vector chain to place instances
+        for idx, pt_coords in enumerate(path_points):
+            marker_obj = bpy.data.objects.new(f"Marker_{name}_{idx}", sphere_mesh)
+            marker_obj.location = pt_coords
+            marker_obj.data.materials.append(debug_mat)
+            
+            # Link it into the isolated debug list hierarchy
+            debug_collection.objects.link(marker_obj)
+            
+    # ---------------------------------------------------------
+    # 4. ASSIGN MATERIAL & PUSH TO VIEWPORT
+    # ---------------------------------------------------------
     bpy.context.view_layer.objects.active = path_obj
     bpy.context.view_layer.update()
     print("="*50)
@@ -206,3 +259,5 @@ def create_sloping_driveway(name="Driveway", width=4.0, thickness=0.15, image_pa
     print("="*50 + "\n")
     
     return path_obj
+
+
