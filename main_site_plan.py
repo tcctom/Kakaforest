@@ -186,17 +186,7 @@ if SHOW_GROUND:
     slope_parking_to_cottage_mid = grid_points((-9, -56.5, 4.0), (-15, -57.5, 4.4), x_spacing=0.25, slope_direction='y')
     slope_parking_to_cottage_east = grid_points((-14, -56, 3.6), (-20, -57.5, 4.2), x_spacing=0.25, slope_direction='y')
     
-    # Area where person is standing in photo - around Y=0, Z~0 to 0.2
-    photo_person_area = grid_points((-7, -59, 4.8), (-11, -60.5, 5.2), x_spacing=0.3)
-    
-    # Additional natural undulation points for realism
-    natural_bumps = [
-        point(-8, -54, 3.05),  # Small bump near camera position
-        point(-9, -55, 3.4),   # Mid-slope variation
-        point(-10, -57, 4.1),  # Mid-slope variation
-        point(-11, -55.5, 3.8), # Eastern slope variation
-    ]
-    
+ 
     # Water tank area - flat pad at (-3, 70, 7)
     water_tank_pad = grid_points((5, -66, 6.0), (1, -76, 6.0), x_spacing=0.5)
     by_water_tank_pad = grid_points((0.5, -67, 6.5), (-6, -76, 7.0), x_spacing=0.5)
@@ -211,8 +201,6 @@ if SHOW_GROUND:
     #forest_areas.append(slope_parking_to_cottage_west)
     #forest_areas.append(slope_parking_to_cottage_mid)
     #forest_areas.append(slope_parking_to_cottage_east)
-    #forest_areas.append(photo_person_area)
-    #forest_areas.append(natural_bumps)
     #forest_areas.append(by_water_tank_pad)
     
     # Build terrain layers for each material type
@@ -265,8 +253,8 @@ if SHOW_GROUND:
     ground_module.forest_plane(grid_points((10, 3.5, -0.2), (6.5, -8, -0.2), x_spacing=0.5)) #main dwelling east 1
     ground_module.forest_plane(grid_points((10, -8, -0.2), (20, 3.5, -6), x_spacing=0.5, slope_direction='x')) #main dwelling east 2
     ground_module.gravel_plane(main_dwelling_forest_west)
-    ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
-    ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
+    #ground_module.gravel_plane(grid_points((-30, -3.5, -0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
+    #ground_module.gravel_plane(grid_points((-30, -8, 0.5), (-6, -7.5, -0.5), x_spacing=0.5, slope_direction='y'))
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
@@ -311,8 +299,8 @@ outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-19.0, -5.5, -0.5))
-outdoor_structures.build_water_tank(origin=(-23.0, -5.5, -0.5))
+outdoor_structures.build_water_tank(origin=(-19.0, -8, -0.5))
+outdoor_structures.build_water_tank(origin=(-23.0, -9, -0.5))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -321,23 +309,18 @@ outdoor_structures.build_water_tank(origin=(-23.0, -5.5, -0.5))
 outdoor_structures.build_water_tank(origin=(-2.2, -4.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
-        mathutils.Vector((-12, 5, -1)),       
-        mathutils.Vector((-25, 10, -1.5)),   
-        mathutils.Vector((-30, 25, -2.0)),  
-        mathutils.Vector((-25, 40, -2.5))   
-    ]
-
-path_points_2 = [
-        mathutils.Vector((-30, -10, -1)),       
-        mathutils.Vector((-28, -20, 0)),   
-        mathutils.Vector((-26, -30, 0)),  
-        mathutils.Vector((-24, -40, 1.5))   
+        mathutils.Vector((-4, -6, 0.0)),       
+        mathutils.Vector((-8, -4, 0.0)),       
+        mathutils.Vector((-10, -1, -0.5)),       
+        mathutils.Vector((-15, 1, -1)),       
+        mathutils.Vector((-25, -2, -1.5)), 
+        mathutils.Vector((-30.0, 0, -1.5))
     ]
 
 
 from driveway import create_sloping_driveway  
 create_sloping_driveway(name="Main_Drivewayv1", width=4.0, thickness=0.15, path_points=path_points_1)
-create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, path_points=path_points_2)
+#create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, path_points=path_points_2)
 
 #Would you be able to analyse the attached image and give me a set of path points in meters? 
 #Just the x, y is fine (put z to 0 on all). the red dot just north of center is the origin. North of that is plus Y and east of that is plus X. 
@@ -345,19 +328,22 @@ create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, pa
 
 # The origin (0, 0, 0) is the red dot north of center
 path_points_main_drive = [
-    mathutils.Vector((-4.0, 48.0, 0.0)),   # Top entrance at the public road boundary
-    mathutils.Vector((-4.0, 35.0, 0.0)),   # Heading straight south along the top ridge
-    mathutils.Vector((-7.0, 20.0, 0.0)),   # Shifting slightly west past the northern red pin
-    mathutils.Vector((-11.0, 4.0, 0.0)),   # Continuing south down the western flank
-    mathutils.Vector((-12.0, -11.0, 0.0)), # Passing perfectly west of your center origin dot
-    mathutils.Vector((-9.0, -26.0, 0.0)),  # Winding lower down the western track
-    mathutils.Vector((-4.0, -38.0, 0.0)),  # Straightening south toward the bottom turn
-    mathutils.Vector((0.0, -45.0, 0.0)),   # Sweeping around the bottom bend (crossing X axis)
-    mathutils.Vector((8.0, -46.0, 0.0))    # Terminating near the bottom right building clearing
+    mathutils.Vector((-24.0, 48.0, -4.0)),   # Top entrance at the public road boundary
+    mathutils.Vector((-24.0, 35.0, -3.0)),   # Heading straight south along the top ridge
+    mathutils.Vector((-27.0, 20.0, -2.0)),   # Shifting slightly west past the northern red pin
+    mathutils.Vector((-29.0, 10, -1.7)),   
+    mathutils.Vector((-31.0, 6.0, -1.5)),   # Continuing south down the western flank
+    mathutils.Vector((-32.0, -11.0, -1.5)), # Passing perfectly west of your center origin dot
+    mathutils.Vector((-29.0, -26.0, -1.0)),  # Winding lower down the western track
+    mathutils.Vector((-24.0, -38.0, 0.5)),  # Straightening south toward the bottom turn
+    mathutils.Vector((-20.0, -45.0, 2.0)),   # Sweeping around the bottom bend (crossing X axis)
+    mathutils.Vector((-12.0, -46.0, 2.5))    # Terminating near the bottom right building clearing
 ]
 
 create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive)
 
 outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1, -10, 4), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 5, 2), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-15, -6, 3), radius=0.4, height=7.0 )  
 
 print("Modular Site Build Complete.")
