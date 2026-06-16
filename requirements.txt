@@ -1,0 +1,5 @@
+numpy
+Pillow
+pyproj
+rasterio
+trimesh

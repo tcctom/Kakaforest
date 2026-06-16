@@ -148,8 +148,7 @@ def set_hdri_sky(image_path):
 
 def import_linz_terrain(obj_path):
     """
-    Imports the textured terrain OBJ, corrects the 90-degree pitch,
-    and fixes the inverted Y-axis/valley inversion by rotating 180 degrees on Z.
+    Import a textured terrain OBJ that is already in site coordinates.
     """
     if not os.path.exists(obj_path):
         print(f"Error: Terrain OBJ not found at {obj_path}")
@@ -169,23 +168,11 @@ def import_linz_terrain(obj_path):
     if new_objects:
         terrain_obj = list(new_objects)[0]
         terrain_obj.name = "LINZ_Aerial_Terrain"
-        
-        # --- THE AXIS FLIP FIX ---
-        # 1. First, lay it flat on the ground (Pitch down 90 degrees on X)
-        terrain_obj.rotation_euler[0] = -math.pi / 2
-        
-        # 2. Second, fix the inverted valley/spur and North/South gradient
-        # Spin the map 180 degrees around the Z axis to flip +Y and -Y.
-        terrain_obj.rotation_euler[2] = math.pi  # 180 degrees in radians
-        
+
         # Ensure it stays perfectly centered at your main dwelling origin
         terrain_obj.location = (0, 0, 0)
-        
-        # Apply the transforms to freeze the new correct layout
-        bpy.context.view_layer.objects.active = terrain_obj
-        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
-        
-        print("LINZ Terrain successfully oriented flat and flipped to match Site Coordinates!")
+
+        print("LINZ Terrain imported at origin using native site coordinates.")
         return terrain_obj
     
     return None
@@ -196,7 +183,7 @@ cleanup()
 
 # Paths to your external asset files
 hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
-terrain_obj_path = os.path.abspath("terrain.obj")  # Point this to where your terrain.obj was saved
+terrain_obj_path = os.path.abspath("Terrain/terrain.obj")
 
 # Set the sky
 set_hdri_sky(hdri_path)
@@ -362,8 +349,7 @@ path_points_1 = [
 
 
 from driveway import create_sloping_driveway  
-create_sloping_driveway(name="Main_Drivewayv1", width=3.5, thickness=0.15, path_points=path_points_1, debug_show_points=True)
-#create_sloping_driveway(name="Secondary_Driveway", width=3.0, thickness=0.15, path_points=path_points_2)
+#create_sloping_driveway(name="Main_Drivewayv1", width=3.5, thickness=0.15, path_points=path_points_1, debug_show_points=True)
 
 #Would you be able to analyse the attached image and give me a set of path points in meters? 
 #Just the x, y is fine (put z to 0 on all). the red dot just north of center is the origin. North of that is plus Y and east of that is plus X. 
@@ -389,8 +375,8 @@ path_points_AMD_ROW = [
     mathutils.Vector((-35.0, 50.0, -9.0))   
 ]
 
-create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
-create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
+#create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
+#create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
 outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1, -10, 4), radius=0.4, height=7.0 )  
 outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 5, 2), radius=0.4, height=7.0 )  
