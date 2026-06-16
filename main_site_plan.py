@@ -2,6 +2,8 @@ import bpy  # type: ignore
 import sys
 import os
 import mathutils
+import math # Needed for the rotation correction
+
 from importlib import reload
 
 
@@ -88,17 +90,6 @@ def cleanup():
     for mat in bpy.data.materials:
         bpy.data.materials.remove(mat)
 
-def setup_blue_sky():
-    """Set up a simple blue sky background"""
-    world = bpy.data.worlds.get("World") or bpy.data.worlds.new("World")
-    bpy.context.scene.world = world
-    world.use_nodes = True
-    bg_node = world.node_tree.nodes.get("Background")
-    if bg_node:
-        # Deep sky blue color (RGB)
-        bg_node.inputs[0].default_value = (0.2, 0.4, 0.7, 1.0)
-        bg_node.inputs[1].default_value = 1.0  # Strength
-
 def set_hdri_sky(image_path):
     """
     Sets the background world environment to use an HDRI image
@@ -155,17 +146,66 @@ def set_hdri_sky(image_path):
     print("HDRI Sky successfully applied!")
     return world
 
+def import_linz_terrain(obj_path):
+    """
+    Imports the textured terrain OBJ, corrects the 90-degree pitch,
+    and fixes the inverted Y-axis/valley inversion by rotating 180 degrees on Z.
+    """
+    if not os.path.exists(obj_path):
+        print(f"Error: Terrain OBJ not found at {obj_path}")
+        return None
+
+    # Save a list of current objects to find what got added
+    old_objects = set(bpy.data.objects)
+
+    # Import the OBJ
+    try:
+        bpy.ops.wm.obj_import(filepath=obj_path)
+    except AttributeError:
+        bpy.ops.import_scene.obj(filepath=obj_path)
+
+    # Find the newly imported object
+    new_objects = set(bpy.data.objects) - old_objects
+    if new_objects:
+        terrain_obj = list(new_objects)[0]
+        terrain_obj.name = "LINZ_Aerial_Terrain"
+        
+        # --- THE AXIS FLIP FIX ---
+        # 1. First, lay it flat on the ground (Pitch down 90 degrees on X)
+        terrain_obj.rotation_euler[0] = -math.pi / 2
+        
+        # 2. Second, fix the inverted valley/spur and North/South gradient
+        # Spin the map 180 degrees around the Z axis to flip +Y and -Y.
+        terrain_obj.rotation_euler[2] = math.pi  # 180 degrees in radians
+        
+        # Ensure it stays perfectly centered at your main dwelling origin
+        terrain_obj.location = (0, 0, 0)
+        
+        # Apply the transforms to freeze the new correct layout
+        bpy.context.view_layer.objects.active = terrain_obj
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+        
+        print("LINZ Terrain successfully oriented flat and flipped to match Site Coordinates!")
+        return terrain_obj
+    
+    return None
+
+
 
 cleanup()
-#setup_blue_sky()
-# Path to the actual HDR panorama map file from your download folder
+
+# Paths to your external asset files
 hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
+terrain_obj_path = os.path.abspath("terrain.obj")  # Point this to where your terrain.obj was saved
 
 # Set the sky
 set_hdri_sky(hdri_path)
 
+# Load your exact GIS accurate mapped mesh
+import_linz_terrain(terrain_obj_path)
+
 # Toggle features on/off
-SHOW_GROUND = True  # Set to False to hide ground terrain
+SHOW_GROUND = False  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:

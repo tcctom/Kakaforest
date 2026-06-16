@@ -16,7 +16,7 @@ This project creates a modular site planning system for architectural visualizat
 - Module reloading pattern used for iterative development
 
 ## Coordinate System
-- **Origin**: (0, 0, 0) is ground level  
+- **Origin**: (0, 0, 0) is ground level and center of the main dwelling
 - **X-axis**: East (+X) / West (-X)
   - Red cottage (Björken) at X=0 is on center
   - Wet wing at X=11 is on the EAST side
