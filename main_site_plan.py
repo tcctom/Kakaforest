@@ -192,99 +192,22 @@ set_hdri_sky(hdri_path)
 import_linz_terrain(terrain_obj_path)
 
 # Toggle features on/off
-SHOW_GROUND = False  # Set to False to hide ground terrain
+SHOW_GROUND = True  # Set to False to hide ground terrain
 
 # 0. Build ground terrain (optional)
 if SHOW_GROUND:
     # Import helper functions for easier point generation
     from ground_module import line_points, grid_points,vector_grid_points, combine_points, point
-
-    north_björken = grid_points((6, -57.5, 4.5), (-3, -52, 4.5), x_spacing=0.4)
-    
-    # South of cottage - upward slope
-    south_björken = grid_points((5, -63.1, 4.5), (-5, -66, 6.8), x_spacing=0.4, slope_direction='y')
-    southwest_björken = grid_points((-4, -64.1, 4.5), (-22, -74, 6.8), x_spacing=0.4, slope_direction='y')
-    
-    
-    # TRANSITION SLOPES - from parking up to cottage level
-    # Gradual slope from parking (-2m) up to cottage area (-0.5m) 
-    # This is the slope visible in the photo - about 1:4 grade
-    slope_parking_to_cottage_west = grid_points((-4, -56, 3.7), (-10, -57.5, 4.3), x_spacing=0.25, slope_direction='y')
-    slope_parking_to_cottage_mid = grid_points((-9, -56.5, 4.0), (-15, -57.5, 4.4), x_spacing=0.25, slope_direction='y')
-    slope_parking_to_cottage_east = grid_points((-14, -56, 3.6), (-20, -57.5, 4.2), x_spacing=0.25, slope_direction='y')
-    
- 
-    # Water tank area - flat pad at (-3, 70, 7)
-    water_tank_pad = grid_points((5, -66, 6.0), (1, -76, 6.0), x_spacing=0.5)
-    by_water_tank_pad = grid_points((0.5, -67, 6.5), (-6, -76, 7.0), x_spacing=0.5)
-    
-    
-    # FOREST areas (default for everything else)
-    forest_areas = []
-    forest_areas.append(south_björken)
-    #forest_areas.append(southwest_björken)
-    #forest_areas.append(drive_end_parking_east)
-    #forest_areas.append(drive_mid_area)
-    #forest_areas.append(slope_parking_to_cottage_west)
-    #forest_areas.append(slope_parking_to_cottage_mid)
-    #forest_areas.append(slope_parking_to_cottage_east)
-    #forest_areas.append(by_water_tank_pad)
-    
-    # Build terrain layers for each material type
-    #ground_module.grass_plane(north_björken)
-
-    #badminton and surrounding area is mostly grass, but with some natural undulation and patches of moss/gravel
-    #ground_module.grass_plane(grid_points((10, -50, 2), (-8, -42, 1.8), x_spacing=0.5, slope_direction='y'))
-        
-    #under and around Björken is mostly gravel with some patches of grass 
-    #ground_module.gravel_plane(grid_points((10, -57.5, 4.5), (-8, -63.1, 4.5), x_spacing=0.4))
-
-    #drive_end_parking_west = grid_points((-4, -50, 3.0), (-12, -54, 3.1), x_spacing=0.3)
-    #drive_mid_area = grid_points((-5, -54.5, 3.3), (-15, -56, 3.5), x_spacing=0.3)
-    #drive_end_parking_east = grid_points((-12, -50, 2.9), (-18, -54, 3.0), x_spacing=0.3)
-
-    #ground_module.gravel_plane(drive_end_parking_west)
-    #ground_module.gravel_plane(drive_mid_area)
-    #ground_module.gravel_plane(drive_end_parking_east)
-    
-    #ground_module.gravel_plane(water_tank_pad)
-    
-    #ground_module.forest_plane(south_björken)
-    #ground_module.forest_plane(southwest_björken)
-
-    #ground_module.forest_plane(slope_parking_to_cottage_west)
     
     # Main Dwelling area (at origin, with Björken 60m south and 5m higher elevation)
     # Ground level at 0.0, building sits on slight clearing
     main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -9, 0.0), x_spacing=0.4)
     ground_module.gravel_plane(main_dwelling_clearing)
-    # Small banks down on east and west sides - narrow strips need fine X spacing, reasonable Y spacing
-    ground_module.gravel_plane(grid_points((6, 4, 0.0), (7, -9, -1), x_spacing=0.5, y_spacing=0.5, slope_direction='x'))
-    ground_module.gravel_plane(grid_points((-7, -9, -1),(-6, 4, 0.0), x_spacing=0.5, y_spacing=0.5, slope_direction='x'))
     
-
-    
-    # Forest surrounds on all sides of main dwelling
-    main_dwelling_forest_north = grid_points((18, 32, 0), (-8, 3.5, -4.2), x_spacing=0.5, slope_direction='y')
-
-    main_dwelling_forest_west = grid_points((-6, 18, -1.5), (-30, -3.5, -4.1), x_spacing=0.5, slope_direction='y')
-    
-    ground_module.forest_plane(main_dwelling_forest_north)
-
-    ground_module.build_off_axis_plane((5, -6, 0.5), (8, -22, 0.5), length=-32, spacing=0.5, name="Flat_Grass_Play_Area", material_type='grass')
-
-    #ground_module.forest_plane(grid_points((2, -28, 0.5), (-30, -8, 0.5), x_spacing=0.5, slope_direction='y')) #flat_grass_play_area
-    ground_module.forest_plane(grid_points((2, -15, 0.5), (5, -8, 1), x_spacing=0.5, slope_direction='x')) 
-    ground_module.forest_plane(grid_points((9, -15, 1  ), (5, -8, 1), x_spacing=0.5, slope_direction='y'))
-    ground_module.forest_plane(grid_points((9, -15, 1  ), (13, -8, -2), x_spacing=0.5, slope_direction='x'))
-    ground_module.forest_plane(grid_points((10, 3.5, -0.2), (6.5, -8, -0.2), x_spacing=0.5)) #main dwelling east 1
-    ground_module.forest_plane(grid_points((10, -8, -0.2), (20, 3.5, -6), x_spacing=0.5, slope_direction='x')) #main dwelling east 2
-    ground_module.gravel_plane(main_dwelling_forest_west)
-
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(0, -60, 5.0))
+björken_module.build_red_cottage(origin=(21, -57, 8.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
@@ -306,7 +229,7 @@ outdoor_structures.create_single_boulder(position=(-6.5, -1.9, -0.4), base_size=
 
 
 # 1c. Pavers extending east from cottage
-outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
+#outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
 
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y) from Björken
