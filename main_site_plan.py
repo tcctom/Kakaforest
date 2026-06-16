@@ -177,6 +177,48 @@ def import_linz_terrain(obj_path):
     
     return None
 
+def create_excavation_cutter(contour_points, depth=5.0, name="Excavation_Cutter"):
+    """Creates a 3D solid box from grid points to act as a Boolean cutter."""
+    xs = [p[0] for p in contour_points]
+    ys = [p[1] for p in contour_points]
+    
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
+    z_top = max([p[2] for p in contour_points]) # The top surface height
+    z_bottom = z_top - depth                    # Push down into the ground
+    
+    # 8 corners of a solid box
+    verts = [
+        (x_min, y_min, z_bottom), (x_max, y_min, z_bottom),
+        (x_max, y_max, z_bottom), (x_min, y_max, z_bottom),
+        (x_min, y_min, z_top),    (x_max, y_min, z_top),
+        (x_max, y_max, z_top),    (x_min, y_max, z_top)
+    ]
+    
+    # 6 faces to close the 3D volume
+    faces = [
+        (0, 1, 2, 3), # Bottom
+        (4, 5, 6, 7), # Top
+        (0, 1, 5, 4), # Front
+        (1, 2, 6, 5), # Right
+        (2, 3, 7, 6), # Back
+        (3, 0, 4, 7)  # Left
+    ]
+    
+    mesh = bpy.data.meshes.new(f"{name}_Mesh")
+    cutter_obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(cutter_obj)
+    
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    
+    # Hide it from view and render so it's just an invisible cutting tool
+    cutter_obj.hide_viewport = True
+    cutter_obj.hide_render = True
+    
+    return cutter_obj
+
+
 
 
 cleanup()
@@ -189,20 +231,34 @@ terrain_obj_path = os.path.abspath("Terrain/terrain.obj")
 set_hdri_sky(hdri_path)
 
 # Load your exact GIS accurate mapped mesh
-import_linz_terrain(terrain_obj_path)
+# (Assuming this returns the imported object, or names it 'terrain')
+linz_terrain = import_linz_terrain(terrain_obj_path) 
+if not linz_terrain:
+    # Fallback if your function doesn't return the object directly
+    linz_terrain = bpy.data.objects.get("terrain") 
 
 # Toggle features on/off
 SHOW_GROUND = True  # Set to False to hide ground terrain
 
-# 0. Build ground terrain (optional)
-if SHOW_GROUND:
-    # Import helper functions for easier point generation
-    from ground_module import line_points, grid_points,vector_grid_points, combine_points, point
+# 0. Build ground terrain and clear the LINZ terrain
+if SHOW_GROUND and linz_terrain:
+    # Import helper functions
+    from ground_module import grid_points
     
-    # Main Dwelling area (at origin, with Björken 60m south and 5m higher elevation)
-    # Ground level at 0.0, building sits on slight clearing
-    main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -9, 0.0), x_spacing=0.4)
-    ground_module.gravel_plane(main_dwelling_clearing)
+    # 1. Define the clearing footprint
+    main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -7.5, 0.0), x_spacing=0.4)
+    
+    # 2. Build the visual gravel plane (sits perfectly on top)
+    gravel_pad = ground_module.gravel_plane(main_dwelling_clearing)
+    
+    # 3. Create the invisible 3D box to dig into the LINZ terrain
+    cutter = create_excavation_cutter(main_dwelling_clearing, depth=-2.0)
+    
+    # 4. Apply the Boolean Modifier to the LINZ terrain to "excavate"
+    bool_mod = linz_terrain.modifiers.new(name="Dwelling_Excavation", type='BOOLEAN')
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.object = cutter
+    bool_mod.solver = 'EXACT'  # 'EXACT' handles dense GIS topography meshes beautifully
     
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
@@ -215,17 +271,17 @@ björken_module.build_red_cottage(origin=(21, -57, 8.0))
 # Roof options: 
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
-main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="flush")
+main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0), show_roof=True, roof_style="flush")
 
 # 1a. Build North Deck - extends 3m north from ground floor
-main_dwelling_module.build_north_deck(origin=(0, 0, 0))
+main_dwelling_module.build_north_deck(origin=(0, -1, 0))
 
 # 1b. Build boulder row along south edge of clearing
-outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)
+#outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)
 # and north and south of porch
-outdoor_structures.create_single_boulder(position=(-6.5, 2.2, -0.4), base_size=1.0)
-outdoor_structures.create_single_boulder(position=(-6.5, 1.6, -0.4), base_size=0.9)
-outdoor_structures.create_single_boulder(position=(-6.5, -1.9, -0.4), base_size=0.9)
+#outdoor_structures.create_single_boulder(position=(-6.5, 2.2, -0.4), base_size=1.0)
+#outdoor_structures.create_single_boulder(position=(-6.5, 1.6, -0.4), base_size=0.9)
+#outdoor_structures.create_single_boulder(position=(-6.5, -1.9, -0.4), base_size=0.9)
 
 
 # 1c. Pavers extending east from cottage
@@ -246,20 +302,20 @@ outdoor_structures.create_single_boulder(position=(-6.5, -1.9, -0.4), base_size=
 #wet_wing_lower1.furniture(origin=(-13.0, -65.0, 5.0), building_width=10.0, building_depth=4.0)
 
 
-ground_module.build_off_axis_plane((-14, -5.8, -0.5), (-13.2, -10, -0.5), length=-12, spacing=0.5, name="Tank_Pad", material_type='gravel',)
+#ground_module.build_off_axis_plane((-14, -5.8, -0.5), (-13.2, -10, -0.5), length=-12, spacing=0.5, name="Tank_Pad", material_type='gravel',)
 
 
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-19.0, -8.5, -0.5))
-outdoor_structures.build_water_tank(origin=(-23.0, -9.3, -0.5))
+outdoor_structures.build_water_tank(origin=(-16.0, -10.5, -0.5))
+outdoor_structures.build_water_tank(origin=(-20.0, -11.3, -0.5))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/1000-ltr-tank-2/
-outdoor_structures.build_water_tank(origin=(-2.2, -4.1, -0.0), diameter=0.9, height=2.0)
+outdoor_structures.build_water_tank(origin=(-2.2, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
         mathutils.Vector((-4, -5.7, 0.0)),       
@@ -301,8 +357,8 @@ path_points_AMD_ROW = [
 #create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
 #create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
-outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1, -10, 4), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 5, 2), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-15, -5.5, 2.5), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.6, -11.1, 4), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 2), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.5, -6.7, 2.5), radius=0.4, height=7.0 )  
 
 print("Modular Site Build Complete.")
