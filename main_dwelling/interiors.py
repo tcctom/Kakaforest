@@ -189,21 +189,21 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Create wall behind log burner (East)
     create_fireplace_wall(
         name="MainDwelling_HeartyhWallEast",
-        location=(0.85, 0.0, 0.6),
+        location=(0.85, oy, 0.6),
         size=(0.1, 1.3, 1.2)
     )
 
     # Create wall south of log burner
     create_fireplace_wall(
         name="MainDwelling_HeartyhWallSouth",
-        location=(0.5, -0.6, 0.6),
+        location=(0.5, oy - 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
     # Create wall north of log burner
     create_fireplace_wall(
         name="MainDwelling_HeartyhWallNorth",
-        location=(0.5, 0.6, 0.6),
+        location=(0.5, oy + 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
@@ -216,7 +216,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Place your real 3D candlestick asset onto the South wall
     import_candlestick(
         name="Prop_RealCandlestick_01",
-        location=(0.5, -0.6, 1.2), 
+        location=(0.5, oy - 0.6, 1.2), 
         scale=(1.0, 1.0, 1.0)
     )
 
@@ -239,7 +239,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
     log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2 - 0.20
-    log_burner_y = 0
+    log_burner_y = oy
 
     FLOOR_TOP = oz + 0.1
     HEARTH_THICKNESS = 0.03

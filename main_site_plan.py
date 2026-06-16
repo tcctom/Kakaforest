@@ -309,7 +309,7 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0))
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
 outdoor_structures.build_water_tank(origin=(-16.0, -10.5, -0.5))
-outdoor_structures.build_water_tank(origin=(-20.0, -11.3, -0.5))
+outdoor_structures.build_water_tank(origin=(-20.0, -12.0, -0.5))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -318,17 +318,18 @@ outdoor_structures.build_water_tank(origin=(-20.0, -11.3, -0.5))
 outdoor_structures.build_water_tank(origin=(-2.2, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
-        mathutils.Vector((-4, -5.7, 0.0)),       
-        mathutils.Vector((-8, -4.5, 0.0)),       
-        mathutils.Vector((-12, -1, -0.5)),       
-        mathutils.Vector((-15, 0, -1)),       
-        mathutils.Vector((-25, -2, -1.5)), 
-        mathutils.Vector((-31.0, -10, -1.5))
+        mathutils.Vector((-4.5, -6.5, 0.0)),       
+        mathutils.Vector((-7.5, -6.5, 0.0)),       
+        mathutils.Vector((-12, -2.2, -1.4)),       
+        mathutils.Vector((-17, -1.4, -1.7)),       
+        mathutils.Vector((-24, -2.9, -1.8)), 
+        mathutils.Vector((-28.0, -7, -2.2)), 
+        mathutils.Vector((-31.0, -7.5, -2.5))
     ]
 
 
 from driveway import create_sloping_driveway  
-#create_sloping_driveway(name="Main_Drivewayv1", width=3.5, thickness=0.15, path_points=path_points_1, debug_show_points=True)
+create_sloping_driveway(name="Main_Drivewayv1", width=3.3, thickness=0.15, path_points=path_points_1, debug_show_points=True)
 
 #Would you be able to analyse the attached image and give me a set of path points in meters? 
 #Just the x, y is fine (put z to 0 on all). the red dot just north of center is the origin. North of that is plus Y and east of that is plus X. 
@@ -336,26 +337,26 @@ from driveway import create_sloping_driveway
 
 # The origin (0, 0, 0) is the red dot north of center
 path_points_main_drive = [
-    mathutils.Vector((-33.5, 50.0, -9.0)),   # Top entrance at the public road boundary
-    mathutils.Vector((-36, 35.0, -6.0)),   # Heading straight south along the top ridge
-    mathutils.Vector((-36.5, 20.0, -3.0)),   # Shifting slightly west past the northern red pin
-    mathutils.Vector((-35.0, 10, -2)),   
-    mathutils.Vector((-34.0, 0.0, -1.5)),   # Continuing south down the western flank
-    mathutils.Vector((-32.0, -11.0, -1.5)), # Passing perfectly west of your center origin dot
-    mathutils.Vector((-29.0, -26.0, -1.0)),  # Winding lower down the western track
-    mathutils.Vector((-24.0, -38.0, 0.5)),  # Straightening south toward the bottom turn
+    mathutils.Vector((-33.5, 50.0, -10.5)),   # Top entrance at the public road boundary
+    mathutils.Vector((-36, 35.0, -8)),   # Heading straight south along the top ridge
+    mathutils.Vector((-36.5, 20.0, -6.5)),   # Shifting slightly west past the northern red pin
+    mathutils.Vector((-35.0, 10, -5)),   
+    mathutils.Vector((-34.0, 0.0, -3.5)),   # Continuing south down the western flank
+    mathutils.Vector((-32.0, -11.0, -2.5)), # Passing perfectly west of your center origin dot
+    mathutils.Vector((-29.0, -26.0, -2.0)),  # Winding lower down the western track
+    mathutils.Vector((-24.0, -38.0, -0.5)),  # Straightening south toward the bottom turn
     mathutils.Vector((-20.0, -45.0, 2.0)),   # Sweeping around the bottom bend (crossing X axis)
     mathutils.Vector((-12.0, -46.0, 2.5))    # Terminating near the bottom right building clearing
 ]
 
 path_points_AMD_ROW = [
-    mathutils.Vector((32.0, 110.0, -20.0)),  
-    mathutils.Vector((1.0, 80.0, -13.0)),  
-    mathutils.Vector((-35.0, 50.0, -9.0))   
+    mathutils.Vector((32.0, 110.0, -22.1)),  
+    mathutils.Vector((1.0, 80.0, -13.5)),  
+    mathutils.Vector((-35.0, 50.0, -10.5))   
 ]
 
-#create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
-#create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
+create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
+create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
 outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.6, -11.1, 4), radius=0.4, height=7.0 )  
 outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 2), radius=0.4, height=7.0 )  
