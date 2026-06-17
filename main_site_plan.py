@@ -1,4 +1,5 @@
 import bpy  # type: ignore
+import addon_utils
 import sys
 import os
 import mathutils
@@ -146,6 +147,98 @@ def set_hdri_sky(image_path):
     print("HDRI Sky successfully applied!")
     return world
 
+def setup_nz_sun_and_sky(latitude=-41.783213855839, longitude=172.92023483494785, month=6, day=21, time=12.0, use_cycles=False):
+    """
+    Sets up a geographically accurate sun and sky.
+    use_cycles=False (Default): Incredibly fast, zero lag for drafting/coding.
+    use_cycles=True: Slow, grainy preview, but photo-realistic for final renders.
+    """
+    world = bpy.context.scene.world
+    world.use_nodes = True
+    node_tree = world.node_tree
+    nodes = node_tree.nodes
+    nodes.clear() 
+
+    node_sky = nodes.new(type='ShaderNodeTexSky')
+    node_bg = nodes.new(type='ShaderNodeBackground')
+    node_output = nodes.new(type='ShaderNodeOutputWorld')
+    
+    node_tree.links.new(node_sky.outputs['Color'], node_bg.inputs['Color'])
+    node_tree.links.new(node_bg.outputs['Background'], node_output.inputs['Surface'])
+
+    if use_cycles:
+        # High quality realism mode
+        bpy.context.scene.render.engine = 'CYCLES'
+        node_sky.sky_type = 'MULTIPLE_SCATTERING'
+    else:
+        # Fast drafting mode (Zero lag, no grain in Blender 5.x)
+        bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+        node_sky.sky_type = 'HOSEK_WILKIE'
+        
+    node_sky.sun_disc = True
+    
+    node_bg = nodes.new(type='ShaderNodeBackground')
+    node_output = nodes.new(type='ShaderNodeOutputWorld')
+    
+    node_tree.links.new(node_sky.outputs['Color'], node_bg.inputs['Color'])
+    node_tree.links.new(node_bg.outputs['Background'], node_output.inputs['Surface'])
+    
+    # 3. Create or grab the Sun Light object
+    if "NZ_Sun" in bpy.data.objects:
+        sun_obj = bpy.data.objects["NZ_Sun"]
+    else:
+        sun_data = bpy.data.lights.new(name="NZ_Sun", type='SUN')
+        sun_data.energy = 5.0  
+        sun_obj = bpy.data.objects.new(name="NZ_Sun", object_data=sun_data)
+        bpy.context.collection.objects.link(sun_obj)
+
+    # 4. NATIVE SOLAR GEOMETRY MATH (Bypasses the Add-on entirely)
+    # Convert degrees to radians for math operations
+    lat_rad = math.radians(latitude)
+    
+    # Calculate Day of the Year
+    days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    day_of_year = sum(days_in_months[:month-1]) + day
+    
+    # Solar Declination Angle (Earth's tilt relative to the sun)
+    # 284 is the offset from the winter solstice
+    declination = math.radians(23.45 * math.sin(math.radians((360.0 / 365.0) * (284 + day_of_year))))
+    
+    # Solar Hour Angle (15 degrees of rotation per hour relative to solar noon)
+    # Standard NZ Time Zone is UTC+12. solar_noon is approximated.
+    hour_angle = math.radians((time - 12.0) * 15.0)
+    
+    # Calculate Solar Elevation (Altitude) Angle
+    sin_elevation = (math.sin(lat_rad) * math.sin(declination) + 
+                     math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle))
+    elevation = math.asin(max(-1.0, min(1.0, sin_elevation))) # Clamp to safe ranges
+    
+    # Calculate Solar Azimuth Angle (Compass direction)
+    cos_azimuth = ((math.sin(declination) - math.sin(lat_rad) * math.sin(elevation)) / 
+                   (math.cos(lat_rad) * math.cos(elevation)))
+    cos_azimuth = max(-1.0, min(1.0, cos_azimuth)) # Clamp
+    
+    # Adjust azimuth quadrant based on afternoon vs morning hours
+    if hour_angle > 0:
+        azimuth = (2.0 * math.pi) - math.acos(cos_azimuth)
+    else:
+        azimuth = math.acos(cos_azimuth)
+
+    # 5. Apply calculation results to the Sky Texture Node
+    node_sky.sun_elevation = elevation
+    node_sky.sun_rotation = azimuth
+    
+    # 6. Apply calculation results to our actual Sun Light object
+    sun_obj.rotation_mode = 'XYZ'
+    sun_obj.rotation_euler[0] = (math.pi / 2.0) - elevation
+    sun_obj.rotation_euler[1] = 0.0
+    sun_obj.rotation_euler[2] = azimuth + math.pi
+
+    print(f"Sun successfully positioned mathematically:")
+    print(f" -> Azimuth: {math.degrees(azimuth):.2f}°")
+    print(f" -> Elevation: {math.degrees(elevation):.2f}°")
+
+
 def import_linz_terrain(obj_path):
     """
     Import a textured terrain OBJ that is already in site coordinates.
@@ -224,11 +317,16 @@ def create_excavation_cutter(contour_points, depth=5.0, name="Excavation_Cutter"
 cleanup()
 
 # Paths to your external asset files
-hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
+#hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
 terrain_obj_path = os.path.abspath("Terrain/terrain.obj")
 
 # Set the sky
-set_hdri_sky(hdri_path)
+#set_hdri_sky(hdri_path)
+
+# Set geographically accurate NZ Sky and Sun
+# note, long and lat default to bach
+# Setting it to March 20th at 4:30 PM (16.5) for long afternoon autumn shadows
+setup_nz_sun_and_sky( month=6, day=1, time=12.0, use_cycles=False)
 
 # Load your exact GIS accurate mapped mesh
 # (Assuming this returns the imported object, or names it 'terrain')
