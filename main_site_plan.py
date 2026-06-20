@@ -422,7 +422,7 @@ cleanup()
 #setup_nz_sun_and_sky( month=6, day=21, time=12.0, use_cycles=False)
 
 #setup_nz_sun_and_sky2(    month=12,    day=21,    time=11)
-setup_nz_sun_and_sky2(    month=6,    day=21,    time=12)
+setup_nz_sun_and_sky2(    month=12,    day=21,    time=12)
 #setup_nz_sun_and_sky2(    month=6,    day=21,    time=15)
 
 # Paths to your external asset files
@@ -444,7 +444,7 @@ if SHOW_GROUND and linz_terrain:
     from ground_module import grid_points
     
     # 1. Define the clearing footprint
-    main_dwelling_clearing = grid_points((6, 4, 0.0), (-6, -7.5, 0.0), x_spacing=0.4)
+    main_dwelling_clearing = grid_points((6, 3.0, -0.2), (-5.2, -8.5, -0.2), x_spacing=0.4)
     
     # 2. Build the visual gravel plane (sits perfectly on top)
     gravel_pad = ground_module.gravel_plane(main_dwelling_clearing)
@@ -461,7 +461,7 @@ if SHOW_GROUND and linz_terrain:
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(21, -57, 8.0))
+björken_module.build_red_cottage(origin=(22, -57, 8.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
@@ -469,10 +469,11 @@ björken_module.build_red_cottage(origin=(21, -57, 8.0))
 # Roof options: 
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
-main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0), show_roof=True, roof_style="flush")
+foundation = ground_module.gravel_plane(grid_points((4.5, 2.8, 0.2), (-4.5, -4.6, 0.2), x_spacing=0.4),thickness=0.3)
+main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush")
 
 # 1a. Build North Deck - extends 3m north from ground floor
-main_dwelling_module.build_north_deck(origin=(0, -1, 0))
+main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
 
 # 1b. Build boulder row along south edge of clearing
 #outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)
@@ -506,8 +507,8 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0))
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-16.0, -10.5, -0.5))
-outdoor_structures.build_water_tank(origin=(-20.0, -12.0, -0.5))
+outdoor_structures.build_water_tank(origin=(-15.5, -12, -0.9))
+outdoor_structures.build_water_tank(origin=(-19.5, -13.5, -0.9))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -516,13 +517,15 @@ outdoor_structures.build_water_tank(origin=(-20.0, -12.0, -0.5))
 outdoor_structures.build_water_tank(origin=(-2.2, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
-        mathutils.Vector((-4.5, -6.5, 0.0)),       
-        mathutils.Vector((-7.5, -6.5, 0.0)),       
-        mathutils.Vector((-12, -2.2, -1.4)),       
+        mathutils.Vector((4.5, -6.5, 0.1)),       
+        mathutils.Vector((-3.0, -6.5, 0.1)),       
+        mathutils.Vector((-7.9, -6.2, -0.15)),       
+        mathutils.Vector((-12, -2.2, -1.2)),       
         mathutils.Vector((-17, -1.4, -1.7)),       
-        mathutils.Vector((-24, -2.9, -1.8)), 
-        mathutils.Vector((-28.0, -7, -2.2)), 
-        mathutils.Vector((-31.0, -7.5, -2.5))
+        mathutils.Vector((-20, -2.0, -1.8)), 
+        mathutils.Vector((-25, -2.9, -2.3)), 
+        mathutils.Vector((-28.0, -6, -2.6)), 
+        mathutils.Vector((-31.0, -7.5, -3.2))
     ]
 
 
@@ -536,21 +539,30 @@ create_sloping_driveway(name="Main_Drivewayv1", width=3.3, thickness=0.15, path_
 # The origin (0, 0, 0) is the red dot north of center
 path_points_main_drive = [
     mathutils.Vector((-33.5, 50.0, -10.5)),   # Top entrance at the public road boundary
-    mathutils.Vector((-36, 35.0, -8)),   # Heading straight south along the top ridge
-    mathutils.Vector((-36.5, 20.0, -6.5)),   # Shifting slightly west past the northern red pin
-    mathutils.Vector((-35.0, 10, -5)),   
-    mathutils.Vector((-34.0, 0.0, -3.5)),   # Continuing south down the western flank
-    mathutils.Vector((-32.0, -11.0, -2.5)), # Passing perfectly west of your center origin dot
+    mathutils.Vector((-36, 35.0, -8.5)),   # Heading straight south along the top ridge
+    mathutils.Vector((-36.5, 20.0, -6.7)),   # Shifting slightly west past the northern red pin
+    mathutils.Vector((-35.5, 10, -5.1)),   
+    mathutils.Vector((-34.0, 0.0, -4.2)),   # Continuing south down the western flank
+    mathutils.Vector((-32.0, -11.0, -2.9)), # Passing perfectly west of your center origin dot
+    mathutils.Vector((-31.0, -18.5, -2.5)),  # Winding lower down the western track
     mathutils.Vector((-29.0, -26.0, -2.0)),  # Winding lower down the western track
-    mathutils.Vector((-24.0, -38.0, -0.5)),  # Straightening south toward the bottom turn
-    mathutils.Vector((-20.0, -45.0, 2.0)),   # Sweeping around the bottom bend (crossing X axis)
-    mathutils.Vector((-12.0, -46.0, 2.5))    # Terminating near the bottom right building clearing
+    mathutils.Vector((-25.0, -38.0, -0.5)),  # Straightening south toward the bottom turn
+    mathutils.Vector((-21.0, -45.0, 1.0)),   # Sweeping around the bottom bend (crossing X axis)
+    mathutils.Vector((-17.5, -50.0, 2.0)),    
+    mathutils.Vector((-13, -55.0, 3.0)),    
+    mathutils.Vector((-6.0, -58.0, 4.6)),
+    mathutils.Vector((-1.0, -57.5, 5.5)),
+    mathutils.Vector((2, -57.0, 5.9)),
+    mathutils.Vector((10, -56.0, 6.3)),
+    mathutils.Vector((14, -55.0, 6.3))     # Terminating near the bottom right building clearing
+
 ]
 
 path_points_AMD_ROW = [
     mathutils.Vector((32.0, 111.5, -22.1)),  
     mathutils.Vector((1.0, 81.0, -14.0)),  
-    mathutils.Vector((-35.0, 50.0, -10.5))   
+    mathutils.Vector((-35.0, 50.0, -10.5)),  
+    mathutils.Vector((-41.0, 46.0, -10.0))     
 ]
 
 create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)

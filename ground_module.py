@@ -341,77 +341,47 @@ def create_material(name, color):
     mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = color
     return mat
 
-def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None, material_type='forest', name_suffix='', use_planar=False, extension=1.0):
+def build_ground_terrain(
+    contour_points=None,
+    fallback_bounds=(-5.0, 5.0, -5.0, 5.0, 0.0),
+    material_type='gravel',
+    name_suffix='',
+    use_planar=False,
+    extension=1.0,
+    thickness=0.100
+):
     """
-    Creates ground terrain for the Kaka Forest Retreat site.
-    
-    Starting simple: flat ground 500mm under cottage, extending 1000mm each side.
-    Can be expanded to use contour_points for accurate terrain modeling.
-    
-    COORDINATE SYSTEM:
-    - Origin (0,0,0) = center of cottage at floor level
-    - X-axis: West (+X) / East (-X)
-    - Y-axis: South (+Y) / North (-Y)
-    - Z-axis: Up (+Z) / Down (-Z)
-    
-    COTTAGE DIMENSIONS (from björken_module.py):
-    - Width (X): 6.2m, so edges at X = ±3.1
-    - Depth (Y): 4.2m, so edges at Y = ±2.1
-    - South wall center: Y = +2.1
-    - North wall center: Y = -2.1
-    
-    EXAMPLE CONTOUR POINT:
-    - Point 3m south of cottage, 2m above floor: (0, 5.1, 2)
-      Calculation: Y = 4.2/2 + 3.0 = 5.1
-    
-    EXAMPLE USAGE:
-        # Method 1: Direct point specification
-        survey_points = [
-            (-3, 5.1, 2), (-2, 5.1, 2), (-1, 5.1, 2), (0, 5.1, 2),
-            (1, 5.1, 2), (2, 5.1, 2), (3, 5.1, 2), (4, 5.1, 2),
-        ]
-        
-        # Method 2: Using helper functions (RECOMMENDED)
-        from ground_module import line_points, grid_points, combine_points
-        
-        ridge = line_points((-3, 5.1, 2), (4, 5.1, 2), spacing=1.0)  # 8 points
-        valley = grid_points((6, -8, -2), (8, -6, -2), x_spacing=1.0)  # Grid
-        survey_points = combine_points(ridge, valley)
-        
-        build_ground_terrain(origin=(0,0,0), contour_points=survey_points)
+    Creates structural ground terrain (e.g., gravel pad, yard space).
     
     Args:
-        cottage_origin: (x, y, z) tuple for red cottage position (default (0,0,0))
         contour_points: Optional list of (x, y, z) tuples for terrain contours
-                       Example: [(0, 5.1, 2), (-3, 4, 1.5), (3, 4, 1.5)]
-        material_type: Type of ground material: 'grass', 'gravel', 'forest' (default)
-        name_suffix: Optional suffix for object name (e.g., '_Grass')
-        use_planar: If True, fit a plane to the points for even slopes (good for uniform slopes)
-        extension: How far (in meters) to extend mesh beyond defined points (default 1.0)
-                   Set to 0.0 to stop exactly at your defined boundaries
+        fallback_bounds: (x_min, x_max, y_min, y_max, z) if no contour points are passed
+        material_type: Type of ground material: 'grass', 'gravel' (default), 'forest'
+        name_suffix: Optional suffix for object name (e.g., '_GravelPad')
+        use_planar: If True, fit a flat planar slope to the points
+        extension: How far (in meters) to extend mesh beyond boundaries
+        thickness: Downward thickness added to the pad in meters (default 100mm)
     """
-    ox, oy, oz = cottage_origin
+    import bpy
+    import math
+
+    GRID_SPACING = 0.5  # 500mm grid resolution for interpolated meshes
     
-    # Cottage dimensions (from björken_module.py)
-    COTTAGE_W = 6.2  # Width (X-direction)
-    COTTAGE_D = 4.2  # Depth (Y-direction)
-    
-    # Ground parameters
-    GROUND_DEPTH = -0.5  # 500mm below cottage origin
-    GRID_SPACING = 0.5  # 500mm grid resolution for terrain mesh
-    
-    # Create mesh for terrain
+    # Create mesh and container object
     mesh = bpy.data.meshes.new(f"GroundMesh{name_suffix}")
-    ground = bpy.data.objects.new(f"Ground_Terrain{name_suffix}", mesh)
-    bpy.context.collection.objects.link(ground)
+    ground_obj = bpy.data.objects.new(f"Ground_Terrain{name_suffix}", mesh)
+    bpy.context.collection.objects.link(ground_obj)
     
+    # --------------------------------------------------
+    # GEOMETRY GENERATION
+    # --------------------------------------------------
     if contour_points is None or len(contour_points) == 0:
-        # Simple flat plane fallback
-        x_min = ox - COTTAGE_W/2 - extension
-        x_max = ox + COTTAGE_W/2 + extension
-        y_min = oy - COTTAGE_D/2 - extension
-        y_max = oy + COTTAGE_D/2 + extension
-        z_ground = oz + GROUND_DEPTH
+        # Generic flat plane fallback using explicit bounds
+        x_min, x_max, y_min, y_max, z_ground = fallback_bounds
+        x_min -= extension
+        x_max += extension
+        y_min -= extension
+        y_max += extension
         
         verts = [
             (x_min, y_min, z_ground),
@@ -421,44 +391,35 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None, material
         ]
         faces = [(0, 1, 2, 3)]
     else:
-        # Grid + Interpolation method using contour points
-        # Determine terrain bounds from contour points
+        # Interpolated grid generation from survey data
         xs = [p[0] for p in contour_points]
         ys = [p[1] for p in contour_points]
         
-        x_min = min(xs) - extension
-        x_max = max(xs) + extension
-        y_min = min(ys) - extension
-        y_max = max(ys) + extension
+        x_min, x_max = min(xs) - extension, max(xs) + extension
+        y_min, y_max = min(ys) - extension, max(ys) + extension
         
-        # Fit plane if using planar interpolation
         if use_planar:
             plane_a, plane_b, plane_c = fit_plane_to_points(contour_points)
         
-        # Create regular grid
         x_steps = int((x_max - x_min) / GRID_SPACING) + 1
         y_steps = int((y_max - y_min) / GRID_SPACING) + 1
         
         verts = []
         vertex_index = {}
         
-        # Generate grid vertices with interpolated Z values
         for j in range(y_steps):
             for i in range(x_steps):
                 x = x_min + i * GRID_SPACING
                 y = y_min + j * GRID_SPACING
                 
                 if use_planar:
-                    # Planar interpolation: z = ax + by + c
                     z = plane_a * x + plane_b * y + plane_c
                 else:
-                    # Inverse Distance Weighting (IDW) interpolation
                     z = interpolate_elevation(x, y, contour_points, power=2)
                 
                 verts.append((x, y, z))
                 vertex_index[(i, j)] = len(verts) - 1
         
-        # Create quad faces from grid
         faces = []
         for j in range(y_steps - 1):
             for i in range(x_steps - 1):
@@ -471,47 +432,50 @@ def build_ground_terrain(cottage_origin=(0, 0, 0), contour_points=None, material
     mesh.from_pydata(verts, [], faces)
     mesh.update()
     
-    # Calculate vertex colors based on slope
+    # --------------------------------------------------
+    # SLOPE-BASED VERTEX COLORS
+    # --------------------------------------------------
     if not mesh.vertex_colors:
         mesh.vertex_colors.new(name="SlopeShading")
     color_layer = mesh.vertex_colors["SlopeShading"]
     
-    # Define colors for different slopes
-    flat_color = (0.3, 0.4, 0.2, 1.0)   # Green-brown for flat ground
-    steep_color = (0.5, 0.4, 0.3, 1.0)  # Tan-brown for steep slopes
+    flat_color = (0.3, 0.4, 0.2, 1.0)
+    steep_color = (0.5, 0.4, 0.3, 1.0)
     
     for poly in mesh.polygons:
-        # Get face normal
-        normal = poly.normal
+        slope_factor = 1.0 - abs(poly.normal.z)
+        steepness = min(slope_factor * 3.0, 1.0)
         
-        # Calculate slope angle from vertical (0° = flat, 90° = vertical)
-        # Z component of normal: 1.0 = flat, 0.0 = vertical
-        slope_factor = 1.0 - abs(normal.z)  # 0.0 = flat, 1.0 = vertical
-        
-        # Clamp and scale (slopes > 30° are considered steep)
-        steepness = min(slope_factor * 3.0, 1.0)  # 0 to 1 range
-        
-        # Interpolate between flat and steep colors
         poly_color = [
-            flat_color[i] * (1 - steepness) + steep_color[i] * steepness
-            for i in range(4)
+            flat_color[k] * (1 - steepness) + steep_color[k] * steepness
+            for k in range(4)
         ]
-        
-        # Apply color to all vertices of this face
         for loop_idx in poly.loop_indices:
             color_layer.data[loop_idx].color = poly_color
-    
-    # Apply ground material based on type
+
+    # --------------------------------------------------
+    # MATERIALS
+    # --------------------------------------------------
     if material_type == 'grass':
         ground_mat = create_grass_material()
     elif material_type == 'gravel':
         ground_mat = create_gravel_material()
-    else:  # 'forest' or default
+    else:
         ground_mat = create_forest_material()
-    
-    ground.data.materials.append(ground_mat)
-    
-    return ground
+        
+    ground_obj.data.materials.append(ground_mat)
+
+    # --------------------------------------------------
+    # ADD PHYSICAL THICKNESS (Solidify Modifier)
+    # --------------------------------------------------
+    if thickness > 0.0:
+        solidify = ground_obj.modifiers.new(name="GravelThickness", type='SOLIDIFY')
+        solidify.thickness = thickness
+        solidify.offset = -1.0  # Expands downward from your elevations
+        solidify.use_rim = True  # Creates clean structural side walls
+
+    return ground_obj
+
 
 def create_grass_material():
     """Create grass material - green with vertex color shading."""
@@ -604,7 +568,7 @@ def create_forest_material():
 # CONVENIENCE FUNCTIONS - Simplified terrain builders with preset materials
 # ============================================================================
 
-def grass_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+def grass_plane(contour_points,  use_planar=True, extension=0.0, thickness=0.100):
     """
     Create a grass terrain plane from contour points.
     
@@ -618,15 +582,15 @@ def grass_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, exten
         Ground object
     """
     return build_ground_terrain(
-        cottage_origin=cottage_origin,
         contour_points=contour_points,
         material_type='grass',
         name_suffix='_Grass',
         use_planar=use_planar,
-        extension=extension
+        extension=extension,
+        thickness=thickness
     )
 
-def gravel_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+def gravel_plane(contour_points, use_planar=True, extension=0.0, thickness=0.100):
     """
     Create a gravel terrain plane from contour points.
     
@@ -640,15 +604,15 @@ def gravel_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, exte
         Ground object
     """
     return build_ground_terrain(
-        cottage_origin=cottage_origin,
         contour_points=contour_points,
         material_type='gravel',
         name_suffix='_Gravel',
         use_planar=use_planar,
-        extension=extension
+        extension=extension,
+        thickness=thickness
     )
 
-def forest_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, extension=0.0):
+def forest_plane(contour_points, use_planar=True, extension=0.0, thickness=0.100):
     """
     Create a forest floor terrain plane from contour points.
     
@@ -662,12 +626,12 @@ def forest_plane(contour_points, cottage_origin=(0, 0, 0), use_planar=True, exte
         Ground object
     """
     return build_ground_terrain(
-        cottage_origin=cottage_origin,
         contour_points=contour_points,
         material_type='forest',
         name_suffix='_Forest',
         use_planar=use_planar,
-        extension=extension
+        extension=extension,
+        thickness=thickness
     )
 
 def build_off_axis_rect_mesh(name_suffix="Driveway_Pad", grid_points=None, width_steps=0, length_steps=0, material_type='forest'):
