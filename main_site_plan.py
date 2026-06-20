@@ -91,62 +91,6 @@ def cleanup():
     for mat in bpy.data.materials:
         bpy.data.materials.remove(mat)
 
-def set_hdri_sky(image_path):
-    """
-    Sets the background world environment to use an HDRI image
-    for realistic sky and ambient lighting.
-    """
-    if not os.path.exists(image_path):
-        print(f"Error: HDRI file not found at {image_path}")
-        return None
-
-    # Ensure the World settings are using nodes
-    world = bpy.context.scene.world
-    if not world:
-        # Create a world if somehow one doesn't exist
-        world = bpy.data.worlds.new("World")
-        bpy.context.scene.world = world
-        
-    world.use_nodes = True
-    node_tree = world.node_tree
-    nodes = node_tree.nodes
-    links = node_tree.links
-    
-    # Clean up existing background/environment nodes to prevent overlapping
-    for node in list(nodes):
-        if node.type in ['BACKGROUND', 'TEX_ENVIRONMENT']:
-            nodes.remove(node)
-            
-    # Find the World Output node (it's always there by default)
-    output_node = next((n for n in nodes if n.type == 'OUTPUT_WORLD'), None)
-    if not output_node:
-        output_node = nodes.new(type='ShaderNodeOutputWorld')
-        output_node.location = (400, 0)
-
-    # 1. Create a Background Shader node
-    bg_node = nodes.new(type='ShaderNodeBackground')
-    bg_node.location = (200, 0)
-    bg_node.inputs['Strength'].default_value = 1.0  # Control sky brightness here
-    
-    # 2. Create an Environment Texture node
-    env_node = nodes.new(type='ShaderNodeTexEnvironment')
-    env_node.location = (0, 0)
-    
-    # 3. Load the actual .hdr or .exr image file
-    try:
-        hdr_image = bpy.data.images.load(image_path)
-        env_node.image = hdr_image
-    except Exception as e:
-        print(f"Failed to load HDRI image data: {e}")
-        return None
-        
-    # 4. Link everything together
-    links.new(env_node.outputs['Color'], bg_node.inputs['Color'])
-    links.new(bg_node.outputs['Background'], output_node.inputs['Surface'])
-    
-    print("HDRI Sky successfully applied!")
-    return world
-
 def setup_nz_sun_and_sky(latitude=-41.783213855839, longitude=172.92023483494785, month=6, day=21, time=12.0, use_cycles=False):
     """
     Sets up a geographically accurate sun and sky.
@@ -238,7 +182,163 @@ def setup_nz_sun_and_sky(latitude=-41.783213855839, longitude=172.92023483494785
     print(f" -> Azimuth: {math.degrees(azimuth):.2f}°")
     print(f" -> Elevation: {math.degrees(elevation):.2f}°")
 
+def setup_nz_sun_and_sky2(
+    latitude=-41.783213855839,
+    longitude=172.92023483494785,
+    month=6,
+    day=21,
+    time=12.0,
+    use_cycles=False,
+    show_debug_sun=True,
+):
+    """
+    New Zealand Sun & Sky for Blender 5.1
+    Fixed: Vector-aligned rotation using explicit ENU Map coordinates.
+    """
+    import math
+    import mathutils
+    import bpy
 
+    scene = bpy.context.scene
+
+    # --------------------------------------------------
+    # WORLD SETUP
+    # --------------------------------------------------
+    world = scene.world
+    if world is None:
+        world = bpy.data.worlds.new("World")
+        scene.world = world
+
+    world.use_nodes = True
+    nt = world.node_tree
+    nt.nodes.clear()
+
+    sky = nt.nodes.new("ShaderNodeTexSky")
+    bg = nt.nodes.new("ShaderNodeBackground")
+    output = nt.nodes.new("ShaderNodeOutputWorld")
+
+    nt.links.new(sky.outputs["Color"], bg.inputs["Color"])
+    nt.links.new(bg.outputs["Background"], output.inputs["Surface"])
+
+    if use_cycles:
+        scene.render.engine = 'CYCLES'
+        sky.sky_type = 'MULTIPLE_SCATTERING'
+    else:
+        scene.render.engine = 'BLENDER_EEVEE'
+        sky.sky_type = 'HOSEK_WILKIE'
+
+    sky.sun_disc = True
+    bg.inputs["Strength"].default_value = 1.0
+
+    # --------------------------------------------------
+    # SUN OBJECT SETUP
+    # --------------------------------------------------
+    if "NZ_Sun" in bpy.data.objects:
+        sun_obj = bpy.data.objects["NZ_Sun"]
+    else:
+        sun_data = bpy.data.lights.new(name="NZ_Sun", type='SUN')
+        sun_obj = bpy.data.objects.new(name="NZ_Sun", object_data=sun_data)
+        bpy.context.collection.objects.link(sun_obj)
+
+    sun_obj.data.energy = 5.0
+    sun_obj.data.angle = math.radians(0.53)
+    sun_obj.data.use_shadow = True
+
+    # --------------------------------------------------
+    # CORE ASTRONOMY MATH
+    # --------------------------------------------------
+    days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    day_of_year = sum(days_in_months[:month - 1]) + day
+    lat_rad = math.radians(latitude)
+
+    declination = math.radians(
+        23.45 * math.sin(math.radians((360.0 / 365.0) * (284 + day_of_year)))
+    )
+    hour_angle = math.radians((time - 12.0) * 15.0)
+
+    # Calculate Elevation (Altitude)
+    sin_elev = (
+        math.sin(lat_rad) * math.sin(declination) +
+        math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
+    )
+    sin_elev = max(-1.0, min(1.0, sin_elev))
+    elevation = math.asin(sin_elev)
+
+    # Calculate Azimuth relative to the horizon
+    y = math.sin(hour_angle)
+    x = (
+        math.cos(hour_angle) * math.sin(lat_rad)
+        - math.tan(declination) * math.cos(lat_rad)
+    )
+    azimuth = math.atan2(y, x)
+    azimuth = (azimuth + math.pi) % (2.0 * math.pi)
+
+    # --------------------------------------------------
+    # GENERATE PERFECT DIRECTORY VECTORS (ENU to Blender XYZ)
+    # --------------------------------------------------
+    east = math.cos(elevation) * math.sin(azimuth)
+    north = math.cos(elevation) * math.cos(azimuth)
+    up = math.sin(elevation)
+
+    # --------------------------------------------------
+    # SYNC RENDER ENGINES (Sky Node & Sun Lamp)
+    # --------------------------------------------------
+    # Match the Sky Texture node to your map layout (Counter-clockwise from East)
+    sky.sun_elevation = elevation
+    sky.sun_rotation = math.atan2(north, east)
+
+    # Create the sun direction vector pointing to the sky
+    sun_vector = mathutils.Vector((east, north, up))
+
+    # CRITICAL FIX: To make the lamp shine DOWN from the sky, we track the INVERSE vector (-sun_vector).
+    # This forces the light beam to travel Southwest towards the origin, matching a 9AM morning.
+    tracking_rotation = (-sun_vector).to_track_quat('-Z', 'Y')
+    
+    sun_obj.rotation_mode = 'XYZ'
+    sun_obj.rotation_euler = tracking_rotation.to_euler()
+
+    # --------------------------------------------------
+    # VISUAL DEBUG SUN SPHERE
+    # --------------------------------------------------
+    if show_debug_sun:
+        if "NZ_DebugSun" not in bpy.data.objects:
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=20)
+            debug_sun = bpy.context.active_object
+            debug_sun.name = "NZ_DebugSun"
+
+            mat = bpy.data.materials.new("NZ_DebugSun_Mat")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs["Emission Strength"].default_value = 50.0
+            debug_sun.data.materials.append(mat)
+        else:
+            debug_sun = bpy.data.objects["NZ_DebugSun"]
+
+        if hasattr(debug_sun, "visible_shadow"):
+            debug_sun.visible_shadow = False
+
+        distance = 20000.0
+        debug_sun.location = (east * distance, north * distance, up * distance)
+
+    # --------------------------------------------------
+    # EEVEE-NEXT SHADOW TWEAKS
+    # --------------------------------------------------
+    if scene.render.engine == 'BLENDER_EEVEE' and hasattr(scene, "eevee"):
+        try:
+            scene.eevee.use_shadows = True
+        except:
+            pass
+
+    # --------------------------------------------------
+    # DIAGNOSTIC LOGGING
+    # --------------------------------------------------
+    print("\n========== NZ SUN VECTOR DEBUG ==========")
+    print(f"Time: {time:.2f} | Elevation: {math.degrees(elevation):.2f}°")
+    print(f"Target Vector (To Sun):  X(East)={east:.3f}, Y(North)={north:.3f}, Z(Up)={up:.3f}")
+    print(f"Light Trajectory (Rays): X={-east:.3f}, Y={-north:.3f}, Z={-up:.3f}")
+    print("=========================================\n")
+
+    return sun_obj
 def import_linz_terrain(obj_path):
     """
     Import a textured terrain OBJ that is already in site coordinates.
@@ -316,17 +416,17 @@ def create_excavation_cutter(contour_points, depth=5.0, name="Excavation_Cutter"
 
 cleanup()
 
-# Paths to your external asset files
-#hdri_path = os.path.abspath("textures/MorningSkyHDRI002B/MorningSkyHDRI002B_1K_HDR.exr")
-terrain_obj_path = os.path.abspath("Terrain/terrain.obj")
-
-# Set the sky
-#set_hdri_sky(hdri_path)
-
 # Set geographically accurate NZ Sky and Sun
 # note, long and lat default to bach
 # Setting it to March 20th at 4:30 PM (16.5) for long afternoon autumn shadows
-setup_nz_sun_and_sky( month=6, day=1, time=12.0, use_cycles=False)
+#setup_nz_sun_and_sky( month=6, day=21, time=12.0, use_cycles=False)
+
+#setup_nz_sun_and_sky2(    month=12,    day=21,    time=11)
+setup_nz_sun_and_sky2(    month=6,    day=21,    time=12)
+#setup_nz_sun_and_sky2(    month=6,    day=21,    time=15)
+
+# Paths to your external asset files
+terrain_obj_path = os.path.abspath("Terrain/terrain.obj")
 
 # Load your exact GIS accurate mapped mesh
 # (Assuming this returns the imported object, or names it 'terrain')
@@ -448,8 +548,8 @@ path_points_main_drive = [
 ]
 
 path_points_AMD_ROW = [
-    mathutils.Vector((32.0, 110.0, -22.1)),  
-    mathutils.Vector((1.0, 80.0, -13.5)),  
+    mathutils.Vector((32.0, 111.5, -22.1)),  
+    mathutils.Vector((1.0, 81.0, -14.0)),  
     mathutils.Vector((-35.0, 50.0, -10.5))   
 ]
 
