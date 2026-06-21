@@ -25,8 +25,8 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_NorthWall_First", (ox - spacing, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MainDwelling_NorthWall_First", (ox + spacing, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
-    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH / 2, oy + 1.5, oz + 1.75), width=1.5, height=0.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH / 2, oy - 2, oz + 1.75), width=1.0, height=0.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH / 2, oy + 1.5, oz + 1.65), width=1.5, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MainDwelling_EastWall_Ground", (ox + LENGTH / 2, oy - 2, oz + 1.65), width=1.0, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     add_window("MainDwelling_EastWall_First", (ox + LENGTH / 2, oy + 1.5, first_floor_z + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MainDwelling_EastWall_First", (ox + LENGTH / 2, oy - 2, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')

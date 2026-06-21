@@ -156,7 +156,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     WALL_HEIGHT = 2.0
 
     shower_x_center = (bathroom_west + bathroom_west + 1) / 2
-    shower_y_center = (bathroom_north + bathroom_north - 0.6) / 2
+    shower_y_center = (bathroom_north + bathroom_north - 0.41) / 2
 
     create_shower_tray(
         x_center=shower_x_center,

@@ -41,8 +41,8 @@ def build_simple_open_porch(
     # Steps down from porch deck on west side - using decking material
     STEP_WIDTH = 2.5  # Full porch width (north-south)
     STEP_DEPTH = 0.4  # 400mm deep (east-west)
-    STEP_HEIGHT = 0.15  # 150mm rise per step
-    NUM_STEPS = 6  # Total number of steps
+    STEP_HEIGHT = 0.16  # 160mm rise per step
+    NUM_STEPS = 7  # Total number of steps
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)
 
     for i in range(NUM_STEPS):

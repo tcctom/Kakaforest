@@ -421,8 +421,9 @@ cleanup()
 # Setting it to March 20th at 4:30 PM (16.5) for long afternoon autumn shadows
 #setup_nz_sun_and_sky( month=6, day=21, time=12.0, use_cycles=False)
 
+setup_nz_sun_and_sky2(    month=1,    day=21,    time=9)
 #setup_nz_sun_and_sky2(    month=12,    day=21,    time=11)
-setup_nz_sun_and_sky2(    month=12,    day=21,    time=12)
+#setup_nz_sun_and_sky2(    month=12,    day=21,    time=12)
 #setup_nz_sun_and_sky2(    month=6,    day=21,    time=15)
 
 # Paths to your external asset files
@@ -461,7 +462,7 @@ if SHOW_GROUND and linz_terrain:
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(22, -57, 8.0))
+björken_module.build_red_cottage(origin=(24, -56, 8.0))
 
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
@@ -508,7 +509,7 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
 outdoor_structures.build_water_tank(origin=(-15.5, -12, -0.9))
-outdoor_structures.build_water_tank(origin=(-19.5, -13.5, -0.9))
+outdoor_structures.build_water_tank(origin=(-19.3, -13.7, -1.2))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -530,7 +531,7 @@ path_points_1 = [
 
 
 from driveway import create_sloping_driveway  
-create_sloping_driveway(name="Main_Drivewayv1", width=3.3, thickness=0.15, path_points=path_points_1, debug_show_points=True)
+create_sloping_driveway(name="Main_Drivewayv1", width=3.3, thickness=0.2, path_points=path_points_1, debug_show_points=True)
 
 #Would you be able to analyse the attached image and give me a set of path points in meters? 
 #Just the x, y is fine (put z to 0 on all). the red dot just north of center is the origin. North of that is plus Y and east of that is plus X. 
@@ -553,8 +554,8 @@ path_points_main_drive = [
     mathutils.Vector((-6.0, -58.0, 4.6)),
     mathutils.Vector((-1.0, -57.5, 5.5)),
     mathutils.Vector((2, -57.0, 5.9)),
-    mathutils.Vector((10, -56.0, 6.3)),
-    mathutils.Vector((14, -55.0, 6.3))     # Terminating near the bottom right building clearing
+    mathutils.Vector((10, -55.5, 6.3)),
+    mathutils.Vector((14, -54.0, 6.3))     # Terminating near the bottom right building clearing
 
 ]
 
@@ -565,11 +566,11 @@ path_points_AMD_ROW = [
     mathutils.Vector((-41.0, 46.0, -10.0))     
 ]
 
-create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.15, path_points=path_points_main_drive, debug_show_points=True)
+create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.2, path_points=path_points_main_drive, debug_show_points=True)
 create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
 outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.6, -11.1, 4), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 2), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.5, -6.7, 2.5), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 1.6), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.5, -6.7, 2.1), radius=0.4, height=7.0 )  
 
 print("Modular Site Build Complete.")

@@ -619,17 +619,17 @@ def show_ground_floor_plan():
     create_white_background_plane()
     
     print("Applying section cut to reveal interior walls...")
-    apply_section_to_all_objects(1.3)  # Slightly higher to avoid deck edge issues
+    apply_section_to_all_objects(1.7)  # Slightly higher to avoid deck edge issues
     
     # Add sample labels (customize these for your actual rooms)
     print("\nAdding room labels...")
     # Example labels - adjust coordinates to match your building layout
     # Using Z at cut height so labels are visible
     create_room_label('GROUND FLOOR', (0, -6.5, 1.3), size=0.8)
-    create_room_label('Dining', (-2, 2, 1.3), size=0.4)
-    create_room_label('Kitchen', (-0.8, -2, 1.3), size=0.4)
-    create_room_label('Bathroom', (+3.2, -2, 1.3), size=0.4)
-    create_room_label('Guest bedroom', (+2.5, 1, 1.3), size=0.4)
+    create_room_label('Dining', (-2, 1, 1.3), size=0.4)
+    create_room_label('Kitchen', (-0.8, -3, 1.3), size=0.4)
+    create_room_label('Bathroom', (+3.2, -3, 1.3), size=0.4)
+    create_room_label('Guest bedroom', (+2.5, 0, 1.3), size=0.4)
     
     # Clean up old dimension lines (in case names were changed)
     cleanup_dimensions()
@@ -638,9 +638,9 @@ def show_ground_floor_plan():
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
-    create_dimension_line((-4.5, -3.6), (4.5, -3.6), offset=-0.6, text_size=0.3, z_height=1.3, name_suffix="south_wall")
-    create_dimension_line((4.5, 3.6), (4.5, -3.6), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((-4.3, 2.5), (0.05, 2.5), offset=0.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
+    create_dimension_line((-4.5, -4.6), (4.5, -4.6), offset=-0.6, text_size=0.3, z_height=1.3, name_suffix="south_wall")
+    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
+    create_dimension_line((-4.3, 1.5), (0.05, 1.5), offset=0.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
     
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")
@@ -787,11 +787,11 @@ def create_floor_plan_cameras(center_x=0, center_y=-1.5):
     """
     cameras = {}
     
-    # Ground Floor Plan - cuts at 1.3m (slightly above standard door height)
+    # Ground Floor Plan - cuts at 1.7m 
     cameras['ground'] = create_blueprint_camera(
         name="BP_Ground_Floor",
         location=(center_x, center_y, 20),
-        clip_height=1.3,
+        clip_height=1.7,
         ortho_scale=30.0
     )
     
@@ -849,7 +849,7 @@ def main():
     print("Blueprint view setup complete!")
     print("="*60)
     print("\nCreated Cameras:")
-    print("  1. BP_Ground_Floor (cuts at 1.3m)")
+    print("  1. BP_Ground_Floor (cuts at 1.7m)")
     print("  2. BP_First_Floor (cuts at 4.0m)")
     print("  3. BP_Roof_Plan (cuts at 7.5m)")
     print("  4. BP_Site_Plan (overview, no clipping)")

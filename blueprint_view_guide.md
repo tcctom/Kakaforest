@@ -18,6 +18,11 @@ The `setup_blueprint_view.py` script creates a professional architectural floor 
    ```python
    exec(open(r"c:\KakaForestRetreat\setup_blueprint_view.py").read())
    ```
+or 
+   ```python
+   exec(open(r"C:\Users\Tom (local)\GH\Kakaforest\setup_blueprint_view.py").read())
+   ```
+
 
 ### Method 2: From Blender's Text Editor
 1. In Blender, switch to the **Scripting** workspace
