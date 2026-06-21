@@ -156,7 +156,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     WALL_HEIGHT = 2.0
 
     shower_x_center = (bathroom_west + bathroom_west + 1) / 2
-    shower_y_center = (bathroom_north + bathroom_north - 0.41) / 2
+    shower_y_center = (bathroom_north + bathroom_north - 0.36) / 2
 
     create_shower_tray(
         x_center=shower_x_center,
@@ -178,12 +178,20 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         projection='BOX',
     )
 
-    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west, bathroom_north - 0.3, FLOOR_TOP + WALL_HEIGHT / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west + 0.03, bathroom_north - 0.2, FLOOR_TOP + WALL_HEIGHT / 2))
     west_wall = bpy.context.active_object
-    west_wall.name = "MainDwelling_Ensuite_ShowerWallWest"
+    west_wall.name = "MainDwelling_Bathroom_ShowerWallWest"
     west_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     west_wall.data.materials.append(tile_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, bathroom_north + 0.35, FLOOR_TOP + WALL_HEIGHT / 2))
+    north_wall = bpy.context.active_object
+    north_wall.name = "MainDwelling_Bathroom_ShowerWallNorth"
+    north_wall.scale = (0.5, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    north_wall.data.materials.append(tile_mat)
+
 
     create_toilet(
         west_edge=bathroom_west,
