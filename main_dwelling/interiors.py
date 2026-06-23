@@ -165,7 +165,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     guest_bed.data.materials.append(bed_mat)
 
     STAIRWELL_WIDTH = 2.0
-    PARTITION_LENGTH = 2.6
+    PARTITION_LENGTH = 2.7
 
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
     south_interior_y = south_interior_face

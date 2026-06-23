@@ -37,13 +37,13 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
     #add_window("MainDwelling_SouthWall_Ground", (ox + 3, south_wall_y, oz + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_Ground", (ox + 1.5, south_wall_y, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_Ground", (ox - 0.7, south_wall_y, oz + 1.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_Ground", (ox - 0.7, south_wall_y, oz + 1.5), width=1.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_Ground", (ox - 3.3, south_wall_y, oz + 2.15), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
     add_window("MainDwelling_SouthWall_First", (ox + 3.2, south_wall_y, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_First", (ox + 1.0, south_wall_y, first_floor_z + 1.5), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_First", (ox - 0.8, south_wall_y, first_floor_z + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_First", (ox - 3.3, south_wall_y, first_floor_z + 0.4), width=1.2, height=2.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_First", (ox - 3.3, south_wall_y, first_floor_z + 0.3), width=1.2, height=3.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
     first_floor_slab = bpy.data.objects.get("MainDwelling_FirstFloor")
     if first_floor_slab:

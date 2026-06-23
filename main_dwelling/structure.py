@@ -96,16 +96,16 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     TOTAL_RISE = first_floor_top - ground_floor_top
     STAIRWELL_WIDTH = 2.0
     STAIRWELL_LENGTH = 3.0
-    FLIGHT_WIDTH = 0.9
+    FLIGHT_WIDTH = 0.95
     CENTRAL_GAP = 0.2
     LANDING_DEPTH = 1.0
+    LANDING_HEIGHT = TOTAL_RISE / 2
 
     STEPS_PER_FLIGHT = 7
     STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)
-    STEP_TREAD = 0.285
+    STEP_TREAD = 0.28
     MODELED_STEPS_PER_FLIGHT = STEPS_PER_FLIGHT - 1
 
-    LANDING_HEIGHT = TOTAL_RISE / 2
 
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
@@ -118,7 +118,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
     landing_mat = floor_mat
 
-    flight1_x = stairwell_east_x - FLIGHT_WIDTH / 2 - 0.05
+    flight1_x = stairwell_east_x - FLIGHT_WIDTH / 2 
     landing_north_y = stairwell_south_y + LANDING_DEPTH
     flight1_start_y = landing_north_y + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) - (STEP_TREAD / 2)
 
@@ -141,7 +141,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
     landing = bpy.context.active_object
     landing.name = "MainDwelling_Stairs_Landing"
-    landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.1)
+    landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.11)
     bpy.ops.object.transform_apply(scale=True)
     landing.data.materials.append(landing_mat)
 
@@ -150,7 +150,7 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2 + 0.05
+    flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2 
     flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD / 2
 
     for i in range(MODELED_STEPS_PER_FLIGHT):
@@ -214,7 +214,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     opening_east_x = west_interior_x + stairwell_width
-    opening_north_y = south_interior_y + stairwell_length
+    opening_north_y = south_interior_y + stairwell_length - 0.3
 
     floor_west_x = ox - floor_length / 2
     floor_east_x = ox + floor_length / 2
