@@ -1,5 +1,6 @@
 from main_dwelling.envelope import (
     _add_exterior_windows_and_doors,
+    _add_west_gable_window,
     _create_gable_roof,
 )
 from main_dwelling.exterior_details import add_first_floor_balcony_railing
@@ -125,4 +126,14 @@ def run_main_dwelling_build_pipeline(
             ROOF_OVERHANG,
             roof_style,
             potius_mat,
+        )
+
+        _add_west_gable_window(
+            ox,
+            oy,
+            oz,
+            LENGTH,
+            GROUND_FLOOR_HEIGHT,
+            EXTERIOR_WALL_THICKNESS,
+            roof_style,
         )

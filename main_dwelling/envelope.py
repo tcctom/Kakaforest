@@ -43,7 +43,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MainDwelling_SouthWall_First", (ox + 3.2, south_wall_y, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_First", (ox + 1.0, south_wall_y, first_floor_z + 1.5), width=0.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MainDwelling_SouthWall_First", (ox - 0.8, south_wall_y, first_floor_z + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-    add_window("MainDwelling_SouthWall_First", (ox - 3.3, south_wall_y, first_floor_z + 0.3), width=1.2, height=3.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+    add_window("MainDwelling_SouthWall_First", (ox - 3.3, south_wall_y, first_floor_z + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
     first_floor_slab = bpy.data.objects.get("MainDwelling_FirstFloor")
     if first_floor_slab:
@@ -64,6 +64,78 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
         window_cutter.hide_viewport = True
         window_cutter.hide_render = True
+
+
+def _add_west_gable_window(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, roof_style):
+    """Add a small window on the west gable after the roof has been created."""
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    west_x = ox - LENGTH / 2
+    window_z = first_floor_z + 3.45
+    inset_depth = EXTERIOR_WALL_THICKNESS * 0.35
+
+    if roof_style == "traditional":
+        # Historical side naming in gable creation can be swapped.
+        # Pick whichever gable object is physically closest to the west side.
+        gable_candidates = []
+        for name in ("MainDwelling_Gable_West", "MainDwelling_Gable_East"):
+            obj = bpy.data.objects.get(name)
+            if obj:
+                gable_candidates.append(obj)
+
+        if not gable_candidates:
+            print("West gable window skipped: no gable objects were found")
+            return
+
+        def _world_x_center(obj):
+            if getattr(obj.data, "vertices", None):
+                xs = [(obj.matrix_world @ v.co).x for v in obj.data.vertices]
+                return sum(xs) / len(xs)
+            return obj.location.x
+
+        target = min(gable_candidates, key=lambda obj: abs(_world_x_center(obj) - west_x))
+        target_x = _world_x_center(target)
+
+        # Gable faces are single-surface meshes (no thickness), so offset outward
+        # so the frame and glass are visible from the exterior.
+        inward_offset = '-X' if target_x <= ox else '+X'
+
+        window_parts = add_window(
+            target.name,
+            (target_x, oy, window_z),
+            width=0.6,
+            height=0.6,
+            depth=EXTERIOR_WALL_THICKNESS,
+            axis='X',
+            inward_offset=inward_offset,
+        )
+
+        if window_parts:
+            frame, glass = window_parts
+            interior_sign = 1.0 if target_x <= ox else -1.0
+            frame.location.x += interior_sign * inset_depth
+            glass.location.x += interior_sign * inset_depth
+        return
+
+    # Flush roof has integrated gable faces in MainDwelling_Roof.
+    roof_obj = bpy.data.objects.get("MainDwelling_Roof")
+    if not roof_obj:
+        print("West gable window skipped: MainDwelling_Roof not found")
+        return
+
+    window_parts = add_window(
+        "MainDwelling_Roof",
+        (west_x, oy, window_z),
+        width=0.6,
+        height=0.6,
+        depth=EXTERIOR_WALL_THICKNESS,
+        axis='X',
+        inward_offset='+X',
+    )
+
+    if window_parts:
+        frame, glass = window_parts
+        frame.location.x += inset_depth
+        glass.location.x += inset_depth
 
 
 def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat):
