@@ -366,31 +366,22 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     add_window(
         "MD_FF_MainPartition",
         (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0),
-        width=0.8,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='X',
-        inward_offset='-X',
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='X', inward_offset='-X',
     )
 
     add_window(
         "MD_FF_BedroomSouthPartition",
         (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-        width=0.8,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='Y',
-        inward_offset='+Y',
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='Y', inward_offset='+Y',
     )
 
     add_window(
         "MD_FF_BedroomSouthPartition",
         (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-        width=0.8,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='Y',
-        inward_offset='+Y',
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='Y', inward_offset='+Y',
     )
 
     BED_WIDTH = 1.8
