@@ -1,3 +1,5 @@
+import os
+
 import bpy  # type: ignore
 
 """
@@ -420,8 +422,9 @@ def get_kitchen_bench_material():
     else:
         blend_dir = r"c:\KakaForestRetreat"
     
-    texture_path = os.path.join(blend_dir, "textures", "granite-2000-mm-architextures.jpg")
-    
+    #texture_path = os.path.join(blend_dir, "textures", "granite-2000-mm-architextures.jpg")
+    texture_path = os.path.abspath("textures/granite-2000-mm-architextures.jpg")
+        
     if os.path.exists(texture_path):
         try:
             # Load granite texture
