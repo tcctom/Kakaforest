@@ -9,41 +9,37 @@ from utils import add_window
 
 
 def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
-    """Create ground floor interior partitions for guest bedroom with built-in wardrobe."""
-    interior_wall_mat = get_interior_wall_material()
+    """Create ground floor interior partitions."""
 
     GUEST_BEDROOM_WIDTH = 3.30
     GUEST_BEDROOM_DEPTH = 3.35
     CUPBOARD_INTERIOR_XAXIS = 0.6
     CUPBOARD_DEPTH = 1.95
+    FLOOR_SLAB_THICKNESS = 0.1
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
-
-    FLOOR_SLAB_THICKNESS = 0.1
-    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
     ground_floor_wall_height = GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS
 
     WEST_WALL_EXTENSION = 0.7
     west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     west_partition_center_y = north_interior_face - (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION) / 2
 
-    west_partition = create_wall(
+    west_partition = create_interior_wall(
         name="MD_GF_GuestBedroomWestWall",
         location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
 
     south_partition_y = north_interior_face - GUEST_BEDROOM_DEPTH + INTERIOR_WALL_THICKNESS / 2
     south_partition_center_x = east_interior_face - GUEST_BEDROOM_WIDTH / 2
 
-    south_partition = create_wall(
+    south_partition = create_interior_wall(
         name="MD_GF_GuestBedroomSouthWall",
         location=(south_partition_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(GUEST_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
 
     # Bathroom partition: runs south-to-north and ties into GuestBedroomSouthWall.
@@ -51,11 +47,10 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bathroom_partition_length = south_partition_y - south_interior_face
     bathroom_partition_center_y = south_interior_face + bathroom_partition_length / 2
 
-    bathroom_partition = create_wall(
+    bathroom_partition = create_interior_wall(
         name="MD_GF_BathroomPartitionWall",
         location=(bathroom_partition_x, bathroom_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, bathroom_partition_length, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
 
     # Door opening center is 700 mm from the southern edge to the start of the opening.
@@ -64,27 +59,19 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     add_window(
         "MD_GF_BathroomPartitionWall",
         (bathroom_partition_x - INTERIOR_WALL_THICKNESS / 2, bathroom_door_center_y, FLOOR_TOP + 1.0),
-        width=bathroom_door_width,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='X',
-        inward_offset='+X',
+        width=bathroom_door_width, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='X', inward_offset='+X',
     )
 
     door_x = east_interior_face - 2.6
     add_window(
         "MD_GF_GuestBedroomSouthWall",
         (door_x, south_partition_y - INTERIOR_WALL_THICKNESS / 2, FLOOR_TOP + 1.0),
-        width=0.8,
-        height=2.0,
-        depth=INTERIOR_WALL_THICKNESS,
-        axis='Y',
-        inward_offset='+Y',
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='Y', inward_offset='+Y',
     )
 
     south_wall_west_end_x = east_interior_face - GUEST_BEDROOM_WIDTH
-    south_wall_extension_center_x = south_wall_west_end_x - CUPBOARD_INTERIOR_XAXIS / 2
-
 
     south_wall_extension_west_x = south_wall_west_end_x - CUPBOARD_INTERIOR_XAXIS
     south_wall_south_face_y = south_partition_y - INTERIOR_WALL_THICKNESS / 2
@@ -115,34 +102,30 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS - INTERIOR_WALL_THICKNESS / 2
     cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH / 2
 
-    cupboard_west_wall = create_wall(
+    cupboard_west_wall = create_interior_wall(
         name="MD_GF_GuestBedroomCupboardWestWall",
         location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, CUPBOARD_DEPTH, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
 
     cupboard_south_wall_y = north_interior_face - CUPBOARD_DEPTH + INTERIOR_WALL_THICKNESS / 2
     cupboard_south_wall_center_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS / 2
 
-    cupboard_south_wall = create_wall(
+    cupboard_south_wall = create_interior_wall(
         name="MD_GF_GuestBedroomCupboardSouthWall",
         location=(cupboard_south_wall_center_x, cupboard_south_wall_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
 
-    south_wall_extension = create_wall(
+    south_wall_extension = create_interior_wall(
         name="MD_GF_GuestBedroomSouthWall_WestExtension",
         location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
-        material=interior_wall_mat,
     )
-    south_wall_return = create_wall(
+    south_wall_return = create_interior_wall(
         name="MD_GF_GuestBedroomSouthWall_WestReturn",
         location=(south_wall_extension_west_x + 0.05, south_wall_return_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, WEST_WALL_EXTENSION, ground_floor_wall_height),
-        material=interior_wall_mat,
     )    
 
     BED_WIDTH = 1.6
@@ -175,13 +158,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
 
-    stair_partition = create_wall(
+    stair_partition = create_interior_wall(
         name="MainDwelling_StaircasePartition_BothFloors",
         location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
         size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
-        material=interior_wall_mat,
     )
-
 
 
     # Create wall behind log burner (East)
@@ -425,6 +406,36 @@ def create_fireplace_wall(name, location, size):
     # 2. Pass everything down to the generic wall creator
     return create_wall(name, location, size, material=hearth_wall_mat)
 
+def create_interior_wall(name, location, size):
+    """
+    High-level wrapper that automatically loads the specific material and builds an interior wall.
+    """
+    interior_wall_mat = get_interior_wall_material()
+    
+    return create_wall(name, location, size, material=interior_wall_mat)
+
+def create_wall(name, location, size, material):
+    """
+    Low-level utility to spawn a wall primitive, scale it to real-world
+    dimensions, apply transforms, and attach a material.
+    """
+    # Spawn the initial default 2m x 2m x 2m cube
+    bpy.ops.mesh.primitive_cube_add(location=location)
+    wall_obj = bpy.context.active_object
+    wall_obj.name = name
+    
+    # Scale from center (Target_Size / 2)
+    wall_obj.scale = (size[0] / 2, size[1] / 2, size[2] / 2)
+    
+    # Apply scale so textures don't stretch
+    bpy.ops.object.transform_apply(scale=True)
+    
+    # Attach material if one was provided
+    if material:
+        wall_obj.data.materials.append(material)
+        
+    return wall_obj
+
 def create_candlestick(name, location, radius, height):
     """
     High-level wrapper that loads the wooden candlestick material 
@@ -451,28 +462,6 @@ def create_candlestick(name, location, radius, height):
         
     # 2. Pass dimensions and material to our generic cylinder engine
     return create_cylinder(name, location, radius, height, material=wood_mat)
-
-def create_wall(name, location, size, material):
-    """
-    Low-level utility to spawn a wall primitive, scale it to real-world
-    dimensions, apply transforms, and attach a material.
-    """
-    # Spawn the initial default 2m x 2m x 2m cube
-    bpy.ops.mesh.primitive_cube_add(location=location)
-    wall_obj = bpy.context.active_object
-    wall_obj.name = name
-    
-    # Scale from center (Target_Size / 2)
-    wall_obj.scale = (size[0] / 2, size[1] / 2, size[2] / 2)
-    
-    # Apply scale so textures don't stretch
-    bpy.ops.object.transform_apply(scale=True)
-    
-    # Attach material if one was provided
-    if material:
-        wall_obj.data.materials.append(material)
-        
-    return wall_obj
 
 def create_cylinder(name, location, radius, height, material=None):
     """
