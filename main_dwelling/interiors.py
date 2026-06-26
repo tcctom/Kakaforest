@@ -2,7 +2,7 @@ import os
 
 import bpy  # type: ignore
 
-from materials import get_interior_wall_material, get_kitchen_bench_material
+from materials import get_interior_door_material, get_interior_wall_material, get_kitchen_bench_material
 from main_dwelling.materials_nodes import create_material, create_textured_material2
 from utils import add_window
 
@@ -23,21 +23,21 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
     ground_floor_wall_height = GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS
 
-    WEST_WALL_EXTENSION = 0.7
     west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
-    west_partition_center_y = north_interior_face - (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION) / 2
-
-    west_partition = create_interior_wall(
-        name="MD_GF_GuestBedroomWestWall",
-        location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION, ground_floor_wall_height),
-    )
-
+    west_partition_center_y = north_interior_face - GUEST_BEDROOM_DEPTH/ 2
     south_partition_y = north_interior_face - GUEST_BEDROOM_DEPTH + INTERIOR_WALL_THICKNESS / 2
     south_partition_center_x = east_interior_face - GUEST_BEDROOM_WIDTH / 2
 
-    south_partition = create_interior_wall(
-        name="MD_GF_GuestBedroomSouthWall",
+    create_interior_wall( name="MD_GF_GuestBedroomWestWall",
+        location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH, ground_floor_wall_height),
+    )
+    create_interior_wall( name="MD_GF_GuestBedroomWestWall_Ext",
+        location=(west_partition_x, south_partition_y -0.4, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, 0.7, ground_floor_wall_height),
+    )
+
+    create_interior_wall( name="MD_GF_GuestBedroomSouthWall",
         location=(south_partition_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(GUEST_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
     )
@@ -47,8 +47,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bathroom_partition_length = south_partition_y - south_interior_face
     bathroom_partition_center_y = south_interior_face + bathroom_partition_length / 2
 
-    bathroom_partition = create_interior_wall(
-        name="MD_GF_BathroomPartitionWall",
+    create_interior_wall( name="MD_GF_BathroomPartitionWall",
         location=(bathroom_partition_x, bathroom_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, bathroom_partition_length, ground_floor_wall_height),
     )
@@ -75,7 +74,6 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     south_wall_extension_west_x = south_wall_west_end_x - CUPBOARD_INTERIOR_XAXIS
     south_wall_south_face_y = south_partition_y - INTERIOR_WALL_THICKNESS / 2
-    south_wall_return_center_y = south_wall_south_face_y - WEST_WALL_EXTENSION / 2
 
     # Add a physical door leaf to close the new small cupboard on the south face.
     SMALL_CUPBOARD_DOOR_THICKNESS = 0.04
@@ -96,36 +94,34 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         small_cupboard_door_height / 2,
     )
     bpy.ops.object.transform_apply(scale=True)
-    small_cupboard_door.data.materials.append(interior_wall_mat)
+    interior_door_mat = get_interior_door_material()
+    small_cupboard_door.data.materials.append(interior_door_mat)
 
 
     cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS - INTERIOR_WALL_THICKNESS / 2
     cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH / 2
 
-    cupboard_west_wall = create_interior_wall(
-        name="MD_GF_GuestBedroomCupboardWestWall",
-        location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, CUPBOARD_DEPTH, ground_floor_wall_height),
-    )
-
     cupboard_south_wall_y = north_interior_face - CUPBOARD_DEPTH + INTERIOR_WALL_THICKNESS / 2
     cupboard_south_wall_center_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS / 2
 
-    cupboard_south_wall = create_interior_wall(
-        name="MD_GF_GuestBedroomCupboardSouthWall",
+    create_interior_wall( name="MD_GF_GuestBedroomCupboardSouthWall",
         location=(cupboard_south_wall_center_x, cupboard_south_wall_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
     )
 
-    south_wall_extension = create_interior_wall(
-        name="MD_GF_GuestBedroomSouthWall_WestExtension",
+    create_interior_wall( name="MD_GF_GuestBedroomSouthWall_WestExtension",
         location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
     )
-    south_wall_return = create_interior_wall(
-        name="MD_GF_GuestBedroomSouthWall_WestReturn",
-        location=(south_wall_extension_west_x + 0.05, south_wall_return_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, WEST_WALL_EXTENSION, ground_floor_wall_height),
+
+    create_interior_wall( name="MD_GF_NorthOfLogBurner_NS",
+        location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, CUPBOARD_DEPTH, ground_floor_wall_height),
+    )
+
+    create_interior_wall( name="MD_GF_SouthOfLogBurner_NS",
+        location=(cupboard_west_wall_x, south_wall_south_face_y - 0.3, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, 0.8, ground_floor_wall_height),
     )    
 
     BED_WIDTH = 1.6

@@ -45,6 +45,16 @@ def get_interior_wall_material():
     """
     return create_material("InteriorWall", (0.8, 0.8, 0.75, 1.0))
 
+def get_interior_door_material():
+    """Interior door material - warm neutral gray
+    
+    RGB(0.6, 0.6, 0.6):
+    - R=0.6, G=0.6: Medium gray base
+    - B=0.6: Balanced blue for neutral tone
+    - Overall: Slightly darker neutral gray suitable for doors
+    """
+    return create_material("InteriorDoor", (0.6, 0.6, 0.6, 1.0))
+
 
 def get_floor_wood_material():
     """Wooden floor material - laminate with texture
