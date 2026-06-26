@@ -14,6 +14,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     GUEST_BEDROOM_WIDTH = 3.30
     GUEST_BEDROOM_DEPTH = 3.35
+    CUPBOARD_INTERIOR_XAXIS = 0.6
+    CUPBOARD_DEPTH = 1.95
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
@@ -27,34 +29,34 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     west_partition_center_y = north_interior_face - (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION) / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    west_partition = bpy.context.active_object
-    west_partition.name = "MainDwelling_GroundFloor_GuestBedroomWestWall"
-    west_partition.scale = (INTERIOR_WALL_THICKNESS / 2, (GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION) / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    west_partition.data.materials.append(interior_wall_mat)
+    west_partition = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomWestWall",
+        location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH + WEST_WALL_EXTENSION, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     south_partition_y = north_interior_face - GUEST_BEDROOM_DEPTH + INTERIOR_WALL_THICKNESS / 2
     south_partition_center_x = east_interior_face - GUEST_BEDROOM_WIDTH / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(south_partition_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    south_partition = bpy.context.active_object
-    south_partition.name = "MainDwelling_GroundFloor_GuestBedroomSouthWall"
-    south_partition.scale = (GUEST_BEDROOM_WIDTH / 2, INTERIOR_WALL_THICKNESS / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    south_partition.data.materials.append(interior_wall_mat)
+    south_partition = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomSouthWall",
+        location=(south_partition_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(GUEST_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     # Bathroom partition: runs south-to-north and ties into GuestBedroomSouthWall.
     bathroom_partition_x = east_interior_face - 2.0 - INTERIOR_WALL_THICKNESS / 2
     bathroom_partition_length = south_partition_y - south_interior_face
     bathroom_partition_center_y = south_interior_face + bathroom_partition_length / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(bathroom_partition_x, bathroom_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    bathroom_partition = bpy.context.active_object
-    bathroom_partition.name = "MainDwelling_GroundFloor_BathroomPartitionWall"
-    bathroom_partition.scale = (INTERIOR_WALL_THICKNESS / 2, bathroom_partition_length / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    bathroom_partition.data.materials.append(interior_wall_mat)
+    bathroom_partition = create_wall(
+        name="MainDwelling_GroundFloor_BathroomPartitionWall",
+        location=(bathroom_partition_x, bathroom_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, bathroom_partition_length, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     # Door opening center is 700 mm from the southern edge to the start of the opening.
     bathroom_door_width = 0.8
@@ -80,28 +82,13 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         inward_offset='+Y',
     )
 
-    SOUTH_WALL_WEST_EXTENSION = 0.8
-
     south_wall_west_end_x = east_interior_face - GUEST_BEDROOM_WIDTH
-    south_wall_extension_center_x = south_wall_west_end_x - SOUTH_WALL_WEST_EXTENSION / 2
+    south_wall_extension_center_x = south_wall_west_end_x - CUPBOARD_INTERIOR_XAXIS / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(south_wall_extension_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    south_wall_extension = bpy.context.active_object
-    south_wall_extension.name = "MainDwelling_GroundFloor_GuestBedroomSouthWall_WestExtension"
-    south_wall_extension.scale = (SOUTH_WALL_WEST_EXTENSION / 2, INTERIOR_WALL_THICKNESS / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    south_wall_extension.data.materials.append(interior_wall_mat)
 
-    south_wall_extension_west_x = south_wall_west_end_x - SOUTH_WALL_WEST_EXTENSION
+    south_wall_extension_west_x = south_wall_west_end_x - CUPBOARD_INTERIOR_XAXIS
     south_wall_south_face_y = south_partition_y - INTERIOR_WALL_THICKNESS / 2
     south_wall_return_center_y = south_wall_south_face_y - WEST_WALL_EXTENSION / 2
-
-    bpy.ops.mesh.primitive_cube_add(location=(south_wall_extension_west_x+0.05, south_wall_return_center_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    south_wall_return = bpy.context.active_object
-    south_wall_return.name = "MainDwelling_GroundFloor_GuestBedroomSouthWall_WestReturn"
-    south_wall_return.scale = (INTERIOR_WALL_THICKNESS / 2, WEST_WALL_EXTENSION / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    south_wall_return.data.materials.append(interior_wall_mat)
 
     # Add a physical door leaf to close the new small cupboard on the south face.
     SMALL_CUPBOARD_DOOR_THICKNESS = 0.04
@@ -124,28 +111,39 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     bpy.ops.object.transform_apply(scale=True)
     small_cupboard_door.data.materials.append(interior_wall_mat)
 
-    CUPBOARD_WIDTH = 0.6
-    CUPBOARD_DEPTH = 1.95
 
-    cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH - INTERIOR_WALL_THICKNESS / 2
+    cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS - INTERIOR_WALL_THICKNESS / 2
     cupboard_west_wall_center_y = north_interior_face - CUPBOARD_DEPTH / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    cupboard_west_wall = bpy.context.active_object
-    cupboard_west_wall.name = "MainDwelling_GroundFloor_GuestBedroomCupboardWestWall"
-    cupboard_west_wall.scale = (INTERIOR_WALL_THICKNESS / 2, CUPBOARD_DEPTH / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    cupboard_west_wall.data.materials.append(interior_wall_mat)
+    cupboard_west_wall = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomCupboardWestWall",
+        location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, CUPBOARD_DEPTH, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     cupboard_south_wall_y = north_interior_face - CUPBOARD_DEPTH + INTERIOR_WALL_THICKNESS / 2
-    cupboard_south_wall_center_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2
+    cupboard_south_wall_center_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(cupboard_south_wall_center_x, cupboard_south_wall_y, FLOOR_TOP + ground_floor_wall_height / 2))
-    cupboard_south_wall = bpy.context.active_object
-    cupboard_south_wall.name = "MainDwelling_GroundFloor_GuestBedroomCupboardSouthWall"
-    cupboard_south_wall.scale = (CUPBOARD_WIDTH / 2, INTERIOR_WALL_THICKNESS / 2, ground_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    cupboard_south_wall.data.materials.append(interior_wall_mat)
+    cupboard_south_wall = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomCupboardSouthWall",
+        location=(cupboard_south_wall_center_x, cupboard_south_wall_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
+
+    south_wall_extension = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomSouthWall_WestExtension",
+        location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )
+    south_wall_return = create_wall(
+        name="MainDwelling_GroundFloor_GuestBedroomSouthWall_WestReturn",
+        location=(south_wall_extension_west_x + 0.05, south_wall_return_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, WEST_WALL_EXTENSION, ground_floor_wall_height),
+        material=interior_wall_mat,
+    )    
 
     BED_WIDTH = 1.6
     BED_LENGTH = 2.0
@@ -177,12 +175,12 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
 
-    bpy.ops.mesh.primitive_cube_add(location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2))
-    stair_partition = bpy.context.active_object
-    stair_partition.name = "MainDwelling_StaircasePartition_BothFloors"
-    stair_partition.scale = (INTERIOR_WALL_THICKNESS / 2, PARTITION_LENGTH / 2, full_partition_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    stair_partition.data.materials.append(interior_wall_mat)
+    stair_partition = create_wall(
+        name="MainDwelling_StaircasePartition_BothFloors",
+        location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
+        material=interior_wall_mat,
+    )
 
 
 
@@ -238,7 +236,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
 
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
-    log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_WIDTH / 2 - 0.20
+    log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS / 2 - 0.20
     log_burner_y = oy
 
     FLOOR_TOP = oz + 0.1
@@ -338,32 +336,32 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     main_partition_x = east_interior_face - MASTER_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     main_partition_center_y = (north_interior_face + south_interior_face) / 2
-    bpy.ops.mesh.primitive_cube_add(location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2))
-    main_partition = bpy.context.active_object
-    main_partition.name = "MainDwelling_FirstFloor_MainPartition"
-    main_partition.scale = (INTERIOR_WALL_THICKNESS / 2, interior_depth / 2, first_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    main_partition.data.materials.append(interior_wall_mat)
+    main_partition = create_wall(
+        name="MainDwelling_FirstFloor_MainPartition",
+        location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, interior_depth, first_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2))
-    bedroom_south_partition = bpy.context.active_object
-    bedroom_south_partition.name = "MainDwelling_FirstFloor_BedroomSouthPartition"
-    bedroom_south_partition.scale = (MASTER_BEDROOM_WIDTH / 2, INTERIOR_WALL_THICKNESS / 2, first_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    bedroom_south_partition.data.materials.append(interior_wall_mat)
+    bedroom_south_partition = create_wall(
+        name="MainDwelling_FirstFloor_BedroomSouthPartition",
+        location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
+        size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH
     ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_top + first_floor_wall_height / 2))
-    ensuite_wardrobe_wall = bpy.context.active_object
-    ensuite_wardrobe_wall.name = "MainDwelling_FirstFloor_EnsuiteWardrobeWall"
-    ensuite_wardrobe_wall.scale = (INTERIOR_WALL_THICKNESS / 2, ENSUITE_DEPTH / 2, first_floor_wall_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    ensuite_wardrobe_wall.data.materials.append(interior_wall_mat)
+    ensuite_wardrobe_wall = create_wall(
+        name="MainDwelling_FirstFloor_EnsuiteWardrobeWall",
+        location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_top + first_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, ENSUITE_DEPTH, first_floor_wall_height),
+        material=interior_wall_mat,
+    )
 
     add_window(
         "MainDwelling_FirstFloor_MainPartition",
