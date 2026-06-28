@@ -36,6 +36,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         location=(west_partition_x, west_partition_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH, ground_floor_wall_height),
     )
+    add_window( "MD_GF_GuestBedroomWestWall",
+        (west_partition_x - INTERIOR_WALL_THICKNESS / 2, oy + 1.6, FLOOR_TOP + 1.0),
+        width=1.5, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+        axis='X', inward_offset='+X',
+    )
     create_interior_wall( name="MD_GF_GuestBedroomWestWall_Ext",
         location=(west_partition_x, south_partition_y -0.4, FLOOR_TOP + ground_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, 0.7, ground_floor_wall_height),
@@ -59,16 +64,14 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Door opening center is 700 mm from the southern edge to the start of the opening.
     bathroom_door_width = 0.8
     bathroom_door_center_y = south_interior_face + 0.7 + bathroom_door_width / 2
-    add_window(
-        "MD_GF_BathroomPartitionWall",
+    add_window("MD_GF_BathroomPartitionWall",
         (bathroom_partition_x - INTERIOR_WALL_THICKNESS / 2, bathroom_door_center_y, FLOOR_TOP + 1.0),
         width=bathroom_door_width, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='X', inward_offset='+X',
     )
 
     door_x = east_interior_face - 2.6
-    add_window(
-        "MD_GF_GuestBedroomSouthWall",
+    add_window( "MD_GF_GuestBedroomSouthWall",
         (door_x, south_partition_y - INTERIOR_WALL_THICKNESS / 2, FLOOR_TOP + 1.0),
         width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='Y', inward_offset='+Y',

@@ -462,10 +462,10 @@ if SHOW_GROUND and linz_terrain:
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
 # Set show_roof=False to hide roof for interior viewing
-björken_module.build_red_cottage(origin=(24, -56, 8.0))
+#björken_module.build_red_cottage(origin=(24, -56, 8.0))
 
 # 1c. Pavers extending east from cottage
-outdoor_structures.build_pavers_east(origin=(27, -56, -7.55))
+#outdoor_structures.build_pavers_east(origin=(27, -56, -7.55))
 
 
 # 1a. Build Main Dwelling
