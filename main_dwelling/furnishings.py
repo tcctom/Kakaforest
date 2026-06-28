@@ -92,7 +92,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
 def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     """Create dining table on ground floor."""
-    TABLE_LENGTH = 0.8
+    TABLE_LENGTH = 0.9
     TABLE_WIDTH = 1.8
     TABLE_HEIGHT = 0.75
     LEG_SIZE = 0.08
@@ -100,8 +100,8 @@ def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     FLOOR_TOP = oz + 0.1
 
     CLEARANCE = 0.4
-    table_x = ox - 3.0
-    table_y = oy + 1.6
+    table_x = ox - 1.10
+    table_y = oy + 1.65
     table_top_z = FLOOR_TOP + TABLE_HEIGHT - TOP_THICKNESS / 2
 
     table_mat = create_material("DiningTableWood", (0.55, 0.35, 0.20, 1))
@@ -412,7 +412,7 @@ def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_mater
     bpy.ops.object.transform_apply(scale=True)
     basin.data.materials.append(basin_material)
 
-    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x - 0.15, vanity_center_y, floor_top + vanity_height + 0.15), radius=0.02, depth=0.2)
+    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x + 0.15, vanity_center_y, floor_top + vanity_height + 0.15), radius=0.02, depth=0.2)
     tap = bpy.context.active_object
     tap.name = f"{name_prefix}_Tap"
     tap.data.materials.append(chrome_material)

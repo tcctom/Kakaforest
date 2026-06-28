@@ -593,7 +593,7 @@ def show_ground_floor_plan():
     print("\n" + "-"*60)
     print("DIAGNOSTIC: Building position check:")
     print("-"*60)
-    north_wall = bpy.data.objects.get('MainDwelling_NorthWall_Ground')
+    north_wall = bpy.data.objects.get('MD_GF_NorthWall')
     if north_wall:
         print(f"North wall location: {north_wall.location}")
         print(f"North wall dimensions (scale): {north_wall.scale}")
@@ -604,7 +604,7 @@ def show_ground_floor_plan():
         max_y = max([v[1] for v in bbox])
         print(f"North wall bounding box: X({min_x:.2f} to {max_x:.2f}), Y({min_y:.2f} to {max_y:.2f})")
     
-    south_wall = bpy.data.objects.get('MainDwelling_SouthWall_Ground')
+    south_wall = bpy.data.objects.get('MD_GF_SouthWall')
     if south_wall:
         print(f"South wall location: {south_wall.location}")
     

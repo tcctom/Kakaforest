@@ -63,8 +63,8 @@ bpy.context.scene.camera = camera
 
 print("\n=== Ground Floor Test Complete ===")
 print("\nVERIFICATION CHECKLIST:")
-print("[ ] North wall (MainDwelling_NorthWall_Ground) is on +Y side (top of screen)")
-print("[ ] South wall (MainDwelling_SouthWall_Ground) is on -Y side (bottom of screen)")
+print("[ ] North wall (MD_GF_NorthWall) is on +Y side (top of screen)")
+print("[ ] South wall (MD_GF_SouthWall) is on -Y side (bottom of screen)")
 print("[ ] East wall (MainDwelling_EastWall_Ground) is on +X side (right of screen)")
 print("[ ] West wall (MainDwelling_WestWall_Ground) is on -X side (left of screen)")
 print("[ ] Guest bedroom is in NE corner (+X, +Y)")

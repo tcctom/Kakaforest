@@ -14,7 +14,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     north_wall_y = oy + WIDTH / 2 - NORTH_RECESS + EXTERIOR_WALL_THICKNESS / 2
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, oz + GROUND_FLOOR_HEIGHT / 2))
     north_wall_ground = bpy.context.active_object
-    north_wall_ground.name = "MainDwelling_NorthWall_Ground"
+    north_wall_ground.name = "MD_GF_NorthWall"
     north_wall_ground.scale = (LENGTH / 2, EXTERIOR_WALL_THICKNESS / 2, GROUND_FLOOR_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall_ground.data.materials.append(potius_mat)
@@ -24,7 +24,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     south_wall_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS / 2
     bpy.ops.mesh.primitive_cube_add(location=(ox, south_wall_y, oz + GROUND_FLOOR_HEIGHT / 2))
     south_wall_ground = bpy.context.active_object
-    south_wall_ground.name = "MainDwelling_SouthWall_Ground"
+    south_wall_ground.name = "MD_GF_SouthWall"
     south_wall_ground.scale = (LENGTH / 2, EXTERIOR_WALL_THICKNESS / 2, GROUND_FLOOR_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     south_wall_ground.data.materials.append(potius_mat)

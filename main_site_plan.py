@@ -464,6 +464,10 @@ if SHOW_GROUND and linz_terrain:
 # Set show_roof=False to hide roof for interior viewing
 björken_module.build_red_cottage(origin=(24, -56, 8.0))
 
+# 1c. Pavers extending east from cottage
+outdoor_structures.build_pavers_east(origin=(27, -56, -7.55))
+
+
 # 1a. Build Main Dwelling
 # Now located at origin (0, 0, 0)
 # This is the new two-story 6m × 8m main dwelling structure
@@ -484,8 +488,6 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
 #outdoor_structures.create_single_boulder(position=(-6.5, -1.9, -0.4), base_size=0.9)
 
 
-# 1c. Pavers extending east from cottage
-#outdoor_structures.build_pavers_east(origin=(0, -60, 4.55))
 
 # 2. Build Wet Wing - OPTION 1 (6m × 6m)
 # Moved 9m West (+X) and 4m South (+Y) from Björken
@@ -500,7 +502,6 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
 # Lower level: 10m wide (X) × 4m deep (Y) - positioned relative to Björken
 #wet_wing_lower1.build(origin=(-13.0, -65.0, 5.0))
 #wet_wing_lower1.furniture(origin=(-13.0, -65.0, 5.0), building_width=10.0, building_depth=4.0)
-
 
 #ground_module.build_off_axis_plane((-14, -5.8, -0.5), (-13.2, -10, -0.5), length=-12, spacing=0.5, name="Tank_Pad", material_type='gravel',)
 

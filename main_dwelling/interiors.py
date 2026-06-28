@@ -1,6 +1,10 @@
 import os
+import sys
 
 import bpy  # type: ignore
+
+if __package__ in {None, ""}:
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from materials import get_interior_door_material, get_interior_wall_material, get_kitchen_bench_material
 from main_dwelling.materials_nodes import create_material, create_textured_material2
@@ -11,8 +15,8 @@ from utils import add_window
 def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
     """Create ground floor interior partitions."""
 
-    GUEST_BEDROOM_WIDTH = 3.30
-    GUEST_BEDROOM_DEPTH = 3.35
+    GUEST_BEDROOM_WIDTH = 3.20 #east wall to west wall
+    GUEST_BEDROOM_DEPTH = 3.35 #north wall to south wall
     CUPBOARD_INTERIOR_XAXIS = 0.6
     CUPBOARD_DEPTH = 1.95
     FLOOR_SLAB_THICKNESS = 0.1
@@ -154,31 +158,27 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
 
-    stair_partition = create_interior_wall(
-        name="MainDwelling_StaircasePartition_BothFloors",
+    create_interior_wall( name="MainDwelling_StaircasePartition_BothFloors",
         location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
         size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
     )
 
 
     # Create wall behind log burner (East)
-    create_fireplace_wall(
-        name="MainDwelling_HeartyhWallEast",
-        location=(0.85, oy, 0.6),
+    create_fireplace_wall( name="MainDwelling_HeartyhWallEast",
+        location=(west_partition_x-0.1, oy, 0.6),
         size=(0.1, 1.3, 1.2)
     )
 
     # Create wall south of log burner
-    create_fireplace_wall(
-        name="MainDwelling_HeartyhWallSouth",
-        location=(0.5, oy - 0.6, 0.6),
+    create_fireplace_wall( name="MainDwelling_HeartyhWallSouth",
+        location=(west_partition_x-0.45, oy - 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
     # Create wall north of log burner
-    create_fireplace_wall(
-        name="MainDwelling_HeartyhWallNorth",
-        location=(0.5, oy + 0.6, 0.6),
+    create_fireplace_wall( name="MainDwelling_HeartyhWallNorth",
+        location=(west_partition_x-0.45, oy + 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
