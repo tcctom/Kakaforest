@@ -63,14 +63,10 @@ def build_simple_open_porch(
 
     # Main entrance door on main building west wall
     main_door_x = ox - LENGTH / 2
-    add_window(
-        "MainDwelling_WestWall_Ground",
+    add_window( "MD_GF_WestWall",
         (main_door_x, oy, oz + 1.0),
-        width=0.9,
-        height=2.0,
-        depth=EXTERIOR_WALL_THICKNESS,
-        axis='X',
-        inward_offset='+X',
+        width=0.9, height=2.0, depth=EXTERIOR_WALL_THICKNESS,
+        axis='X', inward_offset='+X',
     )
 
     # Monopitch porch roof - high at building, low at outer edge

@@ -386,8 +386,8 @@ def create_beech_trunk(name, location, radius, height):
     bark_mat = bpy.data.materials.get("BarkMat")
     
     if bark_mat is None:
-        diffuse_path = os.path.abspath("models/textures/jolcham_oak_bark/jolcham_oak_bark_01_diff_1k.jpg")
-        rough_path = os.path.abspath("models/textures/jolcham_oak_bark/jolcham_oak_bark_01_rough_1k.exr")
+        diffuse_path = os.path.abspath("textures/jolcham_oak_bark/jolcham_oak_bark_01_diff_1k.jpg")
+        rough_path = os.path.abspath("textures/jolcham_oak_bark/jolcham_oak_bark_01_rough_1k.exr")
         
         # Reusing your custom textured material function. 
         # Note: If your function doesn't support roughness maps yet, 

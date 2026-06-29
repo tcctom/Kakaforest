@@ -371,32 +371,48 @@ def import_linz_terrain(obj_path):
     return None
 
 def create_excavation_cutter(contour_points, depth=5.0, name="Excavation_Cutter"):
-    """Creates a 3D solid box from grid points to act as a Boolean cutter."""
-    xs = [p[0] for p in contour_points]
-    ys = [p[1] for p in contour_points]
-    
-    x_min, x_max = min(xs), max(xs)
-    y_min, y_max = min(ys), max(ys)
-    z_top = max([p[2] for p in contour_points]) # The top surface height
-    z_bottom = z_top - depth                    # Push down into the ground
-    
-    # 8 corners of a solid box
-    verts = [
-        (x_min, y_min, z_bottom), (x_max, y_min, z_bottom),
-        (x_max, y_max, z_bottom), (x_min, y_max, z_bottom),
-        (x_min, y_min, z_top),    (x_max, y_min, z_top),
-        (x_max, y_max, z_top),    (x_min, y_max, z_top)
-    ]
-    
-    # 6 faces to close the 3D volume
-    faces = [
-        (0, 1, 2, 3), # Bottom
-        (4, 5, 6, 7), # Top
-        (0, 1, 5, 4), # Front
-        (1, 2, 6, 5), # Right
-        (2, 3, 7, 6), # Back
-        (3, 0, 4, 7)  # Left
-    ]
+    """Create a prism cutter from the footprint of contour points."""
+    def _cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    xy_points = sorted({(p[0], p[1]) for p in contour_points})
+    if len(xy_points) < 3:
+        raise ValueError("Need at least 3 unique XY points to build excavation cutter")
+
+    lower = []
+    for pt in xy_points:
+        while len(lower) >= 2 and _cross(lower[-2], lower[-1], pt) <= 0:
+            lower.pop()
+        lower.append(pt)
+
+    upper = []
+    for pt in reversed(xy_points):
+        while len(upper) >= 2 and _cross(upper[-2], upper[-1], pt) <= 0:
+            upper.pop()
+        upper.append(pt)
+
+    hull = lower[:-1] + upper[:-1]
+    if len(hull) < 3:
+        raise ValueError("Computed cutter footprint is degenerate")
+
+    z_top = max([p[2] for p in contour_points])
+    z_other = z_top - depth
+    z_min = min(z_top, z_other)
+    z_max = max(z_top, z_other)
+
+    bottom_verts = [(x, y, z_min) for x, y in hull]
+    top_verts = [(x, y, z_max) for x, y in hull]
+    verts = bottom_verts + top_verts
+
+    n = len(hull)
+    faces = []
+
+    faces.append(tuple(range(n)))
+    faces.append(tuple(range(2 * n - 1, n - 1, -1)))
+
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append((i, j, n + j, n + i))
     
     mesh = bpy.data.meshes.new(f"{name}_Mesh")
     cutter_obj = bpy.data.objects.new(name, mesh)
@@ -410,6 +426,78 @@ def create_excavation_cutter(contour_points, depth=5.0, name="Excavation_Cutter"
     cutter_obj.hide_render = True
     
     return cutter_obj
+
+def excavate_area(
+    linz_terrain,
+    corner_a,
+    corner_b,
+    z=-0.2,
+    x_spacing=0.4,
+    depth=2.0,
+    modifier_name="Excavation",
+    cutter_name="Excavation_Cutter",
+    create_gravel=True,
+):
+    """Create a rectangular clearing and apply it as a Boolean excavation on terrain."""
+    clearing = ground_module.grid_points(
+        (corner_a[0], corner_a[1], z),
+        (corner_b[0], corner_b[1], z),
+        x_spacing=x_spacing,
+    )
+
+    gravel_pad = None
+    if create_gravel:
+        gravel_pad = ground_module.gravel_plane(clearing)
+
+    cutter = create_excavation_cutter(clearing, depth=depth, name=cutter_name)
+
+    bool_mod = linz_terrain.modifiers.new(name=modifier_name, type='BOOLEAN')
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.object = cutter
+    bool_mod.solver = 'EXACT'  # Stable for dense terrain topology
+
+    return clearing, gravel_pad, cutter, bool_mod
+
+def excavate_strip(
+    linz_terrain,
+    start_xy,
+    end_xy,
+    width,
+    z=-0.2,
+    depth=-2.0,
+    modifier_name="Strip_Excavation",
+    cutter_name="Strip_Excavation_Cutter",
+):
+    """Create a diagonal strip cutter using a centerline and width."""
+    sx, sy = start_xy
+    ex, ey = end_xy
+    dx = ex - sx
+    dy = ey - sy
+    length = (dx * dx + dy * dy) ** 0.5
+    if length == 0:
+        raise ValueError("start_xy and end_xy must be different points")
+
+    ux = dx / length
+    uy = dy / length
+    px = -uy
+    py = ux
+    half_w = width * 0.5
+
+    strip_outline = [
+        (sx + px * half_w, sy + py * half_w, z),
+        (ex + px * half_w, ey + py * half_w, z),
+        (ex - px * half_w, ey - py * half_w, z),
+        (sx - px * half_w, sy - py * half_w, z),
+    ]
+
+    cutter = create_excavation_cutter(strip_outline, depth=depth, name=cutter_name)
+
+    bool_mod = linz_terrain.modifiers.new(name=modifier_name, type='BOOLEAN')
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.object = cutter
+    bool_mod.solver = 'EXACT'
+
+    return strip_outline, cutter, bool_mod
 
 
 
@@ -441,23 +529,43 @@ SHOW_GROUND = True  # Set to False to hide ground terrain
 
 # 0. Build ground terrain and clear the LINZ terrain
 if SHOW_GROUND and linz_terrain:
-    # Import helper functions
-    from ground_module import grid_points
-    
-    # 1. Define the clearing footprint
-    main_dwelling_clearing = grid_points((6, 3.0, -0.2), (-5.2, -8.5, -0.2), x_spacing=0.4)
-    
-    # 2. Build the visual gravel plane (sits perfectly on top)
-    gravel_pad = ground_module.gravel_plane(main_dwelling_clearing)
-    
-    # 3. Create the invisible 3D box to dig into the LINZ terrain
-    cutter = create_excavation_cutter(main_dwelling_clearing, depth=-2.0)
-    
-    # 4. Apply the Boolean Modifier to the LINZ terrain to "excavate"
-    bool_mod = linz_terrain.modifiers.new(name="Dwelling_Excavation", type='BOOLEAN')
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.object = cutter
-    bool_mod.solver = 'EXACT'  # 'EXACT' handles dense GIS topography meshes beautifully
+    # Main dwelling clearing with gravel finish.
+    clearing, gravel_pad, cutter, bool_mod = excavate_area(
+        linz_terrain=linz_terrain,
+        corner_a=(6, 3.0),
+        corner_b=(-4.5, -8.5),
+        z=-0.2,
+        x_spacing=0.4,
+        depth=-2.0,
+        modifier_name="Dwelling_Excavation",
+        cutter_name="Dwelling_Excavation_Cutter",
+        create_gravel=True,
+    )
+
+    # Next area to cut out: same workflow, one function call.
+    clearing2, gravel_pad2, cutter2, bool_mod2 = excavate_area(
+        linz_terrain=linz_terrain,
+        corner_a=(-4.0, -5.0),
+        corner_b=(-10.0, -8.5),
+        z=-0.2,
+        x_spacing=0.4,
+        depth=-2.0,
+        modifier_name="Secondary_Excavation",
+        cutter_name="Secondary_Excavation_Cutter",
+        create_gravel=False,
+    )
+
+    # Optional diagonal strip cut (centerline start/end + width in meters).
+    # strip_outline, strip_cutter, strip_bool = excavate_strip(
+    #     linz_terrain=linz_terrain,
+    #     start_xy=(-2.0, -3.0),
+    #     end_xy=(-10.0, -9.0),
+    #     width=1.8,
+    #     z=-0.2,
+    #     depth=-2.0,
+    #     modifier_name="Diagonal_Strip_Excavation",
+    #     cutter_name="Diagonal_Strip_Cutter",
+    # )
     
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
@@ -474,7 +582,7 @@ if SHOW_GROUND and linz_terrain:
 # Roof options: 
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
-foundation = ground_module.gravel_plane(grid_points((4.5, 2.8, 0.2), (-4.5, -4.6, 0.2), x_spacing=0.4),thickness=0.3)
+foundation = ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush")
 
 # 1a. Build North Deck - extends 3m north from ground floor
