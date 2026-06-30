@@ -458,6 +458,7 @@ def excavate_area(
 
     return clearing, gravel_pad, cutter, bool_mod
 
+import bmesh
 def excavate_strip(
     linz_terrain,
     start_xy,
@@ -492,10 +493,19 @@ def excavate_strip(
 
     cutter = create_excavation_cutter(strip_outline, depth=depth, name=cutter_name)
 
+    # --- FORCE NORMALS OUTWARD ---
+    bm = bmesh.new()
+    bm.from_mesh(cutter.data)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces) 
+    bm.to_mesh(cutter.data)
+    bm.free()
+    cutter.data.update()
+    # -----------------------------
+
     bool_mod = linz_terrain.modifiers.new(name=modifier_name, type='BOOLEAN')
     bool_mod.operation = 'DIFFERENCE'
     bool_mod.object = cutter
-    bool_mod.solver = 'EXACT'
+    bool_mod.solver = 'EXACT'  # Use ... for long strips to avoid precision issues
 
     return strip_outline, cutter, bool_mod
 
@@ -556,16 +566,16 @@ if SHOW_GROUND and linz_terrain:
     )
 
     # Optional diagonal strip cut (centerline start/end + width in meters).
-    # strip_outline, strip_cutter, strip_bool = excavate_strip(
-    #     linz_terrain=linz_terrain,
-    #     start_xy=(-2.0, -3.0),
-    #     end_xy=(-10.0, -9.0),
-    #     width=1.8,
-    #     z=-0.2,
-    #     depth=-2.0,
-    #     modifier_name="Diagonal_Strip_Excavation",
-    #     cutter_name="Diagonal_Strip_Cutter",
-    # )
+    strip_outline, strip_cutter, strip_bool = excavate_strip(
+         linz_terrain=linz_terrain,
+         start_xy=(-3.50, -6.5),
+         end_xy=(-26.0, -20.0),
+         width=4.4999,  # Just under 3.5m to avoid boolean precision issues
+         z=-0.2,
+         depth=-2.0,
+         modifier_name="Diagonal_Strip_Excavation",
+         cutter_name="Diagonal_Strip_Cutter",
+    )
     
 
 # 1. Build existing cottage (60m south of main dwelling, 5m higher elevation)
@@ -617,8 +627,8 @@ main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-15.5, -12, -0.9))
-outdoor_structures.build_water_tank(origin=(-19.3, -13.7, -1.2))
+outdoor_structures.build_water_tank(origin=(-14.5, -13, -0.2))
+outdoor_structures.build_water_tank(origin=(-18.0, -15, -0.2))
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -630,12 +640,15 @@ path_points_1 = [
         mathutils.Vector((4.5, -6.5, 0.1)),       
         mathutils.Vector((-3.0, -6.5, 0.1)),       
         mathutils.Vector((-7.9, -6.2, -0.15)),       
-        mathutils.Vector((-12, -2.2, -1.2)),       
-        mathutils.Vector((-17, -1.4, -1.7)),       
-        mathutils.Vector((-20, -2.0, -1.8)), 
-        mathutils.Vector((-25, -2.9, -2.3)), 
-        mathutils.Vector((-28.0, -6, -2.6)), 
-        mathutils.Vector((-31.0, -7.5, -3.2))
+        mathutils.Vector((-12, -2.4, -1.2)),       
+        mathutils.Vector((-17, -1.9, -1.7)),       
+        mathutils.Vector((-20, -2.5, -1.8)), 
+        mathutils.Vector((-22, -3, -1.9)), 
+        mathutils.Vector((-25, -4, -2.25)), 
+        mathutils.Vector((-26, -6, -2.25)), 
+        mathutils.Vector((-27.0, -8, -2.6)), 
+        mathutils.Vector((-29.0, -10, -2.8)), 
+        mathutils.Vector((-31.0, -10.0, -3.0))
     ]
 
 
@@ -654,7 +667,7 @@ path_points_main_drive = [
     mathutils.Vector((-35.5, 10, -5.1)),   
     mathutils.Vector((-34.0, 0.0, -4.2)),   # Continuing south down the western flank
     mathutils.Vector((-32.0, -11.0, -2.9)), # Passing perfectly west of your center origin dot
-    mathutils.Vector((-31.0, -18.5, -2.5)),  # Winding lower down the western track
+    mathutils.Vector((-31.0, -18.5, -2.4)),  # Winding lower down the western track
     mathutils.Vector((-29.0, -26.0, -2.0)),  # Winding lower down the western track
     mathutils.Vector((-25.0, -38.0, -0.5)),  # Straightening south toward the bottom turn
     mathutils.Vector((-21.0, -45.0, 1.0)),   # Sweeping around the bottom bend (crossing X axis)
@@ -678,8 +691,8 @@ path_points_AMD_ROW = [
 create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.2, path_points=path_points_main_drive, debug_show_points=True)
 create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
-outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.6, -11.1, 4), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 1.6), radius=0.4, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.5, -6.7, 2.1), radius=0.4, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.8, -11.2, 4), radius=0.35, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 1.6), radius=0.35, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.8, -7.2, 2.1), radius=0.35, height=7.0 )  
 
 print("Modular Site Build Complete.")
