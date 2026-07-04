@@ -2,6 +2,8 @@ import os
 import sys
 
 import bpy  # type: ignore
+import math
+import mathutils
 
 if __package__ in {None, ""}:
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -143,7 +145,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     bpy.ops.mesh.primitive_cube_add(location=(guest_bed_x, guest_bed_y, guest_bed_z))
     guest_bed = bpy.context.active_object
-    guest_bed.name = "MainDwelling_GuestBedroom_KingBed"
+    guest_bed.name = "MD_GuestBedroom_KingBed"
     guest_bed.scale = (BED_WIDTH / 2, BED_LENGTH / 2, BED_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     guest_bed.data.materials.append(bed_mat)
@@ -161,26 +163,47 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
 
-    create_interior_wall( name="MainDwelling_StaircasePartition_BothFloors",
+    create_interior_wall( name="MD_StaircasePartition_BothFloors",
         location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
         size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
     )
 
+    #create_interior_wall( name="MD_StaircaseDivider_BothFloors",
+    #    location=(stairwell_east_x - 1, south_interior_y + 1 + 1.7 / 2, FLOOR_TOP + 3.7/2),
+    #    size=(INTERIOR_WALL_THICKNESS, 1.7, 3.7),
+    #)
+
+    create_balustrade(name="MD_StaircaseDivider_BothFloors"
+                      , location=(stairwell_east_x - 1, south_interior_y + 1, FLOOR_TOP)
+                      , size=(INTERIOR_WALL_THICKNESS, 1.7, 2.45), rise_top=1.25)
+
+    # Upstairs Return (East-West, rotated 90 degrees)
+    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
+    create_balustrade(
+        name="MD_Staircase_Baulustrade_Upstairs",
+        location=(stairwell_east_x, south_interior_y + 2.65, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
+        rise_top=0.0, 
+        rise_bottom=0.0, 
+        hide_start_post=True, 
+        hide_end_post=True,
+        rotation_z=90.0 # Flips the rail to line up East-West
+    )
 
     # Create wall behind log burner (East)
-    create_fireplace_wall( name="MainDwelling_HeartyhWallEast",
+    create_fireplace_wall( name="MD_HearthWallEast",
         location=(west_partition_x-0.1, oy, 0.6),
         size=(0.1, 1.3, 1.2)
     )
 
     # Create wall south of log burner
-    create_fireplace_wall( name="MainDwelling_HeartyhWallSouth",
+    create_fireplace_wall( name="MD_HearthWallSouth",
         location=(west_partition_x-0.45, oy - 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
     # Create wall north of log burner
-    create_fireplace_wall( name="MainDwelling_HeartyhWallNorth",
+    create_fireplace_wall( name="MD_HearthWallNorth",
         location=(west_partition_x-0.45, oy + 0.6, 0.6),
         size=(0.6, 0.1, 1.2)
     )
@@ -380,6 +403,119 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     bed.scale = (BED_WIDTH / 2, BED_LENGTH / 2, BED_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     bed.data.materials.append(bed_mat)
+
+
+
+def create_balustrade(name, location, size, rise_top=0.0, rise_bottom=0.0, 
+                      hide_start_post=False, hide_end_post=False, rotation_z=0.0):
+    """
+    Creates a sloped balustrade assembly for stairs with independently controllable 
+    top and bottom slope gains. Includes a rotation parameter for orientation alignment.
+    
+    Parameters:
+    - size (tuple): (width/thickness, horizontal_run/length, flat_height)
+    - rotation_z (float): Z-axis rotation in degrees (e.g., 90.0 for East-West alignment)
+    """
+    width, run, flat_height = size
+    post_width = width  
+    baluster_width = width * 0.5  
+    baluster_spacing = 0.2  
+    handrail_thickness = 0.05  
+
+    slope_angle = math.atan2(rise_top, run)
+    created_parts = []
+    
+    # -------------------------------------------------------------------------
+    # 1. CREATE END POSTS
+    # -------------------------------------------------------------------------
+    if not hide_start_post:
+        y_offset = post_width / 2
+        bpy.ops.mesh.primitive_cube_add(location=(0.0, y_offset, flat_height / 2))
+        start_post = bpy.context.active_object
+        start_post.name = f"{name}_Start_Post"
+        start_post.scale = (post_width / 2, post_width / 2, flat_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        created_parts.append(start_post)
+        
+    if not hide_end_post:
+        y_offset = -post_width / 2
+        post_z_base = rise_bottom
+        post_z_top = flat_height + rise_top
+        current_post_height = post_z_top - post_z_base
+        
+        bpy.ops.mesh.primitive_cube_add(
+            location=(0.0, run + y_offset, post_z_base + (current_post_height / 2))
+        )
+        end_post = bpy.context.active_object
+        end_post.name = f"{name}_End_Post"
+        end_post.scale = (post_width / 2, post_width / 2, current_post_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        created_parts.append(end_post)
+
+    # -------------------------------------------------------------------------
+    # 2. CREATE BALUSTERS
+    # -------------------------------------------------------------------------
+    start_margin = post_width if not hide_start_post else 0.0
+    end_margin = post_width if not hide_end_post else 0.0
+    
+    available_run = run - (start_margin + end_margin)
+    num_spaces = max(1, round(available_run / baluster_spacing))
+    actual_spacing = available_run / num_spaces
+
+    for i in range(1 if not hide_start_post else 0, num_spaces + (0 if not hide_end_post else 1)):
+        b_y = start_margin + (i * actual_spacing) if not hide_start_post else (i * actual_spacing)
+        b_z_base = (b_y / run) * rise_bottom
+        b_z_top = flat_height + ((b_y / run) * rise_top) - handrail_thickness
+        b_height = b_z_top - b_z_base
+        
+        if b_height > 0:
+            bpy.ops.mesh.primitive_cube_add(
+                location=(0.0, b_y, b_z_base + (b_height / 2))
+            )
+            baluster = bpy.context.active_object
+            baluster.name = f"{name}_Baluster_{i}"
+            baluster.scale = (baluster_width / 2, baluster_width / 2, b_height / 2)
+            bpy.ops.object.transform_apply(scale=True)
+            created_parts.append(baluster)
+
+    # -------------------------------------------------------------------------
+    # 3. CREATE HANDRAIL
+    # -------------------------------------------------------------------------
+    sloped_length = math.sqrt(run**2 + rise_top**2)
+    bpy.ops.mesh.primitive_cube_add(location=(0.0, sloped_length / 2, -handrail_thickness / 2))
+    rail = bpy.context.active_object
+    rail.name = f"{name}_Handrail"
+    rail.scale = (width / 2, sloped_length / 2, handrail_thickness / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    
+    rail.rotation_euler[0] = slope_angle
+    rail.location.z += flat_height
+    bpy.ops.object.transform_apply(rotation=True, location=True)
+    created_parts.append(rail)
+
+    # -------------------------------------------------------------------------
+    # 4. ASSEMBLY, ROTATION, AND LOCATION
+    # -------------------------------------------------------------------------
+    if not created_parts:
+        return None
+
+    bpy.ops.object.select_all(action='DESELECT')
+    for part in created_parts:
+        part.select_set(True)
+    bpy.context.view_layer.objects.active = created_parts[0]
+    bpy.ops.object.join()
+    
+    final_balustrade = bpy.context.active_object
+    final_balustrade.name = name
+    
+    # Apply rotation around object origin before moving to world location
+    if rotation_z != 0.0:
+        final_balustrade.rotation_euler[2] = math.radians(rotation_z)
+        bpy.ops.object.transform_apply(rotation=True)
+    
+    final_balustrade.location = location
+
+    return final_balustrade
 
 
 def create_fireplace_wall(name, location, size):
