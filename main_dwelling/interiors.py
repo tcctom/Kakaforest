@@ -320,7 +320,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     flue.data.materials.append(flue_mat)
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
-    create_floor_covering("Floor_A", (0,0,0.501), (2,2), "C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
+    create_floor_covering("Floor_A", (3.3,-3.05,FLOOR_TOP+0.001), (2.05,2.7), "C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
 
 
 
