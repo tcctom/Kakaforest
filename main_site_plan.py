@@ -25,7 +25,6 @@ for mod_name in [
     "main_dwelling.envelope",
     "main_dwelling.exterior_details",
     "main_dwelling.porch",
-    "main_dwelling.material_setup",
     "main_dwelling.build_context",
     "main_dwelling.runtime_context",
     "main_dwelling.build_pipeline",
@@ -50,7 +49,6 @@ import main_dwelling.materials_nodes as main_dwelling_materials_nodes
 import main_dwelling.envelope as main_dwelling_envelope
 import main_dwelling.exterior_details as main_dwelling_exterior_details
 import main_dwelling.porch as main_dwelling_porch
-import main_dwelling.material_setup as main_dwelling_material_setup
 import main_dwelling.build_context as main_dwelling_build_context
 import main_dwelling.runtime_context as main_dwelling_runtime_context
 import main_dwelling.build_pipeline as main_dwelling_build_pipeline
@@ -77,7 +75,6 @@ reload(main_dwelling_furnishings)
 reload(main_dwelling_envelope)
 reload(main_dwelling_exterior_details)
 reload(main_dwelling_porch)
-reload(main_dwelling_material_setup)
 reload(main_dwelling_build_context)
 reload(main_dwelling_runtime_context)
 reload(main_dwelling_build_pipeline)

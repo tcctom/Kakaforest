@@ -6,13 +6,13 @@ from main_dwelling.deck import build_north_deck
 from main_dwelling.materials_nodes import (
     create_textured_material,
 )
-from main_dwelling.material_setup import create_main_dwelling_materials
 from main_dwelling.porch import build_simple_open_porch
 from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
     _create_floors,
 )
+from materials import get_floor_wood_material
 
 # === MAIN BUILDING FUNCTIONS ===
 
@@ -49,10 +49,11 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     runtime_context = get_main_dwelling_runtime_context()
     
     # Materials
-    potius_mat, floor_mat = create_main_dwelling_materials(
-        create_textured_material,
+    potius_mat = create_textured_material(
+        "PotiusExterior",
         runtime_context.exterior_texture_path,
     )
+    floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
