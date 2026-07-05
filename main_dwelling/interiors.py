@@ -192,19 +192,19 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Create wall behind log burner (East)
     create_fireplace_wall( name="MD_HearthWallEast",
-        location=(west_partition_x-0.1, oy, 0.6),
+        location=(west_partition_x-0.1, oy, oz + 0.6),
         size=(0.1, 1.3, 1.2)
     )
 
     # Create wall south of log burner
     create_fireplace_wall( name="MD_HearthWallSouth",
-        location=(west_partition_x-0.45, oy - 0.6, 0.6),
+        location=(west_partition_x-0.45, oy - 0.6, oz + 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
     # Create wall north of log burner
     create_fireplace_wall( name="MD_HearthWallNorth",
-        location=(west_partition_x-0.45, oy + 0.6, 0.6),
+        location=(west_partition_x-0.45, oy + 0.6, oz + 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
@@ -318,6 +318,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     flue = bpy.context.active_object
     flue.name = "MainDwelling_GuestBedroom_Flue"
     flue.data.materials.append(flue_mat)
+
+    #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
+    create_floor_covering("Floor_A", (0,0,0.501), (2,2), "C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
+
+
 
 
 def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -694,4 +699,63 @@ def import_candlestick(name, location, scale=(1.0, 1.0, 1.0)):
         # material creator to re-link 'wooden_candlestick_diff_1k.jpg'.
         
     return prop
+
+
+def create_floor_covering(name, location, size, texture_path):
+    """
+    Creates a flat floor covering plane, builds a new material, 
+    and maps an image texture to it.
+    
+    Parameters:
+    - name (str): Unique name for the floor object and material.
+    - location (tuple): (x, y, z) coordinates for the center of the floor.
+    - size (tuple): (width_x, length_y) dimensions of the floor.
+    - texture_path (str): Relative or absolute system path to the image texture.
+    """
+    width_x, length_y = size
+
+    # --- CHOOSE THE PATH RESOLVER ---
+    # If it's already an absolute path, keep it. If relative, anchor it to this script's directory.
+    if not os.path.isabs(texture_path):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        texture_path = os.path.join(script_dir, texture_path)
+    # --------------------------------
+
+    # 1. Create the Floor Geometry
+    bpy.ops.mesh.primitive_plane_add(location=location)
+    floor_obj = bpy.context.active_object
+    floor_obj.name = name
+    
+    floor_obj.scale = (width_x / 2, length_y / 2, 1.0)
+    bpy.ops.object.transform_apply(scale=True)
+    
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    if hasattr(bpy.ops.uv, "unwrap"):
+        bpy.ops.uv.unwrap(method='ANGLE_BASED', margin=0.001)
+    else:
+        print("Warning: UV unwrap operator not available; skipping floor UV unwrap.")
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # 2. Setup the Material and Nodes
+    mat = bpy.data.materials.new(name=f"Mat_{name}")
+    mat.use_nodes = True
+    floor_obj.data.materials.append(mat)
+    
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    principled = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+    
+    if os.path.exists(texture_path):
+        tex_node = nodes.new(type='ShaderNodeTexImage')
+        try:
+            img = bpy.data.images.load(texture_path)
+            tex_node.image = img
+            links.new(tex_node.outputs['Color'], principled.inputs['Base Color'])
+        except Exception as e:
+            print(f"Warning: Could not read image file. Error: {e}")
+    else:
+        print(f"Warning: Texture path not found at: {texture_path}")
+
+    return floor_obj
 
