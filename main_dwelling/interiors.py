@@ -217,7 +217,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Place your real 3D candlestick asset onto the South wall
     import_candlestick(
         name="Prop_RealCandlestick_01",
-        location=(0.5, oy - 0.6, 1.2), 
+        location=(0.5, oy - 0.6, oz+1.2), 
         scale=(1.0, 1.0, 1.0)
     )
 
@@ -320,7 +320,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     flue.data.materials.append(flue_mat)
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
-    create_floor_covering("Floor_A", (3.3,-3.05,FLOOR_TOP+0.001), (2.05,2.7), "C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
+    create_floor_covering(name="Floor_A"
+                          , location=(3.3,-3.05,FLOOR_TOP+0.001), size=(2.05,2.7)
+                          , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
+                          ,texture_image_width=0.5
+                          )
 
 
 
@@ -701,21 +705,22 @@ def import_candlestick(name, location, scale=(1.0, 1.0, 1.0)):
     return prop
 
 
-def create_floor_covering(name, location, size, texture_path):
+def create_floor_covering(name, location, size, texture_path, texture_image_width=0.0):
     """
     Creates a flat floor covering plane, builds a new material, 
-    and maps an image texture to it.
+    and maps an image texture to it with optional real-world scale tiling.
     
     Parameters:
     - name (str): Unique name for the floor object and material.
     - location (tuple): (x, y, z) coordinates for the center of the floor.
     - size (tuple): (width_x, length_y) dimensions of the floor.
     - texture_path (str): Relative or absolute system path to the image texture.
+    - texture_image_width (float): The real-world width that the texture image file 
+                                  represents (e.g., 1.0 for a 1-meter square tile map).
     """
     width_x, length_y = size
 
     # --- CHOOSE THE PATH RESOLVER ---
-    # If it's already an absolute path, keep it. If relative, anchor it to this script's directory.
     if not os.path.isabs(texture_path):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         texture_path = os.path.join(script_dir, texture_path)
@@ -747,15 +752,35 @@ def create_floor_covering(name, location, size, texture_path):
     principled = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
     
     if os.path.exists(texture_path):
-        tex_node = nodes.new(type='ShaderNodeTexImage')
         try:
             img = bpy.data.images.load(texture_path)
+            
+            # Create shader node chain
+            tex_node = nodes.new(type='ShaderNodeTexImage')
             tex_node.image = img
+            
+            # Handle Tiling Scale calculations if texture_image_width is provided
+            if texture_image_width > 0.0:
+                coord_node = nodes.new(type='ShaderNodeTexCoord')
+                mapping_node = nodes.new(type='ShaderNodeMapping')
+                
+                # Calculate how many times the real-world image width fits across the floor dimensions
+                tiling_factor_x = width_x / texture_image_width
+                tiling_factor_y = length_y / texture_image_width
+                
+                # Assign the repeating scale values to the Mapping node
+                mapping_node.inputs['Scale'].default_value = (tiling_factor_x, tiling_factor_y, 1.0)
+                
+                # Link UV Coordinates -> Mapping Node -> Image Texture
+                links.new(coord_node.outputs['UV'], mapping_node.inputs['Vector'])
+                links.new(mapping_node.outputs['Vector'], tex_node.inputs['Vector'])
+            
+            # Link final texture color payload to the Principal Shader base color input
             links.new(tex_node.outputs['Color'], principled.inputs['Base Color'])
+            
         except Exception as e:
             print(f"Warning: Could not read image file. Error: {e}")
     else:
         print(f"Warning: Texture path not found at: {texture_path}")
 
     return floor_obj
-
