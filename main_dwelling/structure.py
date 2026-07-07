@@ -4,178 +4,6 @@ from materials import get_interior_wall_material
 from main_dwelling.materials_nodes import create_laminate_floor_material, create_material
 
 
-def _get_stair_layout_spec(layout, ox, oy, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
-    """Return shared XY layout spec for staircase and first-floor opening."""
-    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
-
-    if layout == "southwest":
-        west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
-        return {
-            "layout": layout,
-            "stairwell_west_x": west_interior_x,
-            "stairwell_south_y": south_interior_y,
-            "stairwell_width": 2.0,
-            "stairwell_length": 3.0,
-            # Keep this trim for continuity with current slab opening behavior.
-            "opening_north_trim": 0.3,
-        }
-
-    if layout == "southmiddle":
-        west_interior_x = ox
-        return {
-            "layout": layout,
-            "stairwell_west_x": west_interior_x,
-            "stairwell_south_y": south_interior_y,
-            "stairwell_width": 3.0,
-            "stairwell_length": 2.0,
-            # Keep this trim for continuity with current slab opening behavior.
-            "opening_north_trim": 0.3,
-        }
-
-    raise ValueError(f"Unsupported stair layout: {layout}")
-
-
-def _create_180_degree_staircase(layout, ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
-    """Create a 180-degree dog-legged staircase using a named shared layout."""
-    spec = _get_stair_layout_spec(layout, ox, oy, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-
-    GROUND_FLOOR_SLAB_THICKNESS = 0.1
-    FIRST_FLOOR_SLAB_THICKNESS = 0.2
-    ground_floor_top = oz + GROUND_FLOOR_SLAB_THICKNESS
-    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
-    TOTAL_RISE = first_floor_top - ground_floor_top
-
-    STAIRWELL_WIDTH = spec["stairwell_width"]
-    STAIRWELL_LENGTH = spec["stairwell_length"]
-    FLIGHT_WIDTH = 0.95
-    LANDING_DEPTH = 1.0
-    LANDING_HEIGHT = TOTAL_RISE / 2
-
-    STEPS_PER_FLIGHT = 7
-    STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)
-    STEP_TREAD = 0.28
-    MODELED_STEPS_PER_FLIGHT = STEPS_PER_FLIGHT - 1
-
-    stairwell_west_x = spec["stairwell_west_x"]
-    stairwell_east_x = stairwell_west_x + STAIRWELL_WIDTH
-    stairwell_south_y = spec["stairwell_south_y"]
-    stairwell_north_y = stairwell_south_y + STAIRWELL_LENGTH
-
-    stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
-    landing_mat = floor_mat
-
-    if layout == "southwest":
-        flight1_x = stairwell_east_x - FLIGHT_WIDTH / 2
-        landing_north_y = stairwell_south_y + LANDING_DEPTH
-        flight1_start_y = landing_north_y + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) - (STEP_TREAD / 2)
-
-        for i in range(MODELED_STEPS_PER_FLIGHT):
-            step_height = ground_floor_top + STEP_RISE * (i + 0.5)
-            step_y = flight1_start_y - (i * STEP_TREAD)
-
-            bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
-            step = bpy.context.active_object
-            step.name = f"MainDwelling_Stairs_Flight1_Step_{i + 1:02d}"
-            step.scale = (FLIGHT_WIDTH / 2, STEP_TREAD / 2, STEP_RISE / 2)
-            bpy.ops.object.transform_apply(scale=True)
-            step.data.materials.append(stairs_mat)
-
-        landing_x = (stairwell_west_x + stairwell_east_x) / 2
-        landing_y = stairwell_south_y + LANDING_DEPTH / 2
-
-        landing_top_z = ground_floor_top + LANDING_HEIGHT
-        landing_z = landing_top_z - 0.075
-
-        bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
-        landing = bpy.context.active_object
-        landing.name = "MainDwelling_Stairs_Landing"
-        landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.11)
-        bpy.ops.object.transform_apply(scale=True)
-        landing.data.materials.append(landing_mat)
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2
-        flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD / 2
-
-        for i in range(MODELED_STEPS_PER_FLIGHT):
-            step_height = landing_top_z + STEP_RISE * (i + 0.5)
-            step_y = flight2_start_y + (i * STEP_TREAD)
-
-            bpy.ops.mesh.primitive_cube_add(location=(flight2_x, step_y, step_height))
-            step = bpy.context.active_object
-            step.name = f"MainDwelling_Stairs_Flight2_Step_{i + 1:02d}"
-            step.scale = (FLIGHT_WIDTH / 2, STEP_TREAD / 2, STEP_RISE / 2)
-            bpy.ops.object.transform_apply(scale=True)
-            step.data.materials.append(stairs_mat)
-
-        print("180-degree staircase created in southwest corner")
-        print(f"  Flight 1 (EAST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
-        print(f"  Landing (SOUTH edge): {LANDING_HEIGHT}m height, spans East-West")
-        print(f"  Flight 2 (WEST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + floor as final tread")
-    elif layout == "southmiddle":
-        flight1_y = stairwell_north_y - FLIGHT_WIDTH / 2
-        landing_east_x = stairwell_west_x + LANDING_DEPTH
-        flight1_start_x = landing_east_x + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) - (STEP_TREAD / 2)
-
-        for i in range(MODELED_STEPS_PER_FLIGHT):
-            step_height = ground_floor_top + STEP_RISE * (i + 0.5)
-            step_x = flight1_start_x - (i * STEP_TREAD)
-
-            bpy.ops.mesh.primitive_cube_add(location=(step_x, flight1_y, step_height))
-            step = bpy.context.active_object
-            step.name = f"MainDwelling_Stairs_Flight1_Step_{i + 1:02d}"
-            step.scale = (STEP_TREAD / 2, FLIGHT_WIDTH / 2, STEP_RISE / 2)
-            bpy.ops.object.transform_apply(scale=True)
-            step.data.materials.append(stairs_mat)
-
-        landing_x = stairwell_west_x + LANDING_DEPTH / 2
-        landing_y = (stairwell_south_y + stairwell_north_y) / 2
-
-        landing_top_z = ground_floor_top + LANDING_HEIGHT
-        landing_z = landing_top_z - 0.075
-
-        bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
-        landing = bpy.context.active_object
-        landing.name = "MainDwelling_Stairs_Landing"
-        landing.scale = (LANDING_DEPTH / 2, STAIRWELL_LENGTH / 2, 0.11)
-        bpy.ops.object.transform_apply(scale=True)
-        landing.data.materials.append(landing_mat)
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        flight2_y = stairwell_south_y + FLIGHT_WIDTH / 2
-        flight2_start_x = stairwell_west_x + LANDING_DEPTH + STEP_TREAD / 2
-
-        for i in range(MODELED_STEPS_PER_FLIGHT):
-            step_height = landing_top_z + STEP_RISE * (i + 0.5)
-            step_x = flight2_start_x + (i * STEP_TREAD)
-
-            bpy.ops.mesh.primitive_cube_add(location=(step_x, flight2_y, step_height))
-            step = bpy.context.active_object
-            step.name = f"MainDwelling_Stairs_Flight2_Step_{i + 1:02d}"
-            step.scale = (STEP_TREAD / 2, FLIGHT_WIDTH / 2, STEP_RISE / 2)
-            bpy.ops.object.transform_apply(scale=True)
-            step.data.materials.append(stairs_mat)
-
-        print("180-degree staircase created in south-middle, rotated 90 degrees")
-        print(f"  Flight 1 (NORTH edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
-        print(f"  Landing (WEST edge): {LANDING_HEIGHT}m height, spans South-North")
-        print(f"  Flight 2 (SOUTH edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + floor as final tread")
-    else:
-        raise ValueError(f"Unsupported stair layout: {layout}")
-
-    # Stairwell opening is created in _create_floors using the same shared layout spec.
-    print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
-    print(f"  Step rise: {STEP_RISE * 1000:.1f}mm, tread: {STEP_TREAD * 1000:.0f}mm")
-
-
 def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat):
     """Create all exterior walls for ground and first floors with recessed north wall."""
     wall_depth_ground = ENCLOSED_WIDTH - 2 * EXTERIOR_WALL_THICKNESS
@@ -261,14 +89,176 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
 
 def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS,  floor_mat):
     """Create 180-degree dog-legged staircase in southwest corner with clockwise turn."""
-    _create_180_degree_staircase("southwest", ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    GROUND_FLOOR_SLAB_THICKNESS = 0.1
+    FIRST_FLOOR_SLAB_THICKNESS = 0.2
+    ground_floor_top = oz + GROUND_FLOOR_SLAB_THICKNESS
+    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
+    TOTAL_RISE = first_floor_top - ground_floor_top
+    STAIRWELL_WIDTH = 2.0
+    STAIRWELL_LENGTH = 3.0
+    FLIGHT_WIDTH = 0.95
+    LANDING_DEPTH = 1.0
+    LANDING_HEIGHT = TOTAL_RISE / 2
+
+    STEPS_PER_FLIGHT = 7
+    STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)
+    STEP_TREAD = 0.28
+    MODELED_STEPS_PER_FLIGHT = STEPS_PER_FLIGHT - 1
+
+
+    west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+
+    stairwell_west_x = west_interior_x
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
+    stairwell_south_y = south_interior_y
+    stairwell_north_y = south_interior_y + STAIRWELL_LENGTH
+
+    stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
+    landing_mat = floor_mat
+
+    flight1_x = stairwell_east_x - FLIGHT_WIDTH / 2 
+    landing_north_y = stairwell_south_y + LANDING_DEPTH
+    flight1_start_y = landing_north_y + (MODELED_STEPS_PER_FLIGHT * STEP_TREAD) - (STEP_TREAD / 2)
+
+    for i in range(MODELED_STEPS_PER_FLIGHT):
+        step_height = ground_floor_top + STEP_RISE * (i + 0.5)
+        step_y = flight1_start_y - (i * STEP_TREAD)
+
+        bpy.ops.mesh.primitive_cube_add(location=(flight1_x, step_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight1_Step_{i + 1:02d}"
+        step.scale = (FLIGHT_WIDTH / 2, STEP_TREAD / 2, STEP_RISE / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+
+    landing_x = (stairwell_west_x + stairwell_east_x) / 2
+    landing_y = stairwell_south_y + LANDING_DEPTH / 2
+    landing_top_z = ground_floor_top + LANDING_HEIGHT
+    landing_z = landing_top_z - 0.075
+
+    bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
+    landing = bpy.context.active_object
+    landing.name = "MainDwelling_Stairs_Landing"
+    landing.scale = (STAIRWELL_WIDTH / 2, LANDING_DEPTH / 2, 0.11)
+    bpy.ops.object.transform_apply(scale=True)
+    landing.data.materials.append(landing_mat)
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    flight2_x = stairwell_west_x + FLIGHT_WIDTH / 2 
+    flight2_start_y = stairwell_south_y + LANDING_DEPTH + STEP_TREAD / 2
+
+    for i in range(MODELED_STEPS_PER_FLIGHT):
+        step_height = landing_top_z + STEP_RISE * (i + 0.5)
+        step_y = flight2_start_y + (i * STEP_TREAD)
+
+        bpy.ops.mesh.primitive_cube_add(location=(flight2_x, step_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight2_Step_{i + 1:02d}"
+        step.scale = (FLIGHT_WIDTH / 2, STEP_TREAD / 2, STEP_RISE / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+
+    # Stairwell opening is now created directly in first-floor slab geometry in _create_floors.
+
+    print("180-degree staircase created in southwest corner")
+    print(f"  Flight 1 (EAST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
+    print(f"  Landing (SOUTH edge): {LANDING_HEIGHT}m height, spans East-West")
+    print(f"  Flight 2 (WEST edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + floor as final tread")
+    print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
+    print(f"  Step rise: {STEP_RISE * 1000:.1f}mm, tread: {STEP_TREAD * 1000:.0f}mm")
 
 def _create_180_degree_staircase_southmiddle(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS,  floor_mat):
     """Create a 180-degree dog-legged staircase near south-middle, rotated 90 degrees."""
-    _create_180_degree_staircase("southmiddle", ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    GROUND_FLOOR_SLAB_THICKNESS = 0.1
+    FIRST_FLOOR_SLAB_THICKNESS = 0.2
+    ground_floor_top = oz + GROUND_FLOOR_SLAB_THICKNESS
+    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
+    TOTAL_RISE = first_floor_top - ground_floor_top
+    # Rotated 90 degrees from the southwest variant: run direction is along X.
+    STAIRWELL_WIDTH = 3.0
+    STAIRWELL_LENGTH = 2.0
+    FLIGHT_WIDTH = 0.95
+    LANDING_DEPTH = 1.0
+    LANDING_HEIGHT = TOTAL_RISE / 2
+
+    STEPS_PER_FLIGHT = 7
+    STEP_RISE = TOTAL_RISE / (STEPS_PER_FLIGHT * 2)
+    STEP_TREAD = 0.28
+    MODELED_STEPS_PER_FLIGHT = STEPS_PER_FLIGHT - 1
 
 
-def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, stair_layout="southmiddle"):
+    west_interior_x = ox -2
+    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+
+    stairwell_west_x = west_interior_x
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
+    stairwell_south_y = south_interior_y
+    stairwell_north_y = south_interior_y + STAIRWELL_LENGTH
+
+    stairs_mat = create_material("StairsWood", (0.6, 0.4, 0.25, 1))
+    landing_mat = floor_mat
+
+    flight1_y = stairwell_south_y + FLIGHT_WIDTH / 2
+    flight1_start_x = stairwell_west_x + LANDING_DEPTH + STEP_TREAD / 2
+
+    for i in range(MODELED_STEPS_PER_FLIGHT):
+        step_height = ground_floor_top + STEP_RISE * (i + 0.5)
+        step_x = flight1_start_x + (i * STEP_TREAD)
+
+        bpy.ops.mesh.primitive_cube_add(location=(step_x, flight1_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight1_Step_{i + 1:02d}"
+        step.scale = (STEP_TREAD / 2, FLIGHT_WIDTH / 2, STEP_RISE / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+
+    landing_x = stairwell_east_x - LANDING_DEPTH / 2
+    landing_y = (stairwell_south_y + stairwell_north_y) / 2
+    landing_top_z = ground_floor_top + LANDING_HEIGHT
+    landing_z = landing_top_z - 0.075
+
+    bpy.ops.mesh.primitive_cube_add(location=(landing_x, landing_y, landing_z))
+    landing = bpy.context.active_object
+    landing.name = "MainDwelling_Stairs_Landing"
+    landing.scale = (LANDING_DEPTH / 2, STAIRWELL_LENGTH / 2, 0.11)
+    bpy.ops.object.transform_apply(scale=True)
+    landing.data.materials.append(landing_mat)
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    flight2_y = stairwell_north_y - FLIGHT_WIDTH / 2
+    flight2_start_x = stairwell_east_x - LANDING_DEPTH - STEP_TREAD / 2
+
+    for i in range(MODELED_STEPS_PER_FLIGHT):
+        step_height = landing_top_z + STEP_RISE * (i + 0.5)
+        step_x = flight2_start_x - (i * STEP_TREAD)
+
+        bpy.ops.mesh.primitive_cube_add(location=(step_x, flight2_y, step_height))
+        step = bpy.context.active_object
+        step.name = f"MainDwelling_Stairs_Flight2_Step_{i + 1:02d}"
+        step.scale = (STEP_TREAD / 2, FLIGHT_WIDTH / 2, STEP_RISE / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        step.data.materials.append(stairs_mat)
+
+    # Stairwell opening is now created directly in first-floor slab geometry in _create_floors.
+
+    print("180-degree staircase created in south-middle, rotated 90 degrees")
+    print(f"  Flight 1 (SOUTH edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + landing as final tread")
+    print(f"  Landing (EAST edge): {LANDING_HEIGHT}m height, spans South-North")
+    print(f"  Flight 2 (NORTH edge): {MODELED_STEPS_PER_FLIGHT} modeled treads + floor as final tread")
+    print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
+    print(f"  Step rise: {STEP_RISE * 1000:.1f}mm, tread: {STEP_TREAD * 1000:.0f}mm")
+
+
+def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
     """Create ground floor and first floor slabs with laminate texture on top surfaces only."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
 
@@ -302,9 +292,13 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     first_floor_thickness = 0.2
     first_floor_center_z = first_floor_z + first_floor_thickness / 2
 
-    stair_spec = _get_stair_layout_spec(stair_layout, ox, oy, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-    opening_east_x = stair_spec["stairwell_west_x"] + stair_spec["stairwell_width"]
-    opening_north_y = stair_spec["stairwell_south_y"] + stair_spec["stairwell_length"] - stair_spec["opening_north_trim"]
+    stairwell_width = 2.0
+    stairwell_length = 3.0
+
+    west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    opening_east_x = west_interior_x + stairwell_width
+    opening_north_y = south_interior_y + stairwell_length - 0.3
 
     floor_west_x = ox - floor_length / 2
     floor_east_x = ox + floor_length / 2
@@ -319,7 +313,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
         north_strip_center_y = (opening_north_y + floor_north_y) / 2
         bpy.ops.mesh.primitive_cube_add(location=(ox, north_strip_center_y, first_floor_center_z))
         north_strip = bpy.context.active_object
-        north_strip.name = "MainDwelling_FirstFloor_NorthStrip"
+        north_strip.name = "MD_FirstFloor_NorthStrip"
         north_strip.scale = (floor_length / 2, north_strip_depth / 2, first_floor_thickness / 2)
         bpy.ops.object.transform_apply(scale=True)
         slab_parts.append(north_strip)
@@ -332,7 +326,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
         se_center_y = (floor_south_y + opening_north_y) / 2
         bpy.ops.mesh.primitive_cube_add(location=(se_center_x, se_center_y, first_floor_center_z))
         southeast_block = bpy.context.active_object
-        southeast_block.name = "MainDwelling_FirstFloor_SouthEastBlock"
+        southeast_block.name = "MD_FirstFloor_SouthEastBlock"
         southeast_block.scale = (se_width / 2, se_depth / 2, first_floor_thickness / 2)
         bpy.ops.object.transform_apply(scale=True)
         slab_parts.append(southeast_block)
@@ -348,7 +342,7 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
     if len(slab_parts) > 1:
         bpy.ops.object.join()
     first_floor_slab = bpy.context.view_layer.objects.active
-    first_floor_slab.name = "MainDwelling_FirstFloor"
+    first_floor_slab.name = "MD_FirstFloor"
 
     first_floor_slab.data.materials.append(floor_mat)
     first_floor_slab.data.materials.append(laminate_mat)

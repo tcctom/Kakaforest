@@ -43,13 +43,16 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_SouthWall", (ox - 0.8, south_wall_y, first_floor_z + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
     add_window("MD_FF_SouthWall", (ox - 3.3, south_wall_y, first_floor_z + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
-    first_floor_slab = bpy.data.objects.get("MainDwelling_FirstFloor")
+
+
+def _cut_southwest(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
+    first_floor_slab = bpy.data.objects.get("MD_FirstFloor")
     if first_floor_slab:
-        interior_face_y = south_wall_y + EXTERIOR_WALL_THICKNESS / 2
+        interior_face_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS / 2
         window_slab_opening_depth = 0.4
         cutter_center_y = interior_face_y + window_slab_opening_depth / 2
 
-        bpy.ops.mesh.primitive_cube_add(location=(ox - 3.2, cutter_center_y, first_floor_z + 0.1))
+        bpy.ops.mesh.primitive_cube_add(location=(ox - 3.2, cutter_center_y, oz + GROUND_FLOOR_HEIGHT + 0.1))
         window_cutter = bpy.context.active_object
         window_cutter.name = "MainDwelling_WindowSlabCutter_StairLanding"
         window_cutter.scale = (1.0 / 2, window_slab_opening_depth / 2, 0.2 / 2)
@@ -62,6 +65,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
         window_cutter.hide_viewport = True
         window_cutter.hide_render = True
+
 
 
 def _add_west_gable_window(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, roof_style):

@@ -18,8 +18,6 @@ from materials import get_floor_wood_material
 
 # === MAIN BUILDING FUNCTIONS ===
 
-STAIR_LAYOUT = "southmiddle"
-
 def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional", show_porch=True):
     """
     Build the main dwelling with a SIMPLE OPEN PORCH entrance option:
@@ -61,13 +59,9 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
-    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, stair_layout=STAIR_LAYOUT)
-    if STAIR_LAYOUT == "southwest":
-        _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
-    elif STAIR_LAYOUT == "southmiddle":
-        _create_180_degree_staircase_southmiddle(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
-    else:
-        raise ValueError(f"Unsupported STAIR_LAYOUT: {STAIR_LAYOUT}")
+    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    _create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
+    #_create_180_degree_staircase_southmiddle( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
     
     # === SIMPLE OPEN ENTRANCE PORCH (WEST SIDE) ===
     if show_porch:
