@@ -5,8 +5,11 @@ from materials import get_kitchen_bench_material, get_kitchen_cabinet_material
 from main_dwelling.materials_nodes import create_material, create_textured_material2
 
 
+FLOOR_SLAB_THICKNESS = 0.1
+FIRST_FLOOR_SLAB_THICKNESS = 0.2
+
 def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
-    """Create L-shaped kitchen bench against the ground floor south wall and stairwell partition."""
+    """Create L-shaped kitchen bench"""
     BENCH_LENGTH = 2.4
     BENCH_DEPTH = 0.6
     BENCH_HEIGHT = 0.9
@@ -16,8 +19,6 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
 
-    STAIRWELL_WIDTH = 2.0
-    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
     FLOOR_TOP = oz + 0.1
 
     bench_center_x = west_interior_x + BENCH_LENGTH / 2 + 2.1
@@ -343,6 +344,69 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
         chrome_material=chrome_mat,
         name_prefix="MainDwelling_Ensuite",
     )
+
+def _furnish_guest_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
+    """Furnish guest bedroom with bed and ....
+    bedroom is in north east corner on the ground floor, with main bathroom to the south of it. 
+    The bed is placed against the east wall, with the headboard against the wall and the foot of the bed facing west. 
+    The bed is a standard double bed size (1.6m x 2.0m) and is positioned centrally along the east wall, leaving space on either side for bedside tables or access. 
+    The bed is raised slightly off the floor to allow for under-bed storage and to provide a comfortable sleeping height. 
+    The bedding is simple and neutral in color, complementing the overall aesthetic of the room.
+    """
+
+    east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+
+
+    BED_WIDTH = 1.6
+    BED_LENGTH = 2.0
+    BED_HEIGHT = 0.6
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
+
+    bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
+
+    guest_bed_x = east_interior_face - BED_LENGTH / 2 
+    guest_bed_y = north_interior_face - BED_WIDTH / 2 - 0.9
+    guest_bed_z = FLOOR_TOP + BED_HEIGHT / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(guest_bed_x, guest_bed_y, guest_bed_z))
+    guest_bed = bpy.context.active_object
+    guest_bed.name = "MD_GuestBedroom_QueenBed"
+    guest_bed.scale = (BED_LENGTH / 2, BED_WIDTH / 2, BED_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    guest_bed.data.materials.append(bed_mat)
+
+def _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, GROUND_FLOOR_HEIGHT):
+    """Furnish master bedroom with bed and ....
+    bedroom is in north east corner on the first floor, with ensuite to the south of it. 
+    The bed is placed against the east wall, with the headboard against the wall and the foot of the bed facing west. 
+    The bed is a standard king bed size (1.8m x 2.0m) and is positioned centrally along the east wall, leaving space on either side for bedside tables or access. 
+    The bed is raised slightly off the floor to allow for under-bed storage and to provide a comfortable sleeping height. 
+    The bedding is simple and neutral in color, complementing the overall aesthetic of the room.
+    """
+
+    east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    first_floor_top = first_floor_z + FIRST_FLOOR_SLAB_THICKNESS
+
+
+    BED_WIDTH = 1.8
+    BED_LENGTH = 2.0
+    BED_HEIGHT = 0.6
+
+    bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
+
+    bed_x = east_interior_face - BED_LENGTH / 2 
+    bed_y = north_interior_face - BED_WIDTH / 2 - 1
+    bed_z = first_floor_top + BED_HEIGHT / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(bed_x, bed_y, bed_z))
+    bed = bpy.context.active_object
+    bed.name = "MainDwelling_MasterBedroom_KingBed"
+    bed.scale = (BED_LENGTH / 2, BED_WIDTH / 2, BED_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    bed.data.materials.append(bed_mat)
 
 
 def create_shower_tray(x_center, y_center, z_bottom, size, height, material, name_prefix="MainDwelling"):

@@ -12,6 +12,8 @@ from materials import get_interior_door_material, get_interior_wall_material, ge
 from main_dwelling.materials_nodes import create_material, create_textured_material2
 from utils import add_window
 
+FLOOR_SLAB_THICKNESS = 0.1
+FIRST_FLOOR_SLAB_THICKNESS = 0.2
 
 
 def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -21,7 +23,6 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     GUEST_BEDROOM_DEPTH = 3.35 #north wall to south wall
     CUPBOARD_INTERIOR_XAXIS = 0.6
     CUPBOARD_DEPTH = 1.95
-    FLOOR_SLAB_THICKNESS = 0.1
     FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
@@ -133,62 +134,6 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         size=(INTERIOR_WALL_THICKNESS, 0.8, ground_floor_wall_height),
     )    
 
-    BED_WIDTH = 1.6
-    BED_LENGTH = 2.0
-    BED_HEIGHT = 0.6
-
-    bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
-
-    guest_bed_x = east_interior_face - GUEST_BEDROOM_WIDTH / 2 + 0.3
-    guest_bed_y = south_partition_y + INTERIOR_WALL_THICKNESS / 2 + BED_LENGTH / 2
-    guest_bed_z = FLOOR_TOP + BED_HEIGHT / 2
-
-    bpy.ops.mesh.primitive_cube_add(location=(guest_bed_x, guest_bed_y, guest_bed_z))
-    guest_bed = bpy.context.active_object
-    guest_bed.name = "MD_GuestBedroom_KingBed"
-    guest_bed.scale = (BED_WIDTH / 2, BED_LENGTH / 2, BED_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    guest_bed.data.materials.append(bed_mat)
-
-    STAIRWELL_WIDTH = 2.0
-    PARTITION_LENGTH = 2.7
-
-    west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
-    south_interior_y = south_interior_face
-
-    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
-
-    partition_x = stairwell_east_x + INTERIOR_WALL_THICKNESS / 2
-    partition_center_y = south_interior_y + PARTITION_LENGTH / 2
-
-    full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
-
-    create_interior_wall( name="MD_StaircasePartition_BothFloors",
-        location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
-    )
-
-    #create_interior_wall( name="MD_StaircaseDivider_BothFloors",
-    #    location=(stairwell_east_x - 1, south_interior_y + 1 + 1.7 / 2, FLOOR_TOP + 3.7/2),
-    #    size=(INTERIOR_WALL_THICKNESS, 1.7, 3.7),
-    #)
-
-    create_balustrade(name="MD_StaircaseDivider_BothFloors"
-                      , location=(stairwell_east_x - 1, south_interior_y + 1, FLOOR_TOP)
-                      , size=(INTERIOR_WALL_THICKNESS, 1.7, 2.45), rise_top=1.25)
-
-    # Upstairs Return (East-West, rotated 90 degrees)
-    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
-    create_balustrade(
-        name="MD_Staircase_Baulustrade_Upstairs",
-        location=(stairwell_east_x, south_interior_y + 2.65, oz + 2.7),
-        size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
-        rise_top=0.0, 
-        rise_bottom=0.0, 
-        hide_start_post=True, 
-        hide_end_post=True,
-        rotation_z=90.0 # Flips the rail to line up East-West
-    )
 
     # Create wall behind log burner (East)
     create_fireplace_wall( name="MD_HearthWallEast",
@@ -327,12 +272,9 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
                           )
 
 
-
-
 def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
     """Create first floor interior partitions for master bedroom, ensuite, and wardrobe."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
-    FIRST_FLOOR_SLAB_THICKNESS = 0.2
     first_floor_top = first_floor_z + FIRST_FLOOR_SLAB_THICKNESS
     first_floor_wall_height = FIRST_FLOOR_HEIGHT - FIRST_FLOOR_SLAB_THICKNESS
     interior_wall_mat = get_interior_wall_material()
@@ -348,8 +290,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     main_partition_x = east_interior_face - MASTER_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     main_partition_center_y = (north_interior_face + south_interior_face) / 2
-    main_partition = create_wall(
-        name="MD_FF_MainPartition",
+    create_wall( name="MD_FF_MainPartition",
         location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, interior_depth, first_floor_wall_height),
         material=interior_wall_mat,
@@ -358,8 +299,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
 
-    bedroom_south_partition = create_wall(
-        name="MD_FF_BedroomSouthPartition",
+    create_wall( name="MD_FF_BedroomSouthPartition",
         location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
         size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
         material=interior_wall_mat,
@@ -368,51 +308,75 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH
     ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2
 
-    ensuite_wardrobe_wall = create_wall(
-        name="MD_FF_EnsuiteWardrobeWall",
+    create_wall( name="MD_FF_EnsuiteWardrobeWall",
         location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_top + first_floor_wall_height / 2),
         size=(INTERIOR_WALL_THICKNESS, ENSUITE_DEPTH, first_floor_wall_height),
         material=interior_wall_mat,
     )
 
-    add_window(
-        "MD_FF_MainPartition",
+    add_window( "MD_FF_MainPartition",
         (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0),
         width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='X', inward_offset='-X',
     )
 
-    add_window(
-        "MD_FF_BedroomSouthPartition",
+    add_window( "MD_FF_BedroomSouthPartition",
         (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
         width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='Y', inward_offset='+Y',
     )
 
-    add_window(
-        "MD_FF_BedroomSouthPartition",
+    add_window( "MD_FF_BedroomSouthPartition",
         (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
         width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='Y', inward_offset='+Y',
     )
 
-    BED_WIDTH = 1.8
-    BED_LENGTH = 2.0
-    BED_HEIGHT = 0.6
 
-    bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
 
-    bed_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
-    bed_y = bedroom_partition_y + INTERIOR_WALL_THICKNESS / 2 + BED_LENGTH / 2
-    bed_z = first_floor_top + BED_HEIGHT / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(bed_x, bed_y, bed_z))
-    bed = bpy.context.active_object
-    bed.name = "MainDwelling_MasterBedroom_KingBed"
-    bed.scale = (BED_WIDTH / 2, BED_LENGTH / 2, BED_HEIGHT / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    bed.data.materials.append(bed_mat)
+def _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    STAIRWELL_WIDTH = 2.0
+    PARTITION_LENGTH = 2.7
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
 
+    south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
+    south_interior_y = south_interior_face
+
+    stairwell_east_x = west_interior_x + STAIRWELL_WIDTH
+
+    partition_x = stairwell_east_x + INTERIOR_WALL_THICKNESS / 2
+    partition_center_y = south_interior_y + PARTITION_LENGTH / 2
+
+    full_partition_height = (GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS) + FIRST_FLOOR_HEIGHT
+
+    create_interior_wall( name="MD_StaircasePartition_BothFloors",
+        location=(partition_x, partition_center_y, FLOOR_TOP + full_partition_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, PARTITION_LENGTH, full_partition_height),
+    )
+
+    #create_interior_wall( name="MD_StaircaseDivider_BothFloors",
+    #    location=(stairwell_east_x - 1, south_interior_y + 1 + 1.7 / 2, FLOOR_TOP + 3.7/2),
+    #    size=(INTERIOR_WALL_THICKNESS, 1.7, 3.7),
+    #)
+
+    create_balustrade(name="MD_StaircaseDivider_BothFloors"
+                      , location=(stairwell_east_x - 1, south_interior_y + 1, FLOOR_TOP)
+                      , size=(INTERIOR_WALL_THICKNESS, 1.7, 2.45), rise_top=1.25)
+
+    # Upstairs Return (East-West, rotated 90 degrees)
+    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
+    create_balustrade(
+        name="MD_Staircase_Baulustrade_Upstairs",
+        location=(stairwell_east_x, south_interior_y + 2.65, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
+        rise_top=0.0, 
+        rise_bottom=0.0, 
+        hide_start_post=True, 
+        hide_end_post=True,
+        rotation_z=90.0 # Flips the rail to line up East-West
+    )
 
 
 def create_balustrade(name, location, size, rise_top=0.0, rise_bottom=0.0, 

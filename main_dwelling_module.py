@@ -11,12 +11,16 @@ from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
     _create_floors,
+    _create_180_degree_staircase_southwest,
+    _create_180_degree_staircase_southmiddle
 )
 from materials import get_floor_wood_material
 
 # === MAIN BUILDING FUNCTIONS ===
 
-def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional"):
+STAIR_LAYOUT = "southmiddle"
+
+def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional", show_porch=True):
     """
     Build the main dwelling with a SIMPLE OPEN PORCH entrance option:
     - 2.5m Ã— 1.5m deck (same width as enclosed porch, but only 1.5m deep)
@@ -57,30 +61,19 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
-    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, stair_layout=STAIR_LAYOUT)
+    if STAIR_LAYOUT == "southwest":
+        _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    elif STAIR_LAYOUT == "southmiddle":
+        _create_180_degree_staircase_southmiddle(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    else:
+        raise ValueError(f"Unsupported STAIR_LAYOUT: {STAIR_LAYOUT}")
     
     # === SIMPLE OPEN ENTRANCE PORCH (WEST SIDE) ===
-    build_simple_open_porch(
-        ox,
-        oy,
-        oz,
-        LENGTH,
-        GROUND_FLOOR_HEIGHT,
-        EXTERIOR_WALL_THICKNESS,
-        floor_mat,
-        create_textured_material,
-        runtime_context.porch_deck_texture_path,
-    )
+    if show_porch:
+        build_simple_open_porch( ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, create_textured_material, runtime_context.porch_deck_texture_path,)
     
-    run_main_dwelling_build_pipeline(
-        ox,
-        oy,
-        oz,
-        WIDTH,
-        ENCLOSED_WIDTH,
-        LENGTH,
-        GROUND_FLOOR_HEIGHT,
-        FIRST_FLOOR_HEIGHT,
+    run_main_dwelling_build_pipeline( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT,
         TOTAL_HEIGHT,
         EXTERIOR_WALL_THICKNESS,
         INTERIOR_WALL_THICKNESS,
