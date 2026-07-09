@@ -172,6 +172,40 @@ def _create_180_degree_staircase_southwest(ox, oy, oz, WIDTH, LENGTH, GROUND_FLO
     print(f"  Stairwell footprint: {STAIRWELL_WIDTH}m × {STAIRWELL_LENGTH}m")
     print(f"  Step rise: {STEP_RISE * 1000:.1f}mm, tread: {STEP_TREAD * 1000:.0f}mm")
 
+def _create_staircase_southmiddle(ox, oy, oz,  floor_mat):
+    """Create a staircase near south-middle."""
+    STEP_TREAD = 0.28
+    STEP_WIDTH = 0.95
+    STEP_RISE = 0.18
+
+    landing_x_offset = 0.5 * STEP_TREAD + 0.5 * STEP_WIDTH
+    landing_y_offset = 0.5 * STEP_WIDTH + 0.5 * STEP_TREAD
+
+    create_step(ox, oy, oz, 0, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-STEP_TREAD, oy, oz, 1, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-2 * STEP_TREAD, oy, oz, 2, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-3 * STEP_TREAD, oy , oz, 3, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-4 * STEP_TREAD, oy , oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-5 * STEP_TREAD, oy , oz, 5, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-5 * STEP_TREAD - landing_x_offset, oy , oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE)
+    create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset , oz, 7, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + STEP_TREAD , oz, 8, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 2*STEP_TREAD , oz, 9, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+
+
+def create_step(step_x, step_y, oz, step_number, floor_mat, STEP_X_SIZE, STEP_Y_SIZE, STEP_RISE):
+    """Create a single step at the specified position."""
+    step_height = oz + STEP_RISE * (step_number + 0.5)
+    #step_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS + STEP_TREAD * (step_number + 0.5)
+
+    bpy.ops.mesh.primitive_cube_add(location=(step_x, step_y, step_height))
+    step = bpy.context.active_object
+    step.name = f"MD_Stairs_Step_{step_number + 1:02d}"
+    step.scale = (STEP_X_SIZE / 2, STEP_Y_SIZE / 2, STEP_RISE / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    step.data.materials.append(floor_mat)    
+
 def _create_180_degree_staircase_southmiddle(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS,  floor_mat):
     """Create a 180-degree dog-legged staircase near south-middle, rotated 90 degrees."""
     GROUND_FLOOR_SLAB_THICKNESS = 0.1
