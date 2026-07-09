@@ -156,7 +156,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     WALL_THICKNESS = 0.1
     WALL_HEIGHT = 2.0
 
-    shower_x_center = (bathroom_west + bathroom_west + 1) / 2
+    shower_x_center = east_interior_face - 0.5#(bathroom_west + bathroom_west + 1) / 2
     shower_y_center = (bathroom_north + bathroom_north - 0.36) / 2
 
     create_shower_tray(
@@ -179,16 +179,16 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         projection='BOX',
     )
 
-    bpy.ops.mesh.primitive_cube_add(location=(bathroom_west + 0.03, bathroom_north - 0.2, FLOOR_TOP + WALL_HEIGHT / 2))
-    west_wall = bpy.context.active_object
-    west_wall.name = "MainDwelling_Bathroom_ShowerWallWest"
-    west_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
+    bpy.ops.mesh.primitive_cube_add(location=(east_interior_face - 0.03, bathroom_north - 0.2, FLOOR_TOP + WALL_HEIGHT / 2))
+    east_wall = bpy.context.active_object
+    east_wall.name = "MD_Bathroom_ShowerWallEast"
+    east_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
-    west_wall.data.materials.append(tile_mat)
+    east_wall.data.materials.append(tile_mat)
 
     bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, bathroom_north + 0.35, FLOOR_TOP + WALL_HEIGHT / 2))
     north_wall = bpy.context.active_object
-    north_wall.name = "MainDwelling_Bathroom_ShowerWallNorth"
+    north_wall.name = "MD_Bathroom_ShowerWallNorth"
     north_wall.scale = (0.5, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall.data.materials.append(tile_mat)
@@ -199,7 +199,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         south_edge=south_interior_face,
         floor_top=FLOOR_TOP,
         material=white_mat,
-        name_prefix="MainDwelling_MainBathroom",
+        name_prefix="MD_MainBathroom",
     )
 
     create_vanity(
@@ -208,7 +208,7 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
         floor_top=FLOOR_TOP,
         basin_material=white_mat,
         chrome_material=chrome_mat,
-        name_prefix="MainDwelling_MainBathroom",
+        name_prefix="MD_MainBathroom",
     )
 
 

@@ -193,6 +193,27 @@ def _create_staircase_southmiddle(ox, oy, oz,  floor_mat):
     create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 2*STEP_TREAD , oz, 9, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
     create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
 
+def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
+    """Create a staircase near south-middle."""
+    STEP_TREAD = 0.28
+    STEP_WIDTH = 0.95
+    STEP_RISE = 0.18
+
+    landing_x_offset = 0.5 * STEP_TREAD + 0.5 * STEP_WIDTH
+    landing_y_offset = 0.5 * STEP_WIDTH + 0.5 * STEP_TREAD
+
+    create_step(ox, oy, oz, 0, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+STEP_TREAD, oy, oz, 1, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+2 * STEP_TREAD, oy, oz, 2, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+3 * STEP_TREAD, oy , oz, 3, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+4 * STEP_TREAD, oy , oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+5 * STEP_TREAD, oy , oz, 5, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy , oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE)
+    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset , oz, 7, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + STEP_TREAD , oz, 8, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 2*STEP_TREAD , oz, 9, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+
 
 def create_step(step_x, step_y, oz, step_number, floor_mat, STEP_X_SIZE, STEP_Y_SIZE, STEP_RISE):
     """Create a single step at the specified position."""

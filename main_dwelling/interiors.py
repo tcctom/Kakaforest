@@ -44,10 +44,10 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         width=1.5, height=2.0, depth=INTERIOR_WALL_THICKNESS,
         axis='X', inward_offset='+X',
     )
-    create_interior_wall( name="MD_GF_GuestBedroomWestWall_Ext",
-        location=(west_partition_x, south_partition_y -0.4, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, 0.7, ground_floor_wall_height),
-    )
+    #create_interior_wall( name="MD_GF_GuestBedroomWestWall_Ext",
+    #    location=(west_partition_x, south_partition_y -0.4, FLOOR_TOP + ground_floor_wall_height / 2),
+    #    size=(INTERIOR_WALL_THICKNESS, 0.7, ground_floor_wall_height),
+    #)
 
     create_interior_wall( name="MD_GF_GuestBedroomSouthWall",
         location=(south_partition_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
@@ -66,7 +66,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Door opening center is 700 mm from the southern edge to the start of the opening.
     bathroom_door_width = 0.8
-    bathroom_door_center_y = south_interior_face + 0.7 + bathroom_door_width / 2
+    bathroom_door_center_y = south_interior_face + 1.7 + bathroom_door_width / 2
     add_window("MD_GF_BathroomPartitionWall",
         (bathroom_partition_x - INTERIOR_WALL_THICKNESS / 2, bathroom_door_center_y, FLOOR_TOP + 1.0),
         width=bathroom_door_width, height=2.0, depth=INTERIOR_WALL_THICKNESS,
@@ -95,17 +95,17 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     small_cupboard_door_y = south_wall_south_face_y - SMALL_CUPBOARD_DOOR_THICKNESS / 2 - SMALL_CUPBOARD_DOOR_SOUTH_OFFSET
     small_cupboard_door_height = 2.0
 
-    bpy.ops.mesh.primitive_cube_add(location=(small_cupboard_door_x, small_cupboard_door_y, FLOOR_TOP + small_cupboard_door_height / 2))
-    small_cupboard_door = bpy.context.active_object
-    small_cupboard_door.name = "MD_GF_GuestBedroomSmallCupboardSouthDoor"
-    small_cupboard_door.scale = (
-        small_cupboard_door_width / 2,
-        SMALL_CUPBOARD_DOOR_THICKNESS / 2,
-        small_cupboard_door_height / 2,
-    )
-    bpy.ops.object.transform_apply(scale=True)
-    interior_door_mat = get_interior_door_material()
-    small_cupboard_door.data.materials.append(interior_door_mat)
+    #bpy.ops.mesh.primitive_cube_add(location=(small_cupboard_door_x, small_cupboard_door_y, FLOOR_TOP + small_cupboard_door_height / 2))
+    #small_cupboard_door = bpy.context.active_object
+    #small_cupboard_door.name = "MD_GF_GuestBedroomSmallCupboardSouthDoor"
+    #small_cupboard_door.scale = (
+    #    small_cupboard_door_width / 2,
+    #    SMALL_CUPBOARD_DOOR_THICKNESS / 2,
+    #    small_cupboard_door_height / 2,
+    #)
+    #bpy.ops.object.transform_apply(scale=True)
+    #interior_door_mat = get_interior_door_material()
+    #small_cupboard_door.data.materials.append(interior_door_mat)
 
 
     cupboard_west_wall_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS - INTERIOR_WALL_THICKNESS / 2
@@ -129,10 +129,10 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         size=(INTERIOR_WALL_THICKNESS, CUPBOARD_DEPTH, ground_floor_wall_height),
     )
 
-    create_interior_wall( name="MD_GF_SouthOfLogBurner_NS",
-        location=(cupboard_west_wall_x, south_wall_south_face_y - 0.3, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, 0.8, ground_floor_wall_height),
-    )    
+    #create_interior_wall( name="MD_GF_SouthOfLogBurner_NS",
+    #    location=(cupboard_west_wall_x, south_wall_south_face_y - 0.3, FLOOR_TOP + ground_floor_wall_height / 2),
+    #    size=(INTERIOR_WALL_THICKNESS, 0.8, ground_floor_wall_height),
+    #)    
 
 
     # Create wall behind log burner (East)
