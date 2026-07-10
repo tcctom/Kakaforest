@@ -197,9 +197,9 @@ def _create_staircase_southmiddle(ox, oy, oz,  floor_mat):
 
 def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     """Create a staircase near south-middle."""
-    STEP_TREAD = 0.28
-    STEP_WIDTH = 0.97
-    STEP_RISE = 0.182
+    STEP_TREAD = 0.20
+    STEP_WIDTH = 0.92
+    STEP_RISE = 0.183
 
     landing_x_offset = 0.5 * STEP_TREAD + 0.5 * STEP_WIDTH
     landing_y_offset = 0.5 * STEP_WIDTH + 0.5 * STEP_TREAD
@@ -209,19 +209,21 @@ def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     create_step(ox+2 * STEP_TREAD, oy, oz, 2, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox+3 * STEP_TREAD, oy , oz, 3, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox+4 * STEP_TREAD, oy , oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+5 * STEP_TREAD, oy , oz, 5, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
 
     # Calculate the exact X offset required for the larger landing block
-    landing_x = ox + (5 * STEP_TREAD) - (STEP_TREAD / 2) + (STEP_WIDTH / 2)
-    create_step(landing_x, oy, oz, 5, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2a")
-    create_step(landing_x, oy, oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2b")
-    create_step(landing_x, oy+STEP_WIDTH, oz, 7, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1a")
-    create_step(landing_x, oy+STEP_WIDTH, oz, 8, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1b")
+    landing_x = ox + (6 * STEP_TREAD) - (STEP_TREAD / 2) + (STEP_WIDTH / 2)
+    create_step(landing_x, oy, oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2a")
+    create_step(landing_x, oy, oz, 7, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2b")
+    create_step(landing_x, oy+STEP_WIDTH, oz, 8, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1a")
+    create_step(landing_x, oy+STEP_WIDTH, oz, 9, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1b")
 
-    create_step(ox+4 * STEP_TREAD, oy+STEP_WIDTH, oz, 9, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox+3 * STEP_TREAD, oy+STEP_WIDTH, oz, 10, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox+2 * STEP_TREAD, oy+STEP_WIDTH, oz, 11, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox+1 * STEP_TREAD, oy+STEP_WIDTH, oz, 12, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox, oy+STEP_WIDTH, oz, 13, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+5 * STEP_TREAD, oy+STEP_WIDTH, oz, 10, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+4 * STEP_TREAD, oy+STEP_WIDTH, oz, 11, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+3 * STEP_TREAD, oy+STEP_WIDTH, oz, 12, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+2 * STEP_TREAD, oy+STEP_WIDTH, oz, 13, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    #create_step(ox+1 * STEP_TREAD, oy+STEP_WIDTH, oz, 14, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    #create_step(ox, oy+STEP_WIDTH, oz, 15, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
 
 
 
