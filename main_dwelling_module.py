@@ -10,7 +10,7 @@ from main_dwelling.porch import build_simple_open_porch
 from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
-    _create_floors,
+    _create_floors,_create_floors2,
     _create_180_degree_staircase_southwest,
     _create_180_degree_staircase_southmiddle,
     _create_staircase_southmiddle,
@@ -61,7 +61,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
-    _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+    _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
     #_create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
     #_create_180_degree_staircase_southmiddle( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
     #_create_staircase_southmiddle( ox+0.7, oy-2.9, oz+0.1, floor_mat, )

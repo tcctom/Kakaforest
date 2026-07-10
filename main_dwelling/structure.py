@@ -198,8 +198,8 @@ def _create_staircase_southmiddle(ox, oy, oz,  floor_mat):
 def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     """Create a staircase near south-middle."""
     STEP_TREAD = 0.28
-    STEP_WIDTH = 0.95
-    STEP_RISE = 0.18
+    STEP_WIDTH = 0.97
+    STEP_RISE = 0.182
 
     landing_x_offset = 0.5 * STEP_TREAD + 0.5 * STEP_WIDTH
     landing_y_offset = 0.5 * STEP_WIDTH + 0.5 * STEP_TREAD
@@ -218,12 +218,12 @@ def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     create_step(landing_x, oy+STEP_WIDTH, oz, 8, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1b")
 
     create_step(ox+4 * STEP_TREAD, oy+STEP_WIDTH, oz, 9, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+3 * STEP_TREAD, oy+STEP_WIDTH, oz, 10, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+2 * STEP_TREAD, oy+STEP_WIDTH, oz, 11, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox+1 * STEP_TREAD, oy+STEP_WIDTH, oz, 12, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox, oy+STEP_WIDTH, oz, 13, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
 
-    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy , oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE)
-    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset , oz, 7, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
-    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + STEP_TREAD , oz, 8, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
-    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 2*STEP_TREAD , oz, 9, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
-    #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
+
 
 
 
@@ -505,6 +505,122 @@ def _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL
         southeast_block.scale = (se_width / 2, se_depth / 2, first_floor_thickness / 2)
         bpy.ops.object.transform_apply(scale=True)
         slab_parts.append(southeast_block)
+
+    if not slab_parts:
+        raise RuntimeError("Failed to create first-floor slab parts for stairwell opening")
+
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in slab_parts:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = slab_parts[0]
+    if len(slab_parts) > 1:
+        bpy.ops.object.join()
+    first_floor_slab = bpy.context.view_layer.objects.active
+    first_floor_slab.name = "MD_FirstFloor"
+
+    first_floor_slab.data.materials.append(floor_mat)
+    first_floor_slab.data.materials.append(laminate_mat)
+    first_floor_slab.data.materials.append(white_ceiling_mat)
+
+    for i, poly in enumerate(first_floor_slab.data.polygons):
+        if poly.normal.z > 0.9:
+            poly.material_index = 1
+            print(f"First floor: Assigned laminate to polygon {i} (top face)")
+        elif poly.normal.z < -0.9:
+            poly.material_index = 2
+            print(f"First floor: Assigned white ceiling to polygon {i} (bottom face)")
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
+    """Create ground floor and first floor slabs with laminate texture on top surfaces only."""
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+
+    floor_length = LENGTH - 2 * EXTERIOR_WALL_THICKNESS
+    floor_width = WIDTH - EXTERIOR_WALL_THICKNESS
+    floor_center_y = oy + EXTERIOR_WALL_THICKNESS / 2
+
+    laminate_mat = create_laminate_floor_material()
+    white_ceiling_mat = create_material("WhiteCeiling", (1.0, 1.0, 1.0, 1.0))
+
+    bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, oz + 0.05))
+    ground_floor = bpy.context.active_object
+    ground_floor.name = "MainDwelling_GroundFloor"
+    ground_floor.scale = (floor_length / 2, floor_width / 2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+
+    ground_floor.data.materials.append(floor_mat)
+    ground_floor.data.materials.append(laminate_mat)
+
+    for i, poly in enumerate(ground_floor.data.polygons):
+        if poly.normal.z > 0.9:
+            poly.material_index = 1
+            print(f"Ground floor: Assigned laminate to polygon {i} (top face)")
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Build first-floor slab with a built-in stairwell opening in the southwest corner.
+    first_floor_thickness = 0.2
+    first_floor_center_z = first_floor_z + first_floor_thickness / 2
+
+    stairwell_width = 2.0
+    stairwell_length = 2.4
+
+    opening_west_x = ox - 0.13 
+    opening_east_x = opening_west_x + stairwell_length
+    opening_south_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    opening_north_y = opening_south_y + stairwell_width 
+
+    floor_west_x = ox - floor_length / 2
+    floor_east_x = ox + floor_length / 2
+    floor_south_y = floor_center_y - floor_width / 2
+    floor_north_y = floor_center_y + floor_width / 2
+
+    slab_parts = []
+
+    # North strip (full width) above stairwell opening.
+    north_strip_depth = floor_north_y - opening_north_y
+    if north_strip_depth > 0:
+        north_strip_center_y = (opening_north_y + floor_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(ox, north_strip_center_y, first_floor_center_z))
+        north_strip = bpy.context.active_object
+        north_strip.name = "MD_FirstFloor_NorthStrip"
+        north_strip.scale = (floor_length / 2, north_strip_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(north_strip)
+
+    # Southeast block below north strip and east of opening.
+    se_width = floor_east_x - opening_east_x
+    se_depth = opening_north_y - floor_south_y
+    if se_width > 0 and se_depth > 0:
+        se_center_x = (opening_east_x + floor_east_x) / 2
+        se_center_y = (floor_south_y + opening_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(se_center_x, se_center_y, first_floor_center_z))
+        southeast_block = bpy.context.active_object
+        southeast_block.name = "MD_FirstFloor_SouthEastBlock"
+        southeast_block.scale = (se_width / 2, se_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(southeast_block)
+
+    # Southwest block below north strip and west of opening.
+    sw_width = opening_west_x - floor_west_x
+    sw_depth = opening_north_y - floor_south_y
+    if sw_width > 0 and sw_depth > 0:
+        sw_center_x = (floor_west_x + opening_west_x) / 2
+        sw_center_y = (floor_south_y + opening_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(sw_center_x, sw_center_y, first_floor_center_z))
+        southwest_block = bpy.context.active_object
+        southwest_block.name = "MD_FirstFloor_SouthWestBlock"
+        southwest_block.scale = (sw_width / 2, sw_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(southwest_block)
 
     if not slab_parts:
         raise RuntimeError("Failed to create first-floor slab parts for stairwell opening")

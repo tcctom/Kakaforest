@@ -291,8 +291,8 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     main_partition_x = east_interior_face - MASTER_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     main_partition_center_y = (north_interior_face + south_interior_face) / 2
     create_wall( name="MD_FF_MainPartition",
-        location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, interior_depth, first_floor_wall_height),
+        location=(main_partition_x, oy+0.55, first_floor_top + first_floor_wall_height / 2),
+        size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height),
         material=interior_wall_mat,
     )
 
@@ -314,11 +314,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         material=interior_wall_mat,
     )
 
-    add_window( "MD_FF_MainPartition",
-        (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0),
-        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
-        axis='X', inward_offset='-X',
-    )
+    #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     add_window( "MD_FF_BedroomSouthPartition",
         (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
