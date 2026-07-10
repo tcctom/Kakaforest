@@ -65,7 +65,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     #_create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
     #_create_180_degree_staircase_southmiddle( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
     #_create_staircase_southmiddle( ox+0.7, oy-2.9, oz+0.1, floor_mat, )
-    _create_staircase_southmiddle2( ox+0.5, oy-2.9, oz+0.1, floor_mat, )
+    _create_staircase_southmiddle2( ox+0.0, oy-2.9, oz+0.1, floor_mat, )
 
     # === SIMPLE OPEN ENTRANCE PORCH (WEST SIDE) ===
     if show_porch:

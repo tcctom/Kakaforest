@@ -1,4 +1,6 @@
 import bpy  # type: ignore
+import bmesh
+import mathutils
 
 from materials import get_interior_wall_material
 from main_dwelling.materials_nodes import create_laminate_floor_material, create_material
@@ -207,7 +209,16 @@ def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     create_step(ox+2 * STEP_TREAD, oy, oz, 2, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox+3 * STEP_TREAD, oy , oz, 3, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox+4 * STEP_TREAD, oy , oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox+5 * STEP_TREAD, oy , oz, 5, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+
+    # Calculate the exact X offset required for the larger landing block
+    landing_x = ox + (5 * STEP_TREAD) - (STEP_TREAD / 2) + (STEP_WIDTH / 2)
+    create_step(landing_x, oy, oz, 5, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2a")
+    create_step(landing_x, oy, oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal2b")
+    create_step(landing_x, oy+STEP_WIDTH, oz, 7, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1a")
+    create_step(landing_x, oy+STEP_WIDTH, oz, 8, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE, chop="diagonal1b")
+
+    create_step(ox+4 * STEP_TREAD, oy+STEP_WIDTH, oz, 9, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+
     #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy , oz, 6, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE)
     #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset , oz, 7, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
     #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + STEP_TREAD , oz, 8, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
@@ -215,17 +226,126 @@ def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
 
 
-def create_step(step_x, step_y, oz, step_number, floor_mat, STEP_X_SIZE, STEP_Y_SIZE, STEP_RISE):
-    """Create a single step at the specified position."""
-    step_height = oz + STEP_RISE * (step_number + 0.5)
-    #step_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS + STEP_TREAD * (step_number + 0.5)
 
-    bpy.ops.mesh.primitive_cube_add(location=(step_x, step_y, step_height))
-    step = bpy.context.active_object
-    step.name = f"MD_Stairs_Step_{step_number + 1:02d}"
-    step.scale = (STEP_X_SIZE / 2, STEP_Y_SIZE / 2, STEP_RISE / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    step.data.materials.append(floor_mat)    
+
+def create_step(step_x, step_y, oz, step_number, floor_mat, STEP_X_SIZE, STEP_Y_SIZE, STEP_RISE, chop="none"):
+    """
+    Create a single step or one of four sharp triangular diagonal corner steps.
+    
+    diagonal1a / 1b: Split from Bottom-Left (-X,-Y) to Top-Right (+X,+Y)
+    diagonal2a / 2b: Split from Top-Left (-X,+Y) to Bottom-Right (+X,-Y)
+    """
+    step_height = oz + STEP_RISE * (step_number + 0.5)
+    
+    # 1. Create a blank mesh data container and link it to an object
+    mesh_data = bpy.data.meshes.new(name=f"MD_Stairs_Step_Mesh_{step_number + 1:02d}")
+    step = bpy.data.objects.new(f"MD_Stairs_Step_{step_number + 1:02d}", mesh_data)
+    bpy.context.collection.objects.link(step)
+    
+    # Set global position and apply material
+    step.location = (step_x, step_y, step_height)
+    step.data.materials.append(floor_mat)
+    
+    # Initialize an empty bmesh structure
+    bm = bmesh.new()
+    
+    # Define local half-dimensions relative to object origin (0, 0, 0)
+    hx = STEP_X_SIZE / 2
+    hy = STEP_Y_SIZE / 2
+    hz = STEP_RISE / 2
+    
+    if chop == "none":
+        # Standard 8-vertex Box Step
+        v1 = bm.verts.new((-hx, -hy, -hz))
+        v2 = bm.verts.new((hx, -hy, -hz))
+        v3 = bm.verts.new((hx, hy, -hz))
+        v4 = bm.verts.new((-hx, hy, -hz))
+        v5 = bm.verts.new((-hx, -hy, hz))
+        v6 = bm.verts.new((hx, -hy, hz))
+        v7 = bm.verts.new((hx, hy, hz))
+        v8 = bm.verts.new((-hx, hy, hz))
+        
+        # Build the 6 faces of the standard cube step
+        bm.faces.new((v1, v2, v3, v4)) # Bottom
+        bm.faces.new((v5, v6, v7, v8)) # Top
+        bm.faces.new((v1, v2, v6, v5)) # Front
+        bm.faces.new((v2, v3, v7, v6)) # Right
+        bm.faces.new((v3, v4, v8, v7)) # Back
+        bm.faces.new((v4, v1, v5, v8)) # Left
+        
+    elif chop == "diagonal1a":
+        # Diagonal from Bottom-Left to Top-Right (Keeps Bottom-Right Half)
+        v1 = bm.verts.new((-hx, -hy, -hz))
+        v2 = bm.verts.new((hx, -hy, -hz))
+        v3 = bm.verts.new((hx, hy, -hz))
+        
+        v4 = bm.verts.new((-hx, -hy, hz))
+        v5 = bm.verts.new((hx, -hy, hz))
+        v6 = bm.verts.new((hx, hy, hz))
+        
+        bm.faces.new((v1, v2, v3))     # Bottom
+        bm.faces.new((v4, v6, v5))     # Top
+        bm.faces.new((v1, v2, v5, v4)) # Front Side
+        bm.faces.new((v2, v3, v6, v5)) # Right Side
+        bm.faces.new((v3, v1, v4, v6)) # Diagonal Chopped Side
+
+    elif chop == "diagonal1b":
+        # Diagonal from Bottom-Left to Top-Right (Keeps Top-Left Half)
+        v1 = bm.verts.new((-hx, -hy, -hz))
+        v2 = bm.verts.new((hx, hy, -hz))
+        v3 = bm.verts.new((-hx, hy, -hz))
+        
+        v4 = bm.verts.new((-hx, -hy, hz))
+        v5 = bm.verts.new((hx, hy, hz))
+        v6 = bm.verts.new((-hx, hy, hz))
+        
+        bm.faces.new((v1, v3, v2))     # Bottom
+        bm.faces.new((v4, v5, v6))     # Top
+        bm.faces.new((v1, v2, v5, v4)) # Diagonal Chopped Side
+        bm.faces.new((v2, v3, v6, v5)) # Back Side
+        bm.faces.new((v3, v1, v4, v6)) # Left Side
+
+    elif chop == "diagonal2a":
+        # Diagonal from Top-Left to Bottom-Right (Keeps Bottom-Left Half)
+        v1 = bm.verts.new((-hx, -hy, -hz))
+        v2 = bm.verts.new((hx, -hy, -hz))
+        v3 = bm.verts.new((-hx, hy, -hz))
+        
+        v4 = bm.verts.new((-hx, -hy, hz))
+        v5 = bm.verts.new((hx, -hy, hz))
+        v6 = bm.verts.new((-hx, hy, hz))
+        
+        bm.faces.new((v1, v3, v2))     # Bottom
+        bm.faces.new((v4, v5, v6))     # Top
+        bm.faces.new((v1, v2, v5, v4)) # Front Side
+        bm.faces.new((v2, v3, v6, v5)) # Diagonal Chopped Side
+        bm.faces.new((v3, v1, v4, v6)) # Left Side
+
+    elif chop == "diagonal2b":
+        # Diagonal from Top-Left to Bottom-Right (Keeps Top-Right Half)
+        v1 = bm.verts.new((hx, -hy, -hz))
+        v2 = bm.verts.new((hx, hy, -hz))
+        v3 = bm.verts.new((-hx, hy, -hz))
+        
+        v4 = bm.verts.new((hx, -hy, hz))
+        v5 = bm.verts.new((hx, hy, hz))
+        v6 = bm.verts.new((-hx, hy, hz))
+        
+        bm.faces.new((v1, v2, v3))     # Bottom
+        bm.faces.new((v4, v6, v5))     # Top
+        bm.faces.new((v1, v2, v5, v4)) # Right Side
+        bm.faces.new((v2, v3, v6, v5)) # Back Side
+        bm.faces.new((v3, v1, v4, v6)) # Diagonal Chopped Side
+
+    # Finalize the vertex definitions and geometry data
+    bm.to_mesh(mesh_data)
+    bm.free()
+    mesh_data.update()
+    
+    # Ensure the newly instantiated step remains selected and active in the viewport context
+    bpy.context.view_layer.objects.active = step
+    return step
+
 
 def _create_180_degree_staircase_southmiddle(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS,  floor_mat):
     """Create a 180-degree dog-legged staircase near south-middle, rotated 90 degrees."""

@@ -631,7 +631,7 @@ outdoor_structures.build_water_tank(origin=(-18.0, -15, -0.2))
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/1000-ltr-tank-2/
-outdoor_structures.build_water_tank(origin=(-2.2, -5.1, -0.0), diameter=0.9, height=2.0)
+outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
         mathutils.Vector((4.5, -6.5, 0.1)),       
