@@ -20,7 +20,7 @@ from materials import get_floor_wood_material
 
 # === MAIN BUILDING FUNCTIONS ===
 
-def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional", show_porch=True):
+def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional", option=1):
     """
     Build the main dwelling with a SIMPLE OPEN PORCH entrance option:
     - 2.5m Ã— 1.5m deck (same width as enclosed porch, but only 1.5m deep)
@@ -61,26 +61,20 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     
     # === CREATE SHARED COMPONENTS ===
     _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
-    _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
-    #_create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
-    #_create_180_degree_staircase_southmiddle( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
-    #_create_staircase_southmiddle( ox+0.7, oy-2.9, oz+0.1, floor_mat, )
-    _create_staircase_southmiddle2( ox+0.2, oy-2.95, oz+0.1, floor_mat, )
-
-    # === SIMPLE OPEN ENTRANCE PORCH (WEST SIDE) ===
-    if show_porch:
+    if option == 1:
+        _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+        _create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
+        # === SIMPLE OPEN ENTRANCE PORCH (WEST SIDE) ===
         build_simple_open_porch( ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, create_textured_material, runtime_context.porch_deck_texture_path,)
+
+    if option == 2:
+        _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+        _create_staircase_southmiddle2( ox+0.2, oy-2.95, oz+0.1, floor_mat, )
+
+
     
     run_main_dwelling_build_pipeline( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT,
-        TOTAL_HEIGHT,
-        EXTERIOR_WALL_THICKNESS,
-        INTERIOR_WALL_THICKNESS,
-        NORTH_RECESS,
-        ROOF_PITCH,
-        ROOF_OVERHANG,
-        show_roof,
-        roof_style,
-        potius_mat,
-    )
+        TOTAL_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, ROOF_PITCH, ROOF_OVERHANG,
+        show_roof, roof_style, potius_mat, option=option, )   
     
     print(f"Main Dwelling with simple open porch built at origin {origin}") 

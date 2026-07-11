@@ -1,6 +1,8 @@
 import os
 import sys
 
+from click import option
+
 import bpy  # type: ignore
 import math
 import mathutils
@@ -16,7 +18,7 @@ FLOOR_SLAB_THICKNESS = 0.1
 FIRST_FLOOR_SLAB_THICKNESS = 0.2
 
 
-def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
+def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, option=1):
     """Create ground floor interior partitions."""
 
     GUEST_BEDROOM_WIDTH = 3.20 #east wall to west wall
@@ -272,7 +274,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
                           )
 
 
-def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS):
+def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, option=1):
     """Create first floor interior partitions for master bedroom, ensuite, and wardrobe."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     first_floor_top = first_floor_z + FIRST_FLOOR_SLAB_THICKNESS
@@ -285,16 +287,23 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
-    interior_depth = north_interior_face - south_interior_face
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
 
     main_partition_x = east_interior_face - MASTER_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
     main_partition_center_y = (north_interior_face + south_interior_face) / 2
-    create_wall( name="MD_FF_MainPartition",
-        location=(main_partition_x, oy+0.55, first_floor_top + first_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height),
-        material=interior_wall_mat,
-    )
+
+    if option == 1:
+        create_wall( name="MD_FF_MainPartition",
+            location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2),
+            size=(INTERIOR_WALL_THICKNESS, north_interior_face - south_interior_face, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
+    if option == 2:
+        create_wall( name="MD_FF_MainPartition",
+            location=(main_partition_x, oy+0.55, first_floor_top + first_floor_wall_height / 2),
+            size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
@@ -314,7 +323,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         material=interior_wall_mat,
     )
 
-    #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+    add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     add_window( "MD_FF_BedroomSouthPartition",
         (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
@@ -322,11 +331,12 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         axis='Y', inward_offset='+Y',
     )
 
-    add_window( "MD_FF_BedroomSouthPartition",
-        (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
-        axis='Y', inward_offset='+Y',
-    )
+    if option == 1:
+        add_window( "MD_FF_BedroomSouthPartition",
+            (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
+            width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+            axis='Y', inward_offset='+Y',
+        )
 
 
 

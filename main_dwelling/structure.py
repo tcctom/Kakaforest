@@ -572,7 +572,7 @@ def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     first_floor_thickness = 0.2
     first_floor_center_z = first_floor_z + first_floor_thickness / 2
 
-    stairwell_width = 2.0
+    stairwell_width = 1.9
     stairwell_length = 2.4
 
     opening_west_x = ox - 0.13 
@@ -601,6 +601,7 @@ def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     # Southeast block below north strip and east of opening.
     se_width = floor_east_x - opening_east_x
     se_depth = opening_north_y - floor_south_y
+    print(f"  SE width = {se_width:.2f}, SE depth = {se_depth:.2f}")
     if se_width > 0 and se_depth > 0:
         se_center_x = (opening_east_x + floor_east_x) / 2
         se_center_y = (floor_south_y + opening_north_y) / 2
@@ -612,17 +613,25 @@ def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
         slab_parts.append(southeast_block)
 
     # Southwest block below north strip and west of opening.
-    sw_width = opening_west_x - floor_west_x
-    sw_depth = opening_north_y - floor_south_y
-    if sw_width > 0 and sw_depth > 0:
-        sw_center_x = (floor_west_x + opening_west_x) / 2
-        sw_center_y = (floor_south_y + opening_north_y) / 2
-        bpy.ops.mesh.primitive_cube_add(location=(sw_center_x, sw_center_y, first_floor_center_z))
-        southwest_block = bpy.context.active_object
-        southwest_block.name = "MD_FirstFloor_SouthWestBlock"
-        southwest_block.scale = (sw_width / 2, sw_depth / 2, first_floor_thickness / 2)
-        bpy.ops.object.transform_apply(scale=True)
-        slab_parts.append(southwest_block)
+    sw_width = 4.8 #opening_west_x - floor_west_x
+    sw_depth = 1 #opening_north_y - floor_south_y
+    print(f"  SW width = {sw_width:.2f}, SW depth = {sw_depth:.2f}")
+    bpy.ops.mesh.primitive_cube_add(location=(-1.9, -3, first_floor_center_z))
+    southwest_block = bpy.context.active_object
+    southwest_block.name = "MD_FirstFloor_SouthWestBlock"
+    southwest_block.scale = (sw_width / 2, sw_depth / 2, first_floor_thickness / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    slab_parts.append(southwest_block)
+
+    sw_width = 3.0
+    sw_depth = 0.9
+    print(f"  SW width = {sw_width:.2f}, SW depth = {sw_depth:.2f}")
+    bpy.ops.mesh.primitive_cube_add(location=(-2.8, -3.9, first_floor_center_z))
+    southwest_block = bpy.context.active_object
+    southwest_block.name = "MD_FirstFloor_SouthWestBlock"
+    southwest_block.scale = (sw_width / 2, sw_depth / 2, first_floor_thickness / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    slab_parts.append(southwest_block)   
 
     if not slab_parts:
         raise RuntimeError("Failed to create first-floor slab parts for stairwell opening")

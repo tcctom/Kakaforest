@@ -1,3 +1,5 @@
+from click import option
+
 import bpy  # type: ignore
 import addon_utils
 import sys
@@ -7,6 +9,7 @@ import math # Needed for the rotation correction
 
 from importlib import reload
 
+option = 2
 
 # Add current directory to sys.path so Blender can find your modules
 dir = os.path.dirname(bpy.data.filepath)
@@ -192,9 +195,6 @@ def setup_nz_sun_and_sky2(
     New Zealand Sun & Sky for Blender 5.1
     Fixed: Vector-aligned rotation using explicit ENU Map coordinates.
     """
-    import math
-    import mathutils
-    import bpy
 
     scene = bpy.context.scene
 
@@ -590,7 +590,7 @@ if SHOW_GROUND and linz_terrain:
 #   - "traditional": Overhang on all sides, separate gable end triangles
 #   - "flush": Flush with all walls, north side extends 1m down for balcony shading
 foundation = ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
-main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush",show_porch=False)
+main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
 main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
@@ -631,7 +631,10 @@ outdoor_structures.build_water_tank(origin=(-18.0, -15, -0.2))
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/1000-ltr-tank-2/
-outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
+if option == 1:
+    outdoor_structures.build_water_tank(origin=(-2.0, -5.1, -0.0), diameter=0.9, height=2.0)
+if option == 2:
+    outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
         mathutils.Vector((4.5, -6.5, 0.1)),       
@@ -688,8 +691,8 @@ path_points_AMD_ROW = [
 create_sloping_driveway(name="Main_Driveway", width=4.0, thickness=0.2, path_points=path_points_main_drive, debug_show_points=True)
 create_sloping_driveway(name="AMD_ROW", width=6.0, thickness=0.25, path_points=path_points_AMD_ROW, debug_show_points=True)
 
-outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.8, -11.2, 4), radius=0.35, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 1.6), radius=0.35, height=7.0 )  
-outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.8, -7.2, 2.1), radius=0.35, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree", location=(-1.8, -11.2, 4), radius=0.25, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree2", location=(-14, 4, 1.6), radius=0.25, height=7.0 )  
+outdoor_structures.create_beech_trunk( name="beech_tree3", location=(-14.8, -7.2, 2.1), radius=0.25, height=7.0 )  
 
 print("Modular Site Build Complete.")

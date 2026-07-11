@@ -28,12 +28,15 @@ def run_main_dwelling_build_pipeline(
     show_roof,
     roof_style,
     potius_mat,
+    option=1,
 ):
     """Run the post-shell build sequence for interior, detailing, and optional roof."""
     # Interior partitions
-    _create_interior_partitions_ground_floor( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, )
-    _create_interior_partitions_first_floor ( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, )
-    #_create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    _create_interior_partitions_ground_floor( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option, )
+    _create_interior_partitions_first_floor ( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option, )
+    
+    if option == 1:
+        _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
 
 
     # Ensuite and bathroom
@@ -43,12 +46,16 @@ def run_main_dwelling_build_pipeline(
     _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, GROUND_FLOOR_HEIGHT)
 
     # Kitchen and dining
-    _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-    _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+    if option == 1:
+        _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+        _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+    if option == 2:
+        _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+        _create_dining_table(ox-1.9, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
 
     # Exterior openings
-    _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, )
-    _cut_southwest( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, )
+    _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option)
+    #_cut_southwest( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, )
 
     # Balcony railing
     add_first_floor_balcony_railing( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, create_material, )
