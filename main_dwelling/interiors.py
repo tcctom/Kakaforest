@@ -68,7 +68,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Door opening center is 700 mm from the southern edge to the start of the opening.
     bathroom_door_width = 0.8
-    bathroom_door_center_y = south_interior_face + 1.7 + bathroom_door_width / 2
+    bathroom_door_center_y = south_interior_face + 1.8 + bathroom_door_width / 2
     add_window("MD_GF_BathroomPartitionWall",
         (bathroom_partition_x - INTERIOR_WALL_THICKNESS / 2, bathroom_door_center_y, FLOOR_TOP + 1.0),
         width=bathroom_door_width, height=2.0, depth=INTERIOR_WALL_THICKNESS,
@@ -285,6 +285,11 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     ENSUITE_DEPTH = 2.0
     ENSUITE_WIDTH = 2.0
 
+    if option == 2:
+        MASTER_BEDROOM_WIDTH = 3.8
+        ENSUITE_DEPTH = 2.0
+        ENSUITE_WIDTH = 2.05
+
     north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
@@ -323,7 +328,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         material=interior_wall_mat,
     )
 
-    add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+    #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     add_window( "MD_FF_BedroomSouthPartition",
         (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
@@ -337,6 +342,10 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
             width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
             axis='Y', inward_offset='+Y',
         )
+        add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+
+    if option == 2:
+        add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
 
 
@@ -384,6 +393,31 @@ def _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIR
         rotation_z=90.0 # Flips the rail to line up East-West
     )
 
+def _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
+
+    #starts at xy (0.5,-3.5) and does east 1 meter and full height.
+    create_balustrade(name="MD_StaircaseDivider_BothFloors"
+                      , location=(1.5, -3.5, FLOOR_TOP)
+                      , size=(INTERIOR_WALL_THICKNESS, 1.0, 2.45), rise_top=1.25
+                      , rotation_z=90.0
+                      )
+
+    # Upstairs Return (East-West, rotated 90 degrees)
+    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
+    create_balustrade(
+        name="MD_Staircase_Baulustrade_Upstairs",
+        location=(0.5, -3.5, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 1.8, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
+        rotation_z=90.0 # Flips the rail to line up East-West
+    )
+    create_balustrade(
+        name="MD_Staircase_Baulustrade_Upstairs_2",
+        location=(-1.3, -4.45, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
+    )
 
 def create_balustrade(name, location, size, rise_top=0.0, rise_bottom=0.0, 
                       hide_start_post=False, hide_end_post=False, rotation_z=0.0):

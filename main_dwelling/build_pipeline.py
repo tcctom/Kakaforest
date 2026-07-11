@@ -18,6 +18,7 @@ from main_dwelling.interiors import (
     _create_interior_partitions_first_floor,
     _create_interior_partitions_ground_floor,
     _create_stair_partitions,
+    _create_stair_partitions2,
 )
 from main_dwelling.materials_nodes import create_material
 
@@ -25,9 +26,7 @@ from main_dwelling.materials_nodes import create_material
 def run_main_dwelling_build_pipeline(
     ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT,
     TOTAL_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, NORTH_RECESS, ROOF_PITCH, ROOF_OVERHANG,
-    show_roof,
-    roof_style,
-    potius_mat,
+    show_roof,    roof_style,    potius_mat,
     option=1,
 ):
     """Run the post-shell build sequence for interior, detailing, and optional roof."""
@@ -37,6 +36,8 @@ def run_main_dwelling_build_pipeline(
     
     if option == 1:
         _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    if option == 2:
+        _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
 
 
     # Ensuite and bathroom

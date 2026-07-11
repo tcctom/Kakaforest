@@ -199,7 +199,7 @@ def _create_staircase_southmiddle2(ox, oy, oz,  floor_mat):
     """Create a staircase near south-middle."""
     STEP_TREAD = 0.20
     STEP_WIDTH = 0.92
-    STEP_RISE = 0.183
+    STEP_RISE = 0.186
 
     landing_x_offset = 0.5 * STEP_TREAD + 0.5 * STEP_WIDTH
     landing_y_offset = 0.5 * STEP_WIDTH + 0.5 * STEP_TREAD
@@ -573,7 +573,7 @@ def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     first_floor_center_z = first_floor_z + first_floor_thickness / 2
 
     stairwell_width = 1.9
-    stairwell_length = 2.4
+    stairwell_length = 2.32
 
     opening_west_x = ox - 0.13 
     opening_east_x = opening_west_x + stairwell_length
@@ -624,7 +624,7 @@ def _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     slab_parts.append(southwest_block)
 
     sw_width = 3.0
-    sw_depth = 0.9
+    sw_depth = 0.95
     print(f"  SW width = {sw_width:.2f}, SW depth = {sw_depth:.2f}")
     bpy.ops.mesh.primitive_cube_add(location=(-2.8, -3.9, first_floor_center_z))
     southwest_block = bpy.context.active_object
