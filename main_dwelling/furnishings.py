@@ -397,13 +397,13 @@ def _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, 
 
     bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
 
-    bed_x = east_interior_face - BED_LENGTH / 2 
+    bed_x = east_interior_face - BED_LENGTH / 2 - 1.5
     bed_y = north_interior_face - BED_WIDTH / 2 - 1
     bed_z = first_floor_top + BED_HEIGHT / 2
 
     bpy.ops.mesh.primitive_cube_add(location=(bed_x, bed_y, bed_z))
     bed = bpy.context.active_object
-    bed.name = "MainDwelling_MasterBedroom_KingBed"
+    bed.name = "MD_MasterBedroom_KingBed"
     bed.scale = (BED_LENGTH / 2, BED_WIDTH / 2, BED_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     bed.data.materials.append(bed_mat)

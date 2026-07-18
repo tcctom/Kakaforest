@@ -10,10 +10,10 @@ from main_dwelling.porch import build_simple_open_porch
 from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
-    _create_floors,_create_floors2,
+    _create_floors,_create_floors2, _create_floors3,
     _create_180_degree_staircase_southwest,
     _create_180_degree_staircase_southmiddle,
-    _create_staircase_southmiddle,
+    _create_staircase_southmiddle3,
     _create_staircase_southmiddle2
 )
 from materials import get_floor_wood_material
@@ -70,6 +70,10 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     if option == 2:
         _create_floors2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
         _create_staircase_southmiddle2( ox+0.2, oy-2.95, oz+0.1, floor_mat, )
+
+    if option == 3:
+        _create_floors3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+        _create_staircase_southmiddle3( ox+0.2, oy-2.95, oz+0.1, floor_mat, )
 
 
     

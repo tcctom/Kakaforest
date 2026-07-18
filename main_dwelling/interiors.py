@@ -121,10 +121,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
     )
 
-    create_interior_wall( name="MD_GF_GuestBedroomSouthWall_WestExtension",
-        location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
-        size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
-    )
+    if option == 1:
+        create_interior_wall( name="MD_GF_GuestBedroomSouthWall_WestExtension",
+            location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
+            size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
+        )
 
     create_interior_wall( name="MD_GF_NorthOfLogBurner_NS",
         location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
@@ -143,11 +144,12 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         size=(0.1, 1.3, 1.2)
     )
 
-    # Create wall south of log burner
-    create_fireplace_wall( name="MD_HearthWallSouth",
-        location=(west_partition_x-0.45, oy - 0.6, oz + 0.6),
-        size=(0.6, 0.1, 1.2)
-    )
+    if option == 1:
+        # Create wall south of log burner
+        create_fireplace_wall( name="MD_HearthWallSouth",
+            location=(west_partition_x-0.45, oy - 0.6, oz + 0.6),
+            size=(0.6, 0.1, 1.2)
+        )
 
     # Create wall north of log burner
     create_fireplace_wall( name="MD_HearthWallNorth",
@@ -161,13 +163,12 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     # Location matches the wall's X and Y, with Z calculated to rest perfectly on top.
     #create_candlestick( name="Prop_WoodenCandlestick_01", location=(0.5, -0.6, 1.35), radius=0.04, height=0.3    )
 
-    # Place your real 3D candlestick asset onto the South wall
-    import_candlestick(
-        name="Prop_RealCandlestick_01",
-        location=(0.5, oy - 0.6, oz+1.2), 
-        scale=(1.0, 1.0, 1.0)
-    )
-
+    if option == 1 or option == 2:
+        # Place your real 3D candlestick asset onto the South wall
+        import_candlestick( name="Prop_RealCandlestick_01", location=(0.5, oy - 0.6, oz+1.2), scale=(1.0, 1.0, 1.0)    )
+    if option == 3:
+        # Place your real 3D candlestick asset onto the North wall
+        import_candlestick( name="Prop_RealCandlestick_02", location=(0.5, oy + 0.6, oz+1.2), scale=(1.0, 1.0, 1.0)    )    
 
     #create hearth and log burner
     LOG_BURNER_WIDTH = 0.5
@@ -309,15 +310,33 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
             size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height),
             material=interior_wall_mat,
         )
+    if option == 3:
+        create_wall( name="MD_FF_MainPartition",
+            location=(main_partition_x+0.5, oy+0.20, first_floor_top + first_floor_wall_height / 2),
+            size=(INTERIOR_WALL_THICKNESS, 4.80, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
+        create_wall( name="MD_FF_ByStairwell",
+            location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.8, first_floor_top + first_floor_wall_height / 2),
+            size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
 
-    create_wall( name="MD_FF_BedroomSouthPartition",
-        location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
-        size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
-        material=interior_wall_mat,
-    )
+    if option == 1 or option == 2:
+        create_wall( name="MD_FF_BedroomSouthPartition",
+            location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
+            size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
+    if option == 3:
+        create_wall( name="MD_FF_BedroomSouthPartition",
+            location=(bedroom_partition_center_x + 0.25, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
+            size=(MASTER_BEDROOM_WIDTH-0.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
+            material=interior_wall_mat,
+        )
 
     ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH
     ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2
@@ -337,16 +356,29 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     )
 
     if option == 1:
+        #ensuite door
         add_window( "MD_FF_BedroomSouthPartition",
             (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
             width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
             axis='Y', inward_offset='+Y',
         )
+        #MB main door
         add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     if option == 2:
+        #MB main door
         add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
+    if option == 3:
+        #MB main door
+        add_window( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+
+        #large cupboard door
+        add_window( "MD_FF_BedroomSouthPartition",
+            (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
+            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS,
+            axis='Y', inward_offset='+Y',
+        )
 
 
 
@@ -383,7 +415,7 @@ def _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIR
     # Upstairs Return (East-West, rotated 90 degrees)
     # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
     create_balustrade(
-        name="MD_Staircase_Baulustrade_Upstairs",
+        name="MD_Staircase_Balustrade_Upstairs",
         location=(stairwell_east_x, south_interior_y + 2.65, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
         rise_top=0.0, 
@@ -406,16 +438,42 @@ def _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
     # Upstairs Return (East-West, rotated 90 degrees)
     # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
     create_balustrade(
-        name="MD_Staircase_Baulustrade_Upstairs",
+        name="MD_Staircase_Balustrade_Upstairs",
         location=(0.5, -3.5, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 1.8, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
         rotation_z=90.0 # Flips the rail to line up East-West
     )
     create_balustrade(
-        name="MD_Staircase_Baulustrade_Upstairs_2",
+        name="MD_Staircase_Balustrade_Upstairs_2",
         location=(-1.3, -4.45, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 1.0, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
+    )
+
+def _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
+
+    #starts at xy (0.5,-3.5) and does east 1 meter and full height.
+    create_balustrade(name="MD_StaircaseRail_BothFloors"
+                      , location=(0.8, -3.4, FLOOR_TOP)
+                      , size=(INTERIOR_WALL_THICKNESS, 2.6, 1.0), rise_top=2.5, rise_bottom=2.5
+                      , rotation_z=90.0
+                      )
+
+    # Upstairs Return (East-West, rotated 90 degrees)
+    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
+    create_balustrade(
+        name="MD_Staircase_Balustrade_Upstairs",
+        location=(0.7, -3.2, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 2.5, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
+        rotation_z=90.0 # Flips the rail to line up East-West
+    )
+    create_balustrade(
+        name="MD_Staircase_Balustrade_Upstairs_2",
+        location=(-1.75, -3.4, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 0.2, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
     )
 

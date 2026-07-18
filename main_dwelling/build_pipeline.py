@@ -3,7 +3,6 @@ from main_dwelling.envelope import (
     _add_exterior_windows_and_doors,
     _add_west_gable_window,
     _create_gable_roof,
-    _cut_southwest,
 )
 from main_dwelling.exterior_details import add_first_floor_balcony_railing
 from main_dwelling.furnishings import (
@@ -19,6 +18,7 @@ from main_dwelling.interiors import (
     _create_interior_partitions_ground_floor,
     _create_stair_partitions,
     _create_stair_partitions2,
+    _create_stair_partitions3,
 )
 from main_dwelling.materials_nodes import create_material
 
@@ -38,7 +38,8 @@ def run_main_dwelling_build_pipeline(
         _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
     if option == 2:
         _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
-
+    if option == 3:
+        _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
 
     # Ensuite and bathroom
     _furnish_master_ensuite( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, )
@@ -50,13 +51,12 @@ def run_main_dwelling_build_pipeline(
     if option == 1:
         _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-    if option == 2:
+    if option == 2 or option == 3:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-1.9, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
 
     # Exterior openings
     _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option)
-    #_cut_southwest( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, )
 
     # Balcony railing
     add_first_floor_balcony_railing( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, create_material, )

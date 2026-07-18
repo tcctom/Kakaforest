@@ -9,7 +9,7 @@ import math # Needed for the rotation correction
 
 from importlib import reload
 
-option = 2
+option = 3
 
 # Add current directory to sys.path so Blender can find your modules
 dir = os.path.dirname(bpy.data.filepath)
@@ -635,6 +635,8 @@ if option == 1:
     outdoor_structures.build_water_tank(origin=(-2.0, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
+if option == 3:
+    outdoor_structures.build_water_tank(origin=(3.1, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
         mathutils.Vector((4.5, -6.5, 0.1)),       

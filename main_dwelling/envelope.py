@@ -24,7 +24,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_NorthWall", (ox + spacing, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
     add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 1.5, oz + 1.65), width=1.5, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2, oz + 1.65), width=1.0, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.5, oz + 1.65), width=1.0, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 1.5, first_floor_z + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
@@ -53,28 +53,13 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         add_window("MD_FF_SouthWall", (ox - 2.8, south_wall_y, first_floor_z + 1.4), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_FF_SouthWall", (ox + 1.5, south_wall_y, first_floor_z + 1.0), width=1.2, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
+    if option == 3:
+        #south wall windows - option 2
+        add_window("MD_GF_SouthWall", (ox + 1.4, south_wall_y, oz + 1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_GF_SouthWall", (ox - 2.8, south_wall_y, oz + 1.5), width=1.6, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
-def _cut_southwest(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
-    first_floor_slab = bpy.data.objects.get("MD_FirstFloor")
-    if first_floor_slab:
-        interior_face_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS / 2
-        window_slab_opening_depth = 0.4
-        cutter_center_y = interior_face_y + window_slab_opening_depth / 2
-
-        bpy.ops.mesh.primitive_cube_add(location=(ox - 3.2, cutter_center_y, oz + GROUND_FLOOR_HEIGHT + 0.1))
-        window_cutter = bpy.context.active_object
-        window_cutter.name = "MainDwelling_WindowSlabCutter_StairLanding"
-        window_cutter.scale = (1.0 / 2, window_slab_opening_depth / 2, 0.2 / 2)
-        bpy.ops.object.transform_apply(scale=True)
-
-        bool_mod = first_floor_slab.modifiers.new(name="StairWindow_Cut", type='BOOLEAN')
-        bool_mod.object = window_cutter
-        bool_mod.operation = 'DIFFERENCE'
-        bool_mod.solver = 'EXACT'
-
-        window_cutter.hide_viewport = True
-        window_cutter.hide_render = True
-
+        add_window("MD_FF_SouthWall", (ox + 3.2, south_wall_y, first_floor_z + 1.5), width=1.0, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox - 2.8, south_wall_y, first_floor_z + 1.4), width=1.8, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
 
 def _add_west_gable_window(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, roof_style):
