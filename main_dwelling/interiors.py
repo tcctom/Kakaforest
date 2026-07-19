@@ -301,26 +301,26 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     if option == 1:
         create_wall( name="MD_FF_MainPartition",
             location=(main_partition_x, main_partition_center_y, first_floor_top + first_floor_wall_height / 2),
-            size=(INTERIOR_WALL_THICKNESS, north_interior_face - south_interior_face, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
+            size=(INTERIOR_WALL_THICKNESS, north_interior_face - south_interior_face, first_floor_wall_height), material=interior_wall_mat, )
     if option == 2:
         create_wall( name="MD_FF_MainPartition",
             location=(main_partition_x, oy+0.55, first_floor_top + first_floor_wall_height / 2),
-            size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
+            size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height), material=interior_wall_mat, )
     if option == 3:
-        create_wall( name="MD_FF_MainPartition",
-            location=(main_partition_x+0.5, oy+0.20, first_floor_top + first_floor_wall_height / 2),
-            size=(INTERIOR_WALL_THICKNESS, 4.80, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
-        create_wall( name="MD_FF_ByStairwell",
-            location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.8, first_floor_top + first_floor_wall_height / 2),
-            size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
+        create_wall( name="MD_FF_MainPartition", location=(main_partition_x+0.5, oy+0.20, first_floor_top + first_floor_wall_height / 2),
+            size=(INTERIOR_WALL_THICKNESS, 4.80, first_floor_wall_height), material=interior_wall_mat, )
+        
+        create_wall( name="MD_FF_CaveAndHWC", location=(main_partition_x-0.5, oy+1.2, first_floor_top + first_floor_wall_height / 2),
+            size=(INTERIOR_WALL_THICKNESS, 2.8, first_floor_wall_height), material=interior_wall_mat, )
+        
+        create_wall( name="MD_FF_HWC_Front", location=(main_partition_x, oy - 0.15, first_floor_top + first_floor_wall_height / 2),
+            size=(0.9, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
+
+        create_wall( name="MD_FF_HWC_Back", location=(main_partition_x, oy + 0.55, first_floor_top + first_floor_wall_height / 2),
+            size=(0.9, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
+
+        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.8, first_floor_top + first_floor_wall_height / 2),
+            size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
@@ -328,24 +328,18 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     if option == 1 or option == 2:
         create_wall( name="MD_FF_BedroomSouthPartition",
             location=(bedroom_partition_center_x, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
-            size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
+            size=(MASTER_BEDROOM_WIDTH, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
     if option == 3:
         create_wall( name="MD_FF_BedroomSouthPartition",
             location=(bedroom_partition_center_x + 0.25, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
-            size=(MASTER_BEDROOM_WIDTH-0.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height),
-            material=interior_wall_mat,
-        )
+            size=(MASTER_BEDROOM_WIDTH-0.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
     ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH
     ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2
 
     create_wall( name="MD_FF_EnsuiteWardrobeWall",
         location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_top + first_floor_wall_height / 2),
-        size=(INTERIOR_WALL_THICKNESS, ENSUITE_DEPTH, first_floor_wall_height),
-        material=interior_wall_mat,
-    )
+        size=(INTERIOR_WALL_THICKNESS, ENSUITE_DEPTH, first_floor_wall_height), material=interior_wall_mat, )
 
     #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
@@ -371,14 +365,16 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     if option == 3:
         #MB main door
-        add_window( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_window( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.8, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
         #large cupboard door
-        add_window( "MD_FF_BedroomSouthPartition",
-            (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS,
-            axis='Y', inward_offset='+Y',
+        add_window( "MD_FF_BedroomSouthPartition", (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
+            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',
         )
+        
+        #cave opening
+        add_window( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.5, first_floor_top + 1.0), width=1.7, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+
 
 
 

@@ -91,10 +91,8 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     print(f"L-shaped kitchen bench created: {BENCH_LENGTH}m E-W section, {L_SECTION_LENGTH}m N-S section with N-S wall cabinet")
 
 
-def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
+def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9):
     """Create dining table on ground floor."""
-    TABLE_LENGTH = 0.9
-    TABLE_WIDTH = 1.8
     TABLE_HEIGHT = 0.75
     LEG_SIZE = 0.08
     TOP_THICKNESS = 0.04
