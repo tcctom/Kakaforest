@@ -12,11 +12,11 @@ import importlib
 sys.path.insert(0, r"c:\KakaForestRetreat")
 
 # Import and reload modules (including furniture)
-import ww1_furniture
-import ww1_module
+import archive.ww1_furniture as ww1_furniture
+import archive.ww1_module as ww1_module
 importlib.reload(ww1_furniture)  # Reload furniture first
 importlib.reload(ww1_module)      # Then reload main module
-from ww1_module import build_potius_wet_wing
+from archive.ww1_module import build_potius_wet_wing
 
 # Clear scene
 for obj in list(bpy.context.scene.objects):

@@ -182,8 +182,10 @@ def _create_staircase_southmiddle3(ox, oy, oz,  floor_mat):
 
     ox = ox + 0.5
 
-    create_step(ox, oy, oz, 0, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
-    create_step(ox-STEP_TREAD, oy, oz, 1, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    create_step(ox-STEP_TREAD/2, oy, oz, 0, floor_mat, STEP_TREAD*2, STEP_WIDTH, STEP_RISE,chop="diagonal2b")
+    create_step(ox-STEP_TREAD/2, oy, oz, 1, floor_mat, STEP_TREAD*2, STEP_WIDTH, STEP_RISE,chop="diagonal2a")
+    #create_step(ox, oy, oz, 0, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
+    #create_step(ox-STEP_TREAD, oy, oz, 1, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox-2 * STEP_TREAD, oy, oz, 2, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox-3 * STEP_TREAD, oy , oz, 3, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox-4 * STEP_TREAD, oy , oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)

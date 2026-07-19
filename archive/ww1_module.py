@@ -3,7 +3,7 @@ import math
 
 from utils import create_corrugated_iron_material, add_corner_trim, add_window, add_door
 from materials import get_metal_roof_material
-import ww1_furniture
+import archive.ww1_furniture as ww1_furniture
 
 def create_material(name, color):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name=name)

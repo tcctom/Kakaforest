@@ -625,17 +625,19 @@ def show_ground_floor_plan(option=1):
     print("\nAdding room labels...")
     # Example labels - adjust coordinates to match your building layout
     # Using Z at cut height so labels are visible
-    create_room_label('GROUND FLOOR', (0, -6.5, 1.3), size=0.8)
-    create_room_label('Dining', (-2, 1, 1.3), size=0.4)
-    create_room_label('Kitchen', (-0.8, -3, 1.3), size=0.4)
+    create_room_label('GROUND\nFLOOR', (-6.5, 0, 1.3), size=0.8)
+    create_room_label('Dining', (-2, 0, 1.3), size=0.4)
     create_room_label('Bathroom', (+3.2, -3, 1.3), size=0.4)
-    create_room_label('Guest bedroom', (+2.5, 0, 1.3), size=0.4)
+    create_room_label('Guest\nbedroom', (+3.5, 0, 1.3), size=0.4)
 
     if option == 1:
         create_room_label('Kitchen', (-0.8, -3, 1.3), size=0.4)
     if option == 2:
         create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
         create_room_label('Entrance', (-0.8, -4.0, 1.3), size=0.4)
+    if option == 3:
+        create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
+        create_room_label('Hall', (1.2, -3, 1.3), size=0.4)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -645,9 +647,9 @@ def show_ground_floor_plan(option=1):
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
-    create_dimension_line((-4.5, -4.6), (4.5, -4.6), offset=-0.6, text_size=0.3, z_height=1.3, name_suffix="south_wall")
+    create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
     create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=0.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
+    create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
     
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")
@@ -689,10 +691,17 @@ def show_first_floor_plan(option=1):
     
     # Add sample labels
     print("\nAdding room labels...")
-    create_room_label('FIRST FLOOR', (0, -6.5, 3.8), size=0.8)
-    create_room_label('Master bedroom', (+2.5, 1, 3.8), size=0.4)
-    create_room_label('Office', (-1, -2, 3.8), size=0.4)
-    create_room_label('Living', (-2, 1, 3.8), size=0.4)
+    create_room_label('FIRST\nFLOOR', (-6.5, 0, 3.8), size=0.8)
+    create_room_label('Master bedroom', (+2.5, 0, 3.8), size=0.4)
+    create_room_label('Living', (-2, 0, 3.8), size=0.4)
+
+    if option == 1:
+        create_room_label('Office', (-1, -2, 3.8), size=0.4)
+
+    if option == 3:
+        create_room_label('HWC', (0.2, -1.0, 3.8), size=0.3)
+        create_room_label('sleep\ncave\n2mx1m', (0.1, 0.7, 3.8), size=0.3)
+
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -702,12 +711,17 @@ def show_first_floor_plan(option=1):
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
-    create_dimension_line((-4.5, -4.6), (4.5, -4.6), offset=-0.6, text_size=0.3, z_height=3.8, name_suffix="south_wall")
+    create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="north_wall")
     create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=1.6, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((-4.3, 2.5), (0.2, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
-    create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
-    create_dimension_line((4.5, 2.5), (4.5, -1.25), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_length")
-    
+    create_dimension_line((4.5, 1.55), (4.5, -2.3), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_length")
+
+    if option == 1 or option == 2:
+        create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
+        create_dimension_line((-4.3, 2.5), (0.2, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+    if option == 3:
+        create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
+        create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+
 
 
     print("\n✓ First floor plan ready!")

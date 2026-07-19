@@ -452,8 +452,8 @@ def _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
 
     #starts at xy (0.5,-3.5) and does east 1 meter and full height.
     create_balustrade(name="MD_StaircaseRail_BothFloors"
-                      , location=(0.8, -3.4, FLOOR_TOP)
-                      , size=(INTERIOR_WALL_THICKNESS, 2.6, 1.0), rise_top=2.5, rise_bottom=2.5
+                      , location=(0.4, -3.4, FLOOR_TOP)
+                      , size=(INTERIOR_WALL_THICKNESS, 2.2, 1.0), rise_top=2.6, rise_bottom=2.6
                       , rotation_z=90.0
                       )
 
