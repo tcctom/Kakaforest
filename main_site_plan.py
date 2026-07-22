@@ -9,7 +9,7 @@ import math # Needed for the rotation correction
 
 from importlib import reload
 
-option = 3
+option = 4
 
 # Add current directory to sys.path so Blender can find your modules
 dir = os.path.dirname(bpy.data.filepath)

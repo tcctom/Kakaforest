@@ -54,7 +54,7 @@ def run_main_dwelling_build_pipeline(
     if option == 2:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-1.9, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
-    if option == 3:
+    if option == 3 or option == 4:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-2.2, oy-0.5, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9)
 

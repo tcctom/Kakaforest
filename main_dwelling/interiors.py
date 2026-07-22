@@ -306,7 +306,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         create_wall( name="MD_FF_MainPartition",
             location=(main_partition_x, oy+0.55, first_floor_top + first_floor_wall_height / 2),
             size=(INTERIOR_WALL_THICKNESS, 4.06, first_floor_wall_height), material=interior_wall_mat, )
-    if option == 3:
+    if option == 3 or option == 4:
         create_wall( name="MD_FF_MainPartition", location=(main_partition_x+0.5, oy+0.20, first_floor_top + first_floor_wall_height / 2),
             size=(INTERIOR_WALL_THICKNESS, 4.80, first_floor_wall_height), material=interior_wall_mat, )
         
@@ -363,7 +363,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         #MB main door
         add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
-    if option == 3:
+    if option == 3 or option == 4:
         #MB main door
         add_window( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.8, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
