@@ -635,7 +635,7 @@ if option == 1:
     outdoor_structures.build_water_tank(origin=(-2.0, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
-if option == 3:
+if option == 3 or option == 4:
     outdoor_structures.build_water_tank(origin=(3.1, -5.1, -0.0), diameter=0.9, height=2.0)
 
 path_points_1 = [
