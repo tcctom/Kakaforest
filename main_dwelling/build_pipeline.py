@@ -18,7 +18,7 @@ from main_dwelling.interiors import (
     _create_interior_partitions_ground_floor,
     _create_stair_partitions,
     _create_stair_partitions2,
-    _create_stair_partitions3,
+    _create_stair_partitions3,_create_stair_partitions4,
 )
 from main_dwelling.materials_nodes import create_material
 
@@ -40,6 +40,8 @@ def run_main_dwelling_build_pipeline(
         _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
     if option == 3:
         _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
+    if option == 4:
+        _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
 
     # Ensuite and bathroom
     _furnish_master_ensuite( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, )

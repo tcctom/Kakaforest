@@ -319,7 +319,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         create_wall( name="MD_FF_HWC_Back", location=(main_partition_x, oy + 0.55, first_floor_top + first_floor_wall_height / 2),
             size=(0.9, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
-        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.8, first_floor_top + first_floor_wall_height / 2),
+        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.75, first_floor_top + first_floor_wall_height / 2),
             size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
@@ -472,6 +472,33 @@ def _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
         size=(INTERIOR_WALL_THICKNESS, 0.2, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
     )
+
+def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
+    FLOOR_TOP = oz + FLOOR_SLAB_THICKNESS
+
+
+    create_balustrade(name="MD_StaircaseRail_BothFloors"
+                      , location=(1.22, -3.4, FLOOR_TOP+0.75)
+                      , size=(INTERIOR_WALL_THICKNESS, 2.2, 1.0), rise_top=1.85, rise_bottom=1.85
+                      , rotation_z=90.0
+                      )
+
+    # Upstairs Return (East-West, rotated 90 degrees)
+    # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
+    create_balustrade(
+        name="MD_Staircase_Balustrade_Upstairs",
+        location=(0.7, -3.2, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 1.7, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
+        rotation_z=90.0 # Flips the rail to line up East-West
+    )
+    create_balustrade(
+        name="MD_Staircase_Balustrade_Upstairs_2",
+        location=(-0.95, -3.4, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 0.2, 1.0), 
+        rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
+    )
+
 
 def create_balustrade(name, location, size, rise_top=0.0, rise_bottom=0.0, 
                       hide_start_post=False, hide_end_post=False, rotation_z=0.0):

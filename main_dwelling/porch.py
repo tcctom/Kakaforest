@@ -196,3 +196,101 @@ def build_simple_open_porch(
         purlin.scale = (PURLIN_SIZE[0] / 2, purlin_length / 2, PURLIN_SIZE[1] / 2)
         bpy.ops.object.transform_apply(scale=True)
         purlin.data.materials.append(floor_mat)
+
+
+def build_porch_south_side(
+    ox,
+    oy,
+    oz,
+    WIDTH,
+    LENGTH,
+    GROUND_FLOOR_HEIGHT,
+    floor_mat,
+    create_textured_material,
+    deck_texture_path,
+):
+    """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
+    PORCH_LENGTH = 6.0  # West-to-east run
+    PORCH_DEPTH = 3.8  # South projection depth
+    PORCH_ROOF_PITCH = 15
+    PORCH_ROOF_OVERHANG = 0.0
+
+    west_edge_x = ox - 2
+    south_wall_outer_y = oy - WIDTH / 2
+    porch_roof_high_height = oz + 3.15
+
+    porch_west_x = west_edge_x
+    porch_east_x = porch_west_x + PORCH_LENGTH
+    porch_center_x = (porch_west_x + porch_east_x) / 2
+    porch_center_y = south_wall_outer_y - PORCH_DEPTH / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz + 0.05))
+    porch_deck = bpy.context.active_object
+    porch_deck.name = "MainDwelling_PorchDeck_South"
+    porch_deck.scale = (PORCH_LENGTH / 2, PORCH_DEPTH / 2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+
+    deck_mat = create_textured_material("TimberDecking", deck_texture_path)
+    porch_deck.data.materials.append(deck_mat)
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    porch_roof_building = south_wall_outer_y
+    porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG
+    porch_roof_span = abs(porch_roof_outer - porch_roof_building)
+
+    porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
+    porch_roof_low_height = porch_roof_high_height - porch_roof_drop
+
+    porch_roof_west = porch_west_x - PORCH_ROOF_OVERHANG
+    porch_roof_east = porch_east_x + PORCH_ROOF_OVERHANG
+
+    POST_SIZE = 0.15
+    POST_INSET = 0.2
+    post_y = south_wall_outer_y - PORCH_DEPTH
+    post_height = porch_roof_low_height - oz
+
+    post_west_x = porch_west_x + POST_INSET
+    bpy.ops.mesh.primitive_cube_add(location=(post_west_x, post_y, oz + post_height / 2))
+    post_west = bpy.context.active_object
+    post_west.name = "MainDwelling_PorchPost_SouthWest"
+    post_west.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    post_west.data.materials.append(floor_mat)
+
+    post_east_x = porch_east_x - POST_INSET
+    bpy.ops.mesh.primitive_cube_add(location=(post_east_x, post_y, oz + post_height / 2))
+    post_east = bpy.context.active_object
+    post_east.name = "MainDwelling_PorchPost_SouthEast"
+    post_east.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    post_east.data.materials.append(floor_mat)
+
+    porch_roof_mesh = bpy.data.meshes.new("MainDwelling_PorchRoof_Monopitch_South")
+    porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof_South", porch_roof_mesh)
+    bpy.context.collection.objects.link(porch_roof_obj)
+
+    porch_verts = [
+        (porch_roof_west, porch_roof_building, porch_roof_high_height),
+        (porch_roof_east, porch_roof_building, porch_roof_high_height),
+        (porch_roof_west, porch_roof_outer, porch_roof_low_height),
+        (porch_roof_east, porch_roof_outer, porch_roof_low_height),
+    ]
+    porch_faces = [
+        (0, 1, 3, 2),
+    ]
+
+    porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
+    porch_roof_mesh.update()
+    porch_roof_obj.data.materials.append(get_metal_roof_material())
+
+    bpy.context.view_layer.objects.active = porch_roof_obj
+    porch_roof_obj.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    porch_roof_obj.select_set(False)
