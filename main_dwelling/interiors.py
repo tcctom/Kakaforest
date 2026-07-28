@@ -101,10 +101,11 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         )
 
     if option == 4:
-        create_interior_wall( name="MD_GF_SouthExtension", location=(ox+0.5, south_interior_face-1.7, FLOOR_TOP + 2 / 2 - 0.2),
-            size=(3.7, INTERIOR_WALL_THICKNESS, 2), )
-        create_interior_wall( name="MD_GF_SouthExtension2", location=(ox+2.4, south_interior_face-0.9, FLOOR_TOP + 2 / 2 - 0.2),
-                    size=(INTERIOR_WALL_THICKNESS, 1.5, 2), )
+        porch_wall_height = 2.2
+        create_interior_wall( name="MD_GF_SouthExtension", location=(ox+0.5, south_interior_face-1.7, FLOOR_TOP + porch_wall_height / 2 - 0.2),
+            size=(3.7, INTERIOR_WALL_THICKNESS, porch_wall_height), )
+        create_interior_wall( name="MD_GF_SouthExtension2", location=(ox+2.4, south_interior_face-0.9, FLOOR_TOP + porch_wall_height / 2 - 0.2),
+                    size=(INTERIOR_WALL_THICKNESS, 1.5, porch_wall_height), )
         add_window( "MD_GF_SouthExtension",
             (ox-0.2, south_interior_face - 1.7 - INTERIOR_WALL_THICKNESS / 2, FLOOR_TOP + 1.0),
             width=1.5, height=1.0, depth=INTERIOR_WALL_THICKNESS,
