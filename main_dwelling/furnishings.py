@@ -1,5 +1,6 @@
 import bpy  # type: ignore
 import os
+import math
 
 from materials import get_kitchen_bench_material, get_kitchen_cabinet_material
 from main_dwelling.materials_nodes import create_material, create_textured_material2
@@ -331,7 +332,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
         south_edge=ensuite_south,
         floor_top=first_floor_top,
         material=white_mat,
-        name_prefix="MainDwelling_Ensuite",
+        name_prefix="MD_Ensuite",
     )
 
     create_vanity(
@@ -340,7 +341,8 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
         floor_top=first_floor_top,
         basin_material=white_mat,
         chrome_material=chrome_mat,
-        name_prefix="MainDwelling_Ensuite",
+        name_prefix="MD_Ensuite",
+        rotation_z_degrees=270,
     )
 
 def _furnish_guest_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -420,7 +422,7 @@ def create_shower_tray(x_center, y_center, z_bottom, size, height, material, nam
     return shower_tray
 
 
-def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MainDwelling"):
+def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MD"):
     """Create a simple toilet fixture with bowl and tank from west/south room edges."""
     toilet_width = 0.4
     toilet_depth = 0.6
@@ -449,8 +451,11 @@ def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MainD
     return toilet_bowl, toilet_tank
 
 
-def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_material, name_prefix="MainDwelling"):
-    """Create a vanity cabinet, basin, and tap from east/south room edges."""
+def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_material, name_prefix="MD", rotation_z_degrees=0):
+    """Create a vanity cabinet, basin, and tap from east/south room edges.
+
+    rotation_z_degrees rotates the vanity assembly around its center in plan.
+    """
     vanity_width = 0.6
     vanity_depth = 0.5
     vanity_height = 0.85
@@ -458,12 +463,14 @@ def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_mater
 
     vanity_center_x = east_edge - vanity_depth / 2
     vanity_center_y = south_edge + vanity_width / 2
+    theta = math.radians(rotation_z_degrees)
 
     cabinet_mat = create_material("VanityCabinet", (0.4, 0.3, 0.2, 1))
     bpy.ops.mesh.primitive_cube_add(location=(vanity_center_x, vanity_center_y, floor_top + vanity_height / 2))
     vanity_cabinet = bpy.context.active_object
     vanity_cabinet.name = f"{name_prefix}_VanityCabinet"
     vanity_cabinet.scale = (vanity_depth / 2, vanity_width / 2, vanity_height / 2)
+    vanity_cabinet.rotation_euler[2] = theta
     bpy.ops.object.transform_apply(scale=True)
     vanity_cabinet.data.materials.append(cabinet_mat)
 
@@ -471,10 +478,13 @@ def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_mater
     basin = bpy.context.active_object
     basin.name = f"{name_prefix}_Basin"
     basin.scale = ((vanity_depth - 0.1) / 2, (vanity_width - 0.1) / 2, basin_height / 2)
+    basin.rotation_euler[2] = theta
     bpy.ops.object.transform_apply(scale=True)
     basin.data.materials.append(basin_material)
 
-    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x + 0.15, vanity_center_y, floor_top + vanity_height + 0.15), radius=0.02, depth=0.2)
+    tap_offset_x = 0.15 * math.cos(theta)
+    tap_offset_y = 0.15 * math.sin(theta)
+    bpy.ops.mesh.primitive_cylinder_add(location=(vanity_center_x + tap_offset_x, vanity_center_y + tap_offset_y, floor_top + vanity_height + 0.15), radius=0.02, depth=0.2)
     tap = bpy.context.active_object
     tap.name = f"{name_prefix}_Tap"
     tap.data.materials.append(chrome_material)

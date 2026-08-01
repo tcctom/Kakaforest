@@ -1,8 +1,90 @@
 import bpy  # type: ignore
 import math
 
-from materials import get_metal_roof_material
+from materials import get_interior_wall_material, get_metal_roof_material
 from utils import add_window
+
+
+def create_porch_wall(name, location, size, exterior_mat, interior_face_index=None):
+    """Create a porch wall and assign exterior cladding to the outside face set."""
+    bpy.ops.mesh.primitive_cube_add(location=location)
+    wall_obj = bpy.context.active_object
+    wall_obj.name = name
+    wall_obj.scale = (size[0] / 2, size[1] / 2, size[2] / 2)
+    bpy.ops.object.transform_apply(scale=True)
+
+    wall_obj.data.materials.append(exterior_mat)
+
+    if interior_face_index is not None:
+        interior_mat = get_interior_wall_material()
+        wall_obj.data.materials.append(interior_mat)
+        wall_obj.data.polygons[interior_face_index].material_index = 1
+
+    print(
+        f"[PORCH DEBUG] created {name}: "
+        f"location={tuple(round(v, 3) for v in wall_obj.location)} "
+        f"dimensions={tuple(round(v, 3) for v in wall_obj.dimensions)} "
+        f"verts={len(wall_obj.data.vertices)}"
+    )
+
+    return wall_obj
+
+
+def _debug_wall_bounds(wall_obj, label):
+    xs = []
+    ys = []
+    zs = []
+    for vert in wall_obj.data.vertices:
+        world = wall_obj.matrix_world @ vert.co
+        xs.append(world.x)
+        ys.append(world.y)
+        zs.append(world.z)
+
+    print(
+        f"[PORCH DEBUG] {label} {wall_obj.name}: "
+        f"x=({min(xs):.3f},{max(xs):.3f}) "
+        f"y=({min(ys):.3f},{max(ys):.3f}) "
+        f"z=({min(zs):.3f},{max(zs):.3f})"
+    )
+
+
+def slope_wall_top_to_roof(wall_obj, roof_building_y, roof_outer_y, roof_high_height, roof_low_height):
+    """Slope the top vertices of a wall so they follow the porch roof line in Y."""
+    _debug_wall_bounds(wall_obj, "before slope")
+
+    roof_y_span = roof_outer_y - roof_building_y
+    roof_z_span = roof_low_height - roof_high_height
+
+    if roof_y_span == 0:
+        return wall_obj
+
+    max_local_z = max(vert.co.z for vert in wall_obj.data.vertices)
+    top_vertex_tolerance = 0.001
+
+    for vert in wall_obj.data.vertices:
+        if vert.co.z < max_local_z - top_vertex_tolerance:
+            continue
+
+        world_pos = wall_obj.matrix_world @ vert.co
+        world_y = world_pos.y
+        t = (world_y - roof_building_y) / roof_y_span
+        t = max(0.0, min(1.0, t))
+        target_world_z = roof_high_height + (roof_z_span * t)
+        vert.co.z += target_world_z - world_pos.z
+
+    wall_obj.data.update()
+
+    bpy.context.view_layer.objects.active = wall_obj
+    wall_obj.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    wall_obj.select_set(False)
+
+    _debug_wall_bounds(wall_obj, "after slope")
+
+    return wall_obj
 
 
 def build_simple_open_porch(
@@ -82,6 +164,12 @@ def build_simple_open_porch(
     porch_roof_high_height = oz + GROUND_FLOOR_HEIGHT
     porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
     porch_roof_low_height = porch_roof_high_height - porch_roof_drop
+
+    print(
+        "[PORCH DEBUG] roof south porch: "
+        f"building_y={porch_roof_building:.3f} outer_y={porch_roof_outer:.3f} "
+        f"high_z={porch_roof_high_height:.3f} low_z={porch_roof_low_height:.3f}"
+    )
     
     # Track the exact dynamic angle in radians for the fascia boards
     actual_roof_pitch_rad = math.radians(PORCH_ROOF_PITCH)
@@ -205,9 +293,11 @@ def build_porch_south_side(
     WIDTH,
     LENGTH,
     GROUND_FLOOR_HEIGHT,
+    EXTERIOR_WALL_THICKNESS,
     floor_mat,
     create_textured_material,
     deck_texture_path,
+    exterior_mat,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
     PORCH_LENGTH = 7.0  # West-to-east run
@@ -223,6 +313,8 @@ def build_porch_south_side(
     porch_east_x = porch_west_x + PORCH_LENGTH
     porch_center_x = (porch_west_x + porch_east_x) / 2
     porch_center_y = south_wall_outer_y - PORCH_DEPTH / 2
+    south_interior_face = south_wall_outer_y + EXTERIOR_WALL_THICKNESS
+    floor_top = oz + 0.1
 
     bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz - 0.15))
     porch_deck = bpy.context.active_object
@@ -238,12 +330,71 @@ def build_porch_south_side(
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
+    porch_wall_height = 2.15
+    porch_wall_z = floor_top + porch_wall_height / 2 - 0.2
+    porch_south_wall = create_porch_wall(
+        name="MD_GF_SouthExtension",
+        location=(ox + 0.5, south_interior_face - 1.7, porch_wall_z),
+        size=(3.7, EXTERIOR_WALL_THICKNESS, porch_wall_height),
+        exterior_mat=exterior_mat,
+        interior_face_index=1,
+    )
+    porch_east_wall = create_porch_wall(
+        name="MD_GF_SouthExtension2",
+        location=(ox + 2.4, south_interior_face - 0.9, porch_wall_z),
+        size=(EXTERIOR_WALL_THICKNESS, 1.5, porch_wall_height),
+        exterior_mat=exterior_mat,
+        interior_face_index=0,
+    )
+    porch_west_wall = create_porch_wall(
+        name="MD_GF_SouthExtensionWest",
+        location=(porch_west_x + EXTERIOR_WALL_THICKNESS / 2, south_interior_face - 0.9, porch_wall_z),
+        size=(EXTERIOR_WALL_THICKNESS, 1.5, porch_wall_height),
+        exterior_mat=exterior_mat,
+        interior_face_index=2,
+    )
     porch_roof_building = south_wall_outer_y
     porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG
     porch_roof_span = abs(porch_roof_outer - porch_roof_building)
 
     porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
     porch_roof_low_height = porch_roof_high_height - porch_roof_drop
+
+    slope_wall_top_to_roof(
+        porch_south_wall,
+        porch_roof_building,
+        porch_roof_outer,
+        porch_roof_high_height,
+        porch_roof_low_height,
+    )
+    slope_wall_top_to_roof(
+        porch_east_wall,
+        porch_roof_building,
+        porch_roof_outer,
+        porch_roof_high_height,
+        porch_roof_low_height,
+    )
+    slope_wall_top_to_roof(
+        porch_west_wall,
+        porch_roof_building,
+        porch_roof_outer,
+        porch_roof_high_height,
+        porch_roof_low_height,
+    )
+
+    add_window(
+        "MD_GF_SouthExtension",
+        (ox - 0.2, south_interior_face - 1.7 - EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.0),
+        width=1.5,
+        height=1.0,
+        depth=EXTERIOR_WALL_THICKNESS,
+        axis='Y',
+        inward_offset='+Y',
+    )
+
+    _debug_wall_bounds(porch_south_wall, "after window cut")
+    _debug_wall_bounds(porch_east_wall, "after window cut")
+    _debug_wall_bounds(porch_west_wall, "after window cut")
 
     porch_roof_west = porch_west_x - PORCH_ROOF_OVERHANG
     porch_roof_east = porch_east_x + PORCH_ROOF_OVERHANG

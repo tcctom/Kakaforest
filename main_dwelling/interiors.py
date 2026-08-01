@@ -12,7 +12,12 @@ if __package__ in {None, ""}:
 
 from materials import get_interior_door_material, get_interior_wall_material, get_kitchen_bench_material
 from main_dwelling.materials_nodes import create_material, create_textured_material2
-from utils import add_window
+import utils
+
+add_door = utils.add_door
+add_window = utils.add_window
+# Fallback keeps module import resilient if Blender has a stale cached utils module.
+add_opening = getattr(utils, "add_opening", utils.add_window)
 
 FLOOR_SLAB_THICKNESS = 0.1
 FIRST_FLOOR_SLAB_THICKNESS = 0.2
@@ -99,19 +104,6 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
             location=(cupboard_south_wall_center_x, south_partition_y, FLOOR_TOP + ground_floor_wall_height / 2),
             size=(CUPBOARD_INTERIOR_XAXIS, INTERIOR_WALL_THICKNESS, ground_floor_wall_height),
         )
-
-    if option == 4:
-        porch_wall_height = 2.2
-        create_interior_wall( name="MD_GF_SouthExtension", location=(ox+0.5, south_interior_face-1.7, FLOOR_TOP + porch_wall_height / 2 - 0.2),
-            size=(3.7, INTERIOR_WALL_THICKNESS, porch_wall_height), )
-        create_interior_wall( name="MD_GF_SouthExtension2", location=(ox+2.4, south_interior_face-0.9, FLOOR_TOP + porch_wall_height / 2 - 0.2),
-                    size=(INTERIOR_WALL_THICKNESS, 1.5, porch_wall_height), )
-        add_window( "MD_GF_SouthExtension",
-            (ox-0.2, south_interior_face - 1.7 - INTERIOR_WALL_THICKNESS / 2, FLOOR_TOP + 1.0),
-            width=1.5, height=1.0, depth=INTERIOR_WALL_THICKNESS,
-            axis='Y', inward_offset='+Y',
-        )
-
 
     create_interior_wall( name="MD_GF_NorthOfLogBurner_NS",
         location=(cupboard_west_wall_x, cupboard_west_wall_center_y, FLOOR_TOP + ground_floor_wall_height / 2),
@@ -329,37 +321,33 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
-    add_window( "MD_FF_BedroomSouthPartition",
-        (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
-        axis='Y', inward_offset='+Y',
-    )
+    #ensuite door
+    add_door( "MD_FF_BedroomSouthPartition", (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=-90, hinge_side='right'   )
 
     if option == 1:
-        #ensuite door
-        add_window( "MD_FF_BedroomSouthPartition",
-            (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-            width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS,
-            axis='Y', inward_offset='+Y',
-        )
+        #WIR door
+        add_door( "MD_FF_BedroomSouthPartition", (ensuite_wardrobe_wall_x - 1.5, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
+            width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', )
         #MB main door
-        add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_door( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     if option == 2:
         #MB main door
-        add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_door( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy -0.7, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     if option == 3 or option == 4:
         #MB main door
-        add_window( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.8, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_door( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.8, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', 
+                 open_angle_degrees=-90, hinge_side='right'   )
 
         #large cupboard door
-        add_window( "MD_FF_BedroomSouthPartition", (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top + 1.0),
-            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',
+        add_door( "MD_FF_BedroomSouthPartition", (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
+            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=15, hinge_side='left'
         )
         
         #cave opening
-        add_window( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.5, first_floor_top + 1.0), width=1.7, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_opening( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.6, first_floor_top + 1.15), width=2.0, height=2.4, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
 
 

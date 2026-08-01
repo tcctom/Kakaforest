@@ -79,7 +79,19 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     if option == 4:
         _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
         _create_staircase_southmiddle4( ox+1.7, oy-2.05, oz+0.1, floor_mat, )
-        build_porch_south_side(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, floor_mat, create_textured_material, runtime_context.porch_deck_texture_path, )
+        build_porch_south_side(
+            ox,
+            oy,
+            oz,
+            WIDTH,
+            LENGTH,
+            GROUND_FLOOR_HEIGHT,
+            EXTERIOR_WALL_THICKNESS,
+            floor_mat,
+            create_textured_material,
+            runtime_context.porch_deck_texture_path,
+            potius_mat,
+        )
 
     
     run_main_dwelling_build_pipeline( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT,

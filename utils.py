@@ -1,3 +1,5 @@
+import math
+
 import bpy  # type: ignore
 
 def apply_shadowclad_grooves(target_name, width, height, spacing=0.150):
@@ -73,6 +75,83 @@ def apply_shadowclad_grooves(target_name, width, height, spacing=0.150):
     master_cutter.hide_viewport = True
     master_cutter.hide_render = True
 
+def add_opening(
+    wall_name,
+    position,
+    width=1.2,
+    height=1.4,
+    depth=0.5,
+    axis='Y',
+    inward_offset=None,
+    position_mode='center',
+    opening_name_prefix='Opening',
+    modifier_name='Opening_Cut',
+):
+    """
+    Cuts a rectangular opening in a wall.
+
+    Args:
+        wall_name: Name of the wall object to cut into.
+        position: Opening center when position_mode='center', or bottom center when 'bottom'.
+        width: Opening width in meters.
+        height: Opening height in meters.
+        depth: Wall depth to cut through.
+        axis: 'Y' for north/south walls, 'X' for east/west walls.
+        inward_offset: '+X', '-X', '+Y', '-Y' or None for automatic inward placement.
+        position_mode: 'center' or 'bottom'.
+        opening_name_prefix: Prefix for created cutter object name.
+        modifier_name: Boolean modifier name on the target wall.
+    """
+    wall = bpy.data.objects.get(wall_name)
+    if not wall:
+        print(f"Wall '{wall_name}' not found")
+        return None
+
+    x, y, z = position
+    if position_mode == 'bottom':
+        z = z + height / 2
+
+    if axis == 'Y':
+        if inward_offset:
+            y_off = depth / 2 if inward_offset == '+Y' else -depth / 2
+        else:
+            y_off = depth / 2
+        center_offset = (x, y + y_off, z)
+        cutter_dims = (width, depth * 1.1, height)
+    else:
+        if inward_offset:
+            x_off = depth / 2 if inward_offset == '+X' else -depth / 2
+        elif 'West' in wall_name:
+            x_off = depth / 2
+        elif 'East' in wall_name:
+            x_off = -depth / 2
+        else:
+            x_off = depth / 2 if x < wall.location.x else -depth / 2
+
+        center_offset = (x + x_off, y, z)
+        cutter_dims = (depth * 1.1, width, height)
+
+    bpy.ops.mesh.primitive_cube_add(location=center_offset)
+    cutter = bpy.context.active_object
+    cutter.name = f"{opening_name_prefix}_{wall_name}"
+    cutter.dimensions = cutter_dims
+
+    bool_mod = wall.modifiers.new(name=modifier_name, type='BOOLEAN')
+    bool_mod.object = cutter
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.solver = 'EXACT'
+
+    cutter.hide_viewport = True
+    cutter.hide_render = True
+
+    return {
+        'wall': wall,
+        'cutter': cutter,
+        'center_offset': center_offset,
+        'cutter_dims': cutter_dims,
+        'axis': axis,
+    }
+
 def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thickness=0.05, axis='Y', inward_offset=None):
     """
     Adds a window to a wall by cutting a hole and adding glass.
@@ -87,57 +166,32 @@ def add_window(wall_name, position, width=1.2, height=1.4, depth=0.5, frame_thic
         axis: 'Y' for north/south walls (default), 'X' for east/west walls
         inward_offset: Override auto-detection: '+X', '-X', '+Y', '-Y' or None for auto
     """
-    wall = bpy.data.objects.get(wall_name)
-    if not wall:
-        print(f"Wall '{wall_name}' not found")
+    opening_data = add_opening(
+        wall_name,
+        position,
+        width=width,
+        height=height,
+        depth=depth,
+        axis=axis,
+        inward_offset=inward_offset,
+        position_mode='center',
+        opening_name_prefix='Window_Opening',
+        modifier_name='Window_Cut',
+    )
+    if not opening_data:
         return
-    
-    x, y, z = position
-    
-    # Determine offset direction based on axis and wall name/position
-    if axis == 'Y':  # North/South walls (perpendicular to Y axis)
-        if inward_offset:
-            y_off = depth/2 if inward_offset == '+Y' else -depth/2
-        else:
-            y_off = depth / 2  # Default: offset inward (+Y for north walls)
-        center_offset = (x, y + y_off, z)
-        cutter_dims = (width, depth * 1.1, height)
+
+    center_offset = opening_data['center_offset']
+
+    # Determine frame and glass orientation based on wall axis
+    if axis == 'Y':
         frame_dims = (width, depth * 0.9, height)
         frame_cutter_dims = (width - frame_thickness*2, depth * 0.9 + 0.04, height - frame_thickness*2)
         glass_dims = (width - frame_thickness*2, 0.004, height - frame_thickness*2)
-    else:  # axis == 'X': East/West walls (perpendicular to X axis)
-        # For X-axis walls, determine offset from wall name or explicit parameter
-        if inward_offset:
-            x_off = depth/2 if inward_offset == '+X' else -depth/2
-        elif 'West' in wall_name:
-            x_off = depth/2  # West wall: offset eastward (+X) to go inward
-        elif 'East' in wall_name:
-            x_off = -depth/2  # East wall: offset westward (-X) to go inward
-        else:
-            # Fallback to position comparison
-            x_off = depth/2 if x < wall.location.x else -depth/2
-        
-        center_offset = (x + x_off, y, z)
-        cutter_dims = (depth * 1.1, width, height)
+    else:
         frame_dims = (depth * 0.9, width, height)
         frame_cutter_dims = (depth * 0.9 + 0.04, width - frame_thickness*2, height - frame_thickness*2)
         glass_dims = (0.004, width - frame_thickness*2, height - frame_thickness*2)
-    
-    # Create window opening (cutter) - positioned at center of wall thickness
-    bpy.ops.mesh.primitive_cube_add(location=center_offset)
-    cutter = bpy.context.active_object
-    cutter.name = f"Window_Opening_{wall_name}"
-    cutter.dimensions = cutter_dims  # Slightly oversized to ensure clean cut
-    
-    # Add Boolean modifier to wall (use EXACT solver for clean cuts)
-    bool_mod = wall.modifiers.new(name="Window_Cut", type='BOOLEAN')
-    bool_mod.object = cutter
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.solver = 'EXACT'
-    
-    # Move cutter to separate collection and hide it
-    cutter.hide_viewport = True
-    cutter.hide_render = True
     
     # Create window frame (painted wood) - positioned slightly inward
     # Use most of the depth for the frame so it's visible
@@ -268,51 +322,102 @@ def add_corner_trim(origin, width, depth, height, trim_width=0.15, trim_depth=0.
     
     return trim_objects
 
-def add_door(wall_name, position, width=0.9, height=2.1, depth=0.5, axis='Y'):
+def add_door(
+    wall_name,
+    position,
+    width=0.9,
+    height=2.1,
+    depth=0.5,
+    axis='Y',
+    inward_offset=None,
+    open_angle_degrees=90,
+    hinge_side='left',
+    leaf_thickness=0.04,
+):
     """
-    Adds a door opening to a wall by cutting a hole.
+    Adds a door opening and a simple hinged door leaf.
     
     Args:
         wall_name: Name of the wall object to cut into
-        position: (x, y, z) world position for door bottom center at wall surface
-        width: Door width in meters (default 0.9m - standard single door)
-        height: Door height in meters (default 2.1m - standard door height)
-        depth: Wall depth to cut through (default 0.5m)
-        axis: 'Y' for north/south walls (default), 'X' for east/west walls
+        position: (x, y, z) world position for door bottom center at wall surface.
+        width: Door width in meters.
+        height: Door height in meters.
+        depth: Wall depth to cut through.
+        axis: 'Y' for north/south walls, 'X' for east/west walls.
+        inward_offset: '+X', '-X', '+Y', '-Y' or None for automatic inward placement.
+        open_angle_degrees: Door swing angle around hinge in degrees (default 90).
+        hinge_side: 'left' or 'right' viewed from the outside of the wall.
+        leaf_thickness: Door panel thickness in meters.
     """
-    wall = bpy.data.objects.get(wall_name)
-    if not wall:
-        print(f"Wall '{wall_name}' not found")
+    opening_data = add_opening(
+        wall_name,
+        position,
+        width=width,
+        height=height,
+        depth=depth,
+        axis=axis,
+        inward_offset=inward_offset,
+        position_mode='bottom',
+        opening_name_prefix='Door_Opening',
+        modifier_name='Door_Cut',
+    )
+    if not opening_data:
         return
-    
-    x, y, z = position
-    door_center_z = z + height/2  # Center height of door opening
-    
-    # Position cutter at the wall's location (no offset needed for simple opening)
-    if axis == 'Y':  # North/South walls (perpendicular to Y axis)
-        center_offset = (x, y, door_center_z)
-        cutter_dims = (width, depth * 1.2, height)
-    else:  # axis == 'X': East/West walls (perpendicular to X axis)
-        center_offset = (x, y, door_center_z)
-        cutter_dims = (depth * 1.2, width, height)
-    
-    # Create door opening (cutter) - positioned at wall center
-    bpy.ops.mesh.primitive_cube_add(location=center_offset)
-    cutter = bpy.context.active_object
-    cutter.name = f"Door_Opening_{wall_name}"
-    cutter.dimensions = cutter_dims  # Oversized to ensure clean cut through entire wall
-    
-    # Add Boolean modifier to wall (use EXACT solver for clean cuts)
-    bool_mod = wall.modifiers.new(name="Door_Cut", type='BOOLEAN')
-    bool_mod.object = cutter
-    bool_mod.operation = 'DIFFERENCE'
-    bool_mod.solver = 'EXACT'
-    
-    # Move cutter to separate collection and hide it
-    cutter.hide_viewport = True
-    cutter.hide_render = True
-    
-    return cutter
+
+    center_x, center_y, center_z = opening_data['center_offset']
+    hinge_side = hinge_side.lower()
+
+    leaf_width = max(width - 0.02, 0.05)
+    leaf_height = max(height - 0.02, 0.05)
+    half_width = leaf_width / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(center_x, center_y, center_z))
+    door = bpy.context.active_object
+    door.name = f"Door_Leaf_{wall_name}"
+
+    if axis == 'Y':
+        door.dimensions = (leaf_width, leaf_thickness, leaf_height)
+    else:
+        door.dimensions = (leaf_thickness, leaf_width, leaf_height)
+
+    theta = math.radians(open_angle_degrees)
+    if hinge_side == 'right':
+        theta = -theta
+
+    if axis == 'Y':
+        hinge_x = center_x - half_width if hinge_side == 'left' else center_x + half_width
+        hinge_y = center_y
+        dx = center_x - hinge_x
+        dy = center_y - hinge_y
+        rotated_dx = dx * math.cos(theta) - dy * math.sin(theta)
+        rotated_dy = dx * math.sin(theta) + dy * math.cos(theta)
+        door.location.x = hinge_x + rotated_dx
+        door.location.y = hinge_y + rotated_dy
+        door.rotation_euler[2] = theta
+    else:
+        hinge_x = center_x
+        hinge_y = center_y - half_width if hinge_side == 'left' else center_y + half_width
+        dx = center_x - hinge_x
+        dy = center_y - hinge_y
+        rotated_dx = dx * math.cos(theta) - dy * math.sin(theta)
+        rotated_dy = dx * math.sin(theta) + dy * math.cos(theta)
+        door.location.x = hinge_x + rotated_dx
+        door.location.y = hinge_y + rotated_dy
+        door.rotation_euler[2] = theta
+
+    door_mat = bpy.data.materials.get("DoorLeaf") or bpy.data.materials.new(name="DoorLeaf")
+    door_mat.use_nodes = True
+    bsdf = door_mat.node_tree.nodes.get("Principled BSDF")
+    if bsdf:
+        bsdf.inputs['Base Color'].default_value = (0.35, 0.22, 0.12, 1.0)
+        bsdf.inputs['Roughness'].default_value = 0.45
+
+    if not door.data.materials:
+        door.data.materials.append(door_mat)
+    else:
+        door.data.materials[0] = door_mat
+
+    return opening_data['cutter']
 
 
 
