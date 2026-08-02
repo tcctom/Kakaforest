@@ -1,8 +1,64 @@
 import bpy  # type: ignore
 import math
+import os
 
 from materials import get_interior_wall_material, get_metal_roof_material
-from utils import add_window
+from utils import add_window, add_door
+
+
+def create_black_box_profile_roof_material():
+    """Create a black corrugated roof material using the box profile displacement map as bump."""
+    material_name = "PorchRoof_BlackBoxProfile"
+    mat = bpy.data.materials.get(material_name)
+    if mat is None:
+        mat = bpy.data.materials.new(name=material_name)
+
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+
+    out = nodes.new(type='ShaderNodeOutputMaterial')
+    out.location = (500, 0)
+
+    bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+    bsdf.location = (220, 0)
+    bsdf.inputs['Base Color'].default_value = (0.03, 0.03, 0.03, 1.0)
+    bsdf.inputs['Metallic'].default_value = 0.9
+    bsdf.inputs['Roughness'].default_value = 0.45
+    links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+
+    disp_path = os.path.abspath("textures/box_profile_metal_sheet/box_profile_metal_sheet_disp_1k.png")
+    if not os.path.exists(disp_path):
+        disp_path = os.path.abspath("textures/box_profile_metal_sheet/box_profile_metal_sheet_disp_1k.jpg")
+
+    if os.path.exists(disp_path):
+        tex_coord = nodes.new(type='ShaderNodeTexCoord')
+        tex_coord.location = (-700, -150)
+
+        mapping = nodes.new(type='ShaderNodeMapping')
+        mapping.location = (-500, -150)
+        mapping.inputs['Scale'].default_value = (8.0, 2.0, 1.0)
+        mapping.inputs['Rotation'].default_value[2] = 1.5708  # 90 degrees
+
+        disp_tex = nodes.new(type='ShaderNodeTexImage')
+        disp_tex.location = (-280, -150)
+        disp_tex.image = bpy.data.images.load(disp_path, check_existing=True)
+        disp_tex.image.colorspace_settings.name = 'Non-Color'
+
+        bump = nodes.new(type='ShaderNodeBump')
+        bump.location = (-20, -150)
+        bump.inputs['Strength'].default_value = 0.28
+        bump.inputs['Distance'].default_value = 0.02
+
+        links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
+        links.new(mapping.outputs['Vector'], disp_tex.inputs['Vector'])
+        links.new(disp_tex.outputs['Color'], bump.inputs['Height'])
+        links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    else:
+        print(f"[PORCH DEBUG] missing box-profile texture: {disp_path}")
+
+    return mat
 
 
 def create_porch_wall(name, location, size, exterior_mat, interior_face_index=None):
@@ -20,12 +76,12 @@ def create_porch_wall(name, location, size, exterior_mat, interior_face_index=No
         wall_obj.data.materials.append(interior_mat)
         wall_obj.data.polygons[interior_face_index].material_index = 1
 
-    print(
-        f"[PORCH DEBUG] created {name}: "
-        f"location={tuple(round(v, 3) for v in wall_obj.location)} "
-        f"dimensions={tuple(round(v, 3) for v in wall_obj.dimensions)} "
-        f"verts={len(wall_obj.data.vertices)}"
-    )
+    #print(
+    #    f"[PORCH DEBUG] created {name}: "
+    #    f"location={tuple(round(v, 3) for v in wall_obj.location)} "
+    #    f"dimensions={tuple(round(v, 3) for v in wall_obj.dimensions)} "
+    #    f"verts={len(wall_obj.data.vertices)}"
+    #)
 
     return wall_obj
 
@@ -40,12 +96,12 @@ def _debug_wall_bounds(wall_obj, label):
         ys.append(world.y)
         zs.append(world.z)
 
-    print(
-        f"[PORCH DEBUG] {label} {wall_obj.name}: "
-        f"x=({min(xs):.3f},{max(xs):.3f}) "
-        f"y=({min(ys):.3f},{max(ys):.3f}) "
-        f"z=({min(zs):.3f},{max(zs):.3f})"
-    )
+    #print(
+    #    f"[PORCH DEBUG] {label} {wall_obj.name}: "
+    #    f"x=({min(xs):.3f},{max(xs):.3f}) "
+    #    f"y=({min(ys):.3f},{max(ys):.3f}) "
+    #    f"z=({min(zs):.3f},{max(zs):.3f})"
+    #)
 
 
 def slope_wall_top_to_roof(wall_obj, roof_building_y, roof_outer_y, roof_high_height, roof_low_height):
@@ -165,11 +221,11 @@ def build_simple_open_porch(
     porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
     porch_roof_low_height = porch_roof_high_height - porch_roof_drop
 
-    print(
-        "[PORCH DEBUG] roof south porch: "
-        f"building_y={porch_roof_building:.3f} outer_y={porch_roof_outer:.3f} "
-        f"high_z={porch_roof_high_height:.3f} low_z={porch_roof_low_height:.3f}"
-    )
+    #print(
+    #    "[PORCH DEBUG] roof south porch: "
+    #    f"building_y={porch_roof_building:.3f} outer_y={porch_roof_outer:.3f} "
+    #    f"high_z={porch_roof_high_height:.3f} low_z={porch_roof_low_height:.3f}"
+    #)
     
     # Track the exact dynamic angle in radians for the fascia boards
     actual_roof_pitch_rad = math.radians(PORCH_ROOF_PITCH)
@@ -301,22 +357,23 @@ def build_porch_south_side(
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
     PORCH_LENGTH = 7.0  # West-to-east run
-    PORCH_DEPTH = 1.5  # South projection depth
-    PORCH_ROOF_PITCH = 15
+    PORCH_DEPTH = 1.7  # South projection depth
+    PORCH_ROOF_PITCH = 20
     PORCH_ROOF_OVERHANG = 0.1
+    PORCH_EXTERIOR_WALL_THICKNESS = 0.15
+    PORCH_INTERIOR_WALL_THICKNESS = 0.11
 
     west_edge_x = ox - 4.4
     south_wall_outer_y = oy - WIDTH / 2
-    porch_roof_high_height = oz + 2.5  #3.15
+    porch_roof_high_height = oz + 2.6
 
     porch_west_x = west_edge_x
     porch_east_x = porch_west_x + PORCH_LENGTH
     porch_center_x = (porch_west_x + porch_east_x) / 2
     porch_center_y = south_wall_outer_y - PORCH_DEPTH / 2
-    south_interior_face = south_wall_outer_y + EXTERIOR_WALL_THICKNESS
-    floor_top = oz + 0.1
+    floor_top = oz - 0.1
 
-    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz - 0.15))
+    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz-0.15 ))
     porch_deck = bpy.context.active_object
     porch_deck.name = "MainDwelling_PorchDeck_South"
     porch_deck.scale = (PORCH_LENGTH / 2, PORCH_DEPTH / 2, 0.05)
@@ -330,29 +387,21 @@ def build_porch_south_side(
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    porch_wall_height = 2.15
-    porch_wall_z = floor_top + porch_wall_height / 2 - 0.2
-    porch_south_wall = create_porch_wall(
-        name="MD_GF_SouthExtension",
-        location=(ox + 0.5, south_interior_face - 1.7, porch_wall_z),
-        size=(3.7, EXTERIOR_WALL_THICKNESS, porch_wall_height),
-        exterior_mat=exterior_mat,
-        interior_face_index=1,
-    )
-    porch_east_wall = create_porch_wall(
-        name="MD_GF_SouthExtension2",
-        location=(ox + 2.4, south_interior_face - 0.9, porch_wall_z),
-        size=(EXTERIOR_WALL_THICKNESS, 1.5, porch_wall_height),
-        exterior_mat=exterior_mat,
-        interior_face_index=0,
-    )
-    porch_west_wall = create_porch_wall(
-        name="MD_GF_SouthExtensionWest",
-        location=(porch_west_x + EXTERIOR_WALL_THICKNESS / 2, south_interior_face - 0.9, porch_wall_z),
-        size=(EXTERIOR_WALL_THICKNESS, 1.5, porch_wall_height),
-        exterior_mat=exterior_mat,
-        interior_face_index=2,
-    )
+    porch_wall_height = 2.3
+    porch_wall_z = floor_top + porch_wall_height / 2 
+    porch_south_wall = create_porch_wall( name="MD_GF_SouthExtension",
+        location=(ox + 0.5, south_wall_outer_y - PORCH_DEPTH, porch_wall_z-0.1),
+        size=(4.2, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.2),        exterior_mat=exterior_mat, interior_face_index=1, )
+    porch_east_wall = create_porch_wall( name="MD_GF_SouthExtension2",
+        location=(ox + 2.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
+        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
+    porch_west_wall = create_porch_wall( name="MD_GF_SouthExtensionWest",
+        location=(ox-1.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
+        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=2, )
+    porch_interior_wall = create_porch_wall( name="MD_GF_SouthExtensionInterior",
+        location=(ox + 0.8, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
+        size=(PORCH_INTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
+
     porch_roof_building = south_wall_outer_y
     porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG
     porch_roof_span = abs(porch_roof_outer - porch_roof_building)
@@ -360,41 +409,24 @@ def build_porch_south_side(
     porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
     porch_roof_low_height = porch_roof_high_height - porch_roof_drop
 
-    slope_wall_top_to_roof(
-        porch_south_wall,
-        porch_roof_building,
-        porch_roof_outer,
-        porch_roof_high_height,
-        porch_roof_low_height,
-    )
-    slope_wall_top_to_roof(
-        porch_east_wall,
-        porch_roof_building,
-        porch_roof_outer,
-        porch_roof_high_height,
-        porch_roof_low_height,
-    )
-    slope_wall_top_to_roof(
-        porch_west_wall,
-        porch_roof_building,
-        porch_roof_outer,
-        porch_roof_high_height,
-        porch_roof_low_height,
-    )
+    #slope_wall_top_to_roof( porch_south_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
+    slope_wall_top_to_roof( porch_east_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
+    slope_wall_top_to_roof( porch_west_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
+    slope_wall_top_to_roof( porch_interior_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
 
-    add_window(
-        "MD_GF_SouthExtension",
-        (ox - 0.2, south_interior_face - 1.7 - EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.0),
-        width=1.5,
-        height=1.0,
-        depth=EXTERIOR_WALL_THICKNESS,
-        axis='Y',
-        inward_offset='+Y',
-    )
 
-    _debug_wall_bounds(porch_south_wall, "after window cut")
-    _debug_wall_bounds(porch_east_wall, "after window cut")
-    _debug_wall_bounds(porch_west_wall, "after window cut")
+    add_window( "MD_GF_SouthExtension", (ox - 0.42, south_wall_outer_y - PORCH_DEPTH - PORCH_EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.4),
+        width=1.0, height=1.0, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',    )
+
+    add_door( "MD_GF_SouthExtensionWest", (ox - 1.5 + PORCH_EXTERIOR_WALL_THICKNESS / 2, south_wall_outer_y - PORCH_DEPTH/2, floor_top),
+        width=0.9, height=2.0, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', open_angle_degrees=90, hinge_side='right',    )
+
+    add_door( "MD_GF_SouthExtensionInterior", (ox + 0.8 + PORCH_INTERIOR_WALL_THICKNESS/2, south_wall_outer_y - 1.25, floor_top),
+        width=0.7, height=2.0, depth=PORCH_INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', open_angle_degrees=-90, hinge_side='left',    )
+
+    #_debug_wall_bounds(porch_south_wall, "after window cut")
+    #_debug_wall_bounds(porch_east_wall, "after window cut")
+    #_debug_wall_bounds(porch_west_wall, "after window cut")
 
     porch_roof_west = porch_west_x - PORCH_ROOF_OVERHANG
     porch_roof_east = porch_east_x + PORCH_ROOF_OVERHANG
@@ -412,31 +444,71 @@ def build_porch_south_side(
     bpy.ops.object.transform_apply(scale=True)
     post_west.data.materials.append(floor_mat)
 
-    post_east_x = porch_east_x - POST_INSET
-    bpy.ops.mesh.primitive_cube_add(location=(post_east_x, post_y, oz + post_height / 2))
-    post_east = bpy.context.active_object
-    post_east.name = "MainDwelling_PorchPost_SouthEast"
-    post_east.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
-    bpy.ops.object.transform_apply(scale=True)
-    post_east.data.materials.append(floor_mat)
+    #post_east_x = porch_east_x - POST_INSET
+    #bpy.ops.mesh.primitive_cube_add(location=(post_east_x, post_y, oz + post_height / 2))
+    #post_east = bpy.context.active_object
+    #post_east.name = "MainDwelling_PorchPost_SouthEast"
+    #post_east.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
+    #bpy.ops.object.transform_apply(scale=True)
+    #post_east.data.materials.append(floor_mat)
 
     porch_roof_mesh = bpy.data.meshes.new("MainDwelling_PorchRoof_Monopitch_South")
     porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof_South", porch_roof_mesh)
     bpy.context.collection.objects.link(porch_roof_obj)
 
+    roof_thickness = 0.07
     porch_verts = [
+        # top surface
         (porch_roof_west, porch_roof_building, porch_roof_high_height),
         (porch_roof_east, porch_roof_building, porch_roof_high_height),
         (porch_roof_west, porch_roof_outer, porch_roof_low_height),
         (porch_roof_east, porch_roof_outer, porch_roof_low_height),
+        # underside surface
+        (porch_roof_west, porch_roof_building, porch_roof_high_height - roof_thickness),
+        (porch_roof_east, porch_roof_building, porch_roof_high_height - roof_thickness),
+        (porch_roof_west, porch_roof_outer, porch_roof_low_height - roof_thickness),
+        (porch_roof_east, porch_roof_outer, porch_roof_low_height - roof_thickness),
     ]
     porch_faces = [
         (0, 1, 3, 2),
+        (4, 6, 7, 5),
+        (0, 2, 6, 4),
+        (1, 5, 7, 3),
+        (0, 4, 5, 1),
+        (2, 3, 7, 6),
     ]
 
     porch_roof_mesh.from_pydata(porch_verts, [], porch_faces)
     porch_roof_mesh.update()
-    porch_roof_obj.data.materials.append(get_metal_roof_material())
+    porch_roof_obj.data.materials.append(create_black_box_profile_roof_material())
+
+    # Exposed rafters under the roof panel.
+    rafter_width = 0.06
+    rafter_height = 0.12
+    rafter_inset = 0.15
+    rafter_end_overhang = 0.00
+    rafter_spacing = 0.8
+    pitch_rad = math.radians(PORCH_ROOF_PITCH)
+
+    # Run rafters close to full roof depth, with a slight extension beyond the wall lines.
+    rafter_span = max(0.2, porch_roof_span + (2 * rafter_end_overhang))
+    rafter_y = (porch_roof_building + porch_roof_outer) / 2
+    rafter_z = ((porch_roof_high_height + porch_roof_low_height) / 2) - roof_thickness - rafter_height / 2 - 0.01
+
+    rafter_count = max(2, int(PORCH_LENGTH / rafter_spacing) + 1)
+    start_x = porch_west_x + rafter_inset
+    end_x = porch_east_x - rafter_inset
+    actual_spacing = (end_x - start_x) / (rafter_count - 1)
+
+    for i in range(rafter_count):
+        rafter_x = start_x + i * actual_spacing
+        bpy.ops.mesh.primitive_cube_add(location=(rafter_x, rafter_y, rafter_z))
+        rafter = bpy.context.active_object
+        rafter.name = f"MainDwelling_PorchRafter_{i + 1:02d}"
+        rafter.scale = (rafter_width / 2, rafter_span / 2, rafter_height / 2)
+        rafter.rotation_euler[0] = pitch_rad
+        bpy.ops.object.transform_apply(scale=True, rotation=True)
+        rafter.data.materials.append(floor_mat)
 
     bpy.context.view_layer.objects.active = porch_roof_obj
     porch_roof_obj.select_set(True)

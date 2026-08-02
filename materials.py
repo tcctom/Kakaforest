@@ -186,10 +186,8 @@ def get_metal_roof_material():
     3. Files needed: *_diff_1k.jpg, *_rough_1k.exr
     """
     mat = bpy.data.materials.get("MetalRoof")
-    if mat:
-        return mat
-    
-    mat = bpy.data.materials.new(name="MetalRoof")
+    if mat is None:
+        mat = bpy.data.materials.new(name="MetalRoof")
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
@@ -215,12 +213,16 @@ def get_metal_roof_material():
         blend_dir = r"c:\KakaForestRetreat"
     
     texture_dir = os.path.join(blend_dir, "textures", "box_profile_metal_sheet")
+    if not os.path.exists(texture_dir):
+        # Fallback to project-relative path when blend file lives elsewhere.
+        texture_dir = os.path.abspath("textures/box_profile_metal_sheet")
     
     # Find texture files (they may have different naming patterns)
     color_path = None
     rough_path = None
     normal_path = None
     metallic_path = None
+    disp_path = None
     
     if os.path.exists(texture_dir):
         for filename in os.listdir(texture_dir):
@@ -232,6 +234,8 @@ def get_metal_roof_material():
                 normal_path = os.path.join(texture_dir, filename)
             elif 'metal' in filename.lower() and filename.endswith('.exr'):
                 metallic_path = os.path.join(texture_dir, filename)
+            elif 'disp' in filename.lower() and (filename.endswith('.png') or filename.endswith('.jpg')):
+                disp_path = os.path.join(texture_dir, filename)
     
     print(f"Roof material: Loading textures from {texture_dir}")
     
@@ -265,18 +269,12 @@ def get_metal_roof_material():
             tex_coord = nodes.new(type='ShaderNodeTexCoord')
             tex_coord.location = (-1200, 0)
             
-            # Color Mix node to darken/blacken the texture
-            color_mix = nodes.new(type='ShaderNodeMix')
-            color_mix.data_type = 'RGBA'
-            color_mix.location = (-300, 200)
-            color_mix.inputs['Factor'].default_value = 0.85  # 85% black
-            color_mix.inputs['A'].default_value = (0.05, 0.05, 0.05, 1.0)  # Very dark gray/black
-            
-            # Link texture
+            # Keep the roof visibly black; use texture maps for relief/roughness/metal only.
+            bsdf_node.inputs['Base Color'].default_value = (0.03, 0.03, 0.03, 1.0)
+
+            # Link texture coordinates for shared mapping
             links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
             links.new(mapping.outputs['Vector'], color_tex.inputs['Vector'])
-            links.new(color_tex.outputs['Color'], color_mix.inputs['B'])
-            links.new(color_mix.outputs['Result'], bsdf_node.inputs['Base Color'])
             
             # Set metallic property for metal roof
             bsdf_node.inputs['Metallic'].default_value = 0.9
@@ -329,6 +327,32 @@ def get_metal_roof_material():
                     print("  ✓ Normal map connected")
                 except Exception as e:
                     print(f"  ! Normal map failed: {e}")
+
+            # Displacement/height texture as bump for corrugation relief.
+            if disp_path and os.path.exists(disp_path):
+                try:
+                    disp_img = bpy.data.images.get(os.path.basename(disp_path))
+                    if not disp_img:
+                        disp_img = bpy.data.images.load(disp_path)
+                        print("  ✓ Displacement texture loaded")
+                    else:
+                        print("  ✓ Displacement texture (cached)")
+
+                    disp_tex = nodes.new(type='ShaderNodeTexImage')
+                    disp_tex.location = (-600, -800)
+                    disp_tex.image = disp_img
+                    disp_tex.image.colorspace_settings.name = 'Non-Color'
+
+                    bump = nodes.new(type='ShaderNodeBump')
+                    bump.location = (-300, -800)
+                    bump.inputs['Strength'].default_value = 0.25
+                    bump.inputs['Distance'].default_value = 0.02
+
+                    links.new(mapping.outputs['Vector'], disp_tex.inputs['Vector'])
+                    links.new(disp_tex.outputs['Color'], bump.inputs['Height'])
+                    links.new(bump.outputs['Normal'], bsdf_node.inputs['Normal'])
+                except Exception as e:
+                    print(f"  ! Displacement texture failed: {e}")
             
             # Metallic texture
             if metallic_path and os.path.exists(metallic_path):
