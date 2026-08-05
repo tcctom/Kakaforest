@@ -628,7 +628,7 @@ def show_ground_floor_plan(option=1):
     create_room_label('GROUND\nFLOOR', (-6.5, 0, 1.3), size=0.8)
     create_room_label('Dining', (-2, 0, 1.3), size=0.4)
     create_room_label('Bathroom', (+3.2, -3, 1.3), size=0.4)
-    create_room_label('Guest\nbedroom', (+3.5, 0, 1.3), size=0.4)
+    create_room_label('Guest\nbedroom', (+3.3, 0, 1.3), size=0.4)
 
     if option == 1:
         create_room_label('Kitchen', (-0.8, -3, 1.3), size=0.4)
@@ -638,6 +638,8 @@ def show_ground_floor_plan(option=1):
     if option == 3:
         create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
         create_room_label('Hall', (1.2, -3, 1.3), size=0.4)
+    if option == 4:
+        create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -647,10 +649,14 @@ def show_ground_floor_plan(option=1):
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
+    # north face
     create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
-    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
     create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
-    
+    create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_estwest_width")
+
+    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=1.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
+    create_dimension_line((4.5, 1.6), (4.5, -1.7), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
+
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")
     print("="*60)

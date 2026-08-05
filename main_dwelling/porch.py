@@ -48,7 +48,7 @@ def create_black_box_profile_roof_material():
 
         bump = nodes.new(type='ShaderNodeBump')
         bump.location = (-20, -150)
-        bump.inputs['Strength'].default_value = 0.28
+        bump.inputs['Strength'].default_value = 0.20
         bump.inputs['Distance'].default_value = 0.02
 
         links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
@@ -104,7 +104,7 @@ def _debug_wall_bounds(wall_obj, label):
     #)
 
 
-def slope_wall_top_to_roof(wall_obj, roof_building_y, roof_outer_y, roof_high_height, roof_low_height):
+def slope_wall_top_to_roof(wall_obj, roof_building_y, roof_outer_y, roof_high_height, roof_low_height, roof_clearance=0.02):
     """Slope the top vertices of a wall so they follow the porch roof line in Y."""
     _debug_wall_bounds(wall_obj, "before slope")
 
@@ -125,7 +125,7 @@ def slope_wall_top_to_roof(wall_obj, roof_building_y, roof_outer_y, roof_high_he
         world_y = world_pos.y
         t = (world_y - roof_building_y) / roof_y_span
         t = max(0.0, min(1.0, t))
-        target_world_z = roof_high_height + (roof_z_span * t)
+        target_world_z = (roof_high_height + (roof_z_span * t)) - roof_clearance
         vert.co.z += target_world_z - world_pos.z
 
     wall_obj.data.update()
@@ -391,7 +391,7 @@ def build_porch_south_side(
     porch_wall_z = floor_top + porch_wall_height / 2 
     porch_south_wall = create_porch_wall( name="MD_GF_SouthExtension",
         location=(ox + 0.5, south_wall_outer_y - PORCH_DEPTH, porch_wall_z-0.1),
-        size=(4.2, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.2),        exterior_mat=exterior_mat, interior_face_index=1, )
+        size=(4.2, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.3),        exterior_mat=exterior_mat, interior_face_index=1, )
     porch_east_wall = create_porch_wall( name="MD_GF_SouthExtension2",
         location=(ox + 2.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
         size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )

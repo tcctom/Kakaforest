@@ -4,7 +4,7 @@ from main_dwelling import config as dwelling_config
 from main_dwelling.materials_nodes import create_material, create_textured_material
 
 
-def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, north_recess=1.0):
+def build_north_deck(origin=(0, 0, 0), building_length=8.6, building_width=7.0, DECK_EXTENSION = 3.0, PILE_SIZE = 0.15, BEARER_SIZE = (0.150, 0.200), add_boundary_joist=False):
     """
     Build a timber deck extending 3 meters north from the recessed north wall of the main dwelling.
     The deck is constructed with piles, bearers, joists, and 90mm x 25mm decking boards.
@@ -13,24 +13,21 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
         origin: (x, y, z) tuple for building origin (same as main dwelling)
         building_length: East-west dimension of building (9m default)
         building_width: North-south dimension of building (7m default)
-        north_recess: How far north wall is recessed (1m default)
     """
     ox, oy, oz = origin
 
-    DECK_EXTENSION = 3.0
     DECK_THICKNESS = 0.025
     DECK_BOARD_WIDTH = 0.090
     BOARD_GAP = 0.005
-
-    PILE_SIZE = 0.15
+   
     PILE_HEIGHT_ABOVE_GROUND = 0.4
     PILE_DEPTH_BELOW_GROUND = 0.6
-    BEARER_SIZE = (0.150, 0.200)
+    
     JOIST_SIZE = (0.090, 0.190)
     JOIST_SPACING = 0.45
 
-    north_wall_y = oy + building_width / 2 - north_recess
-    deck_start_y = north_wall_y + 1.0
+    #north_wall_y = oy + building_width / 2 - north_recess
+    deck_start_y = oy
     deck_end_y = deck_start_y + DECK_EXTENSION
     deck_center_y = (deck_start_y + deck_end_y) / 2
 
@@ -100,6 +97,16 @@ def build_north_deck(origin=(0, 0, 0), building_length=9.0, building_width=7.0, 
         joist.scale = (JOIST_SIZE[0] / 2, DECK_EXTENSION / 2, JOIST_SIZE[1] / 2)
         bpy.ops.object.transform_apply(scale=True)
         joist.data.materials.append(structure_mat)
+
+    if add_boundary_joist:
+        # Optional rim/boundary joist along the north deck edge.
+        boundary_joist_y = deck_end_y - JOIST_SIZE[0] / 2
+        bpy.ops.mesh.primitive_cube_add(location=(deck_center_x, boundary_joist_y, joist_z))
+        boundary_joist = bpy.context.active_object
+        boundary_joist.name = "Deck_BoundaryJoist_North"
+        boundary_joist.scale = (building_length / 2, JOIST_SIZE[0] / 2, JOIST_SIZE[1] / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        boundary_joist.data.materials.append(structure_mat)
 
     deck_surface_z = oz + DECK_HEIGHT_OFFSET + PILE_HEIGHT_ABOVE_GROUND + JOIST_SIZE[1] + DECK_THICKNESS / 2
     num_boards = int(DECK_EXTENSION / (DECK_BOARD_WIDTH + BOARD_GAP)) + 1

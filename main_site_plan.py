@@ -593,7 +593,8 @@ foundation = ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
-main_dwelling_module.build_north_deck(origin=(0, -1, 0.2))
+main_dwelling_module.build_north_deck(origin=(0, 1.8, 0.15))
+main_dwelling_module.build_north_deck(origin=(0, 1.8, 2.8), DECK_EXTENSION=0.8, PILE_SIZE=0.0, BEARER_SIZE = (0.0, 0.0), add_boundary_joist = True)  # upper level deck
 
 # 1b. Build boulder row along south edge of clearing
 #outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)

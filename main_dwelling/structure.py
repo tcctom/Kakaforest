@@ -819,10 +819,11 @@ def _create_floors3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
 def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
     """Create ground floor and first floor slabs with laminate texture on top surfaces only."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
+    recessed_width = 0.85
 
     floor_length = LENGTH - 2 * EXTERIOR_WALL_THICKNESS
-    floor_width = WIDTH - EXTERIOR_WALL_THICKNESS
-    floor_center_y = oy + EXTERIOR_WALL_THICKNESS / 2
+    floor_width = WIDTH - EXTERIOR_WALL_THICKNESS - recessed_width
+    floor_center_y = oy + EXTERIOR_WALL_THICKNESS / 2 - recessed_width / 2
 
     laminate_mat = create_laminate_floor_material()
     white_ceiling_mat = create_material("WhiteCeiling", (1.0, 1.0, 1.0, 1.0))
