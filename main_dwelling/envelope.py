@@ -57,7 +57,7 @@ def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
         south_rafter = bpy.context.active_object
         south_rafter.name = f"MainDwelling_Rafter_South_{i + 1:02d}"
         south_rafter.scale = (rafter_width / 2, rafter_run / 2, rafter_depth / 2)
-        south_rafter.rotation_euler[0] = -pitch_rad
+        south_rafter.rotation_euler[0] = pitch_rad
         bpy.ops.object.transform_apply(scale=True, rotation=True)
         south_rafter.data.materials.append(framing_mat)
 
@@ -67,7 +67,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     window_z_first = first_floor_z + 1.2
 
-    north_wall_y = oy + WIDTH / 2 - NORTH_RECESS + EXTERIOR_WALL_THICKNESS / 2
+    north_wall_y = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS / 2 + 0.01
     north_wall_outer_face = north_wall_y + EXTERIOR_WALL_THICKNESS / 2
     south_wall_y = oy - WIDTH / 2
 

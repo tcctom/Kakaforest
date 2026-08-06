@@ -355,7 +355,7 @@ def _furnish_guest_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, N
     """
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
-    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS
 
 
     BED_WIDTH = 1.6
@@ -386,7 +386,7 @@ def _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, 
     """
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
-    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     first_floor_top = first_floor_z + FIRST_FLOOR_SLAB_THICKNESS
 

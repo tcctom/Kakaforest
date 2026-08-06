@@ -78,7 +78,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
 
     if option == 4:
         _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
-        _create_staircase_southmiddle4( ox+1.7, oy-2.05, oz+0.1, floor_mat, )
+        _create_staircase_southmiddle4( ox+1.7, oy-2.19, oz+0.1, floor_mat, )
         build_porch_south_side(
             ox,
             oy,

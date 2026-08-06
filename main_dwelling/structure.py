@@ -12,8 +12,10 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
 
     interior_wall_mat = get_interior_wall_material()
+    print(f"Creating exterior walls at origin ({ox}, {oy}, {oz}) with dimensions: WIDTH={WIDTH}, ENCLOSED_WIDTH={ENCLOSED_WIDTH}, LENGTH={LENGTH}, GROUND_FLOOR_HEIGHT={GROUND_FLOOR_HEIGHT}, FIRST_FLOOR_HEIGHT={FIRST_FLOOR_HEIGHT}, EXTERIOR_WALL_THICKNESS={EXTERIOR_WALL_THICKNESS}, NORTH_RECESS={NORTH_RECESS}")
+    print(f"oy : {oy}, WIDTH: {WIDTH}, NORTH_RECESS: {NORTH_RECESS}, EXTERIOR_WALL_THICKNESS: {EXTERIOR_WALL_THICKNESS}")
+    north_wall_y = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS / 2 + 0.01
 
-    north_wall_y = oy + WIDTH / 2 - NORTH_RECESS + EXTERIOR_WALL_THICKNESS / 2
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, oz + GROUND_FLOOR_HEIGHT / 2))
     north_wall_ground = bpy.context.active_object
     north_wall_ground.name = "MD_GF_NorthWall"
@@ -52,10 +54,11 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_ground.data.materials.append(interior_wall_mat)
     west_wall_ground.data.polygons[2].material_index = 1
 
-    bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, first_floor_z + FIRST_FLOOR_HEIGHT / 2))
+    north_wall_first_height = FIRST_FLOOR_HEIGHT + 0.65
+    bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, first_floor_z + north_wall_first_height / 2))
     north_wall_first = bpy.context.active_object
     north_wall_first.name = "MD_FF_NorthWall"
-    north_wall_first.scale = (LENGTH / 2, EXTERIOR_WALL_THICKNESS / 2, FIRST_FLOOR_HEIGHT / 2)
+    north_wall_first.scale = (LENGTH / 2, EXTERIOR_WALL_THICKNESS / 2, north_wall_first_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     north_wall_first.data.materials.append(potius_mat)
     north_wall_first.data.materials.append(interior_wall_mat)
@@ -819,7 +822,7 @@ def _create_floors3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
 def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
     """Create ground floor and first floor slabs with laminate texture on top surfaces only."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
-    recessed_width = 0.85
+    recessed_width = 1
 
     floor_length = LENGTH - 2 * EXTERIOR_WALL_THICKNESS
     floor_width = WIDTH - EXTERIOR_WALL_THICKNESS - recessed_width

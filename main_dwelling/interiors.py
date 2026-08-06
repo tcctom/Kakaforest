@@ -34,7 +34,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
-    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS
     ground_floor_wall_height = GROUND_FLOOR_HEIGHT - FLOOR_SLAB_THICKNESS
 
     west_partition_x = east_interior_face - GUEST_BEDROOM_WIDTH - INTERIOR_WALL_THICKNESS / 2
@@ -232,7 +232,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
     create_floor_covering(name="Floor_A"
-                          , location=(3.3,-3.05,FLOOR_TOP+0.001), size=(2.05,2.7)
+                          , location=(3.3,-3.2,FLOOR_TOP+0.001), size=(2.05,2.7)
                           , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
                           ,texture_image_width=0.5
                           )
@@ -254,7 +254,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         ENSUITE_DEPTH = 2.0
         ENSUITE_WIDTH = 2.05
 
-    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS
+    north_interior_face = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
 
