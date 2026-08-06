@@ -1,8 +1,8 @@
 import os
 
 # Core dimensions (meters)
-WIDTH = 7.2
-ENCLOSED_WIDTH = 6.0
+WIDTH = 7.4
+ENCLOSED_WIDTH = 6.0  #should be WIDTH minus NORTH_RECESS minus 2 * EXTERIOR_WALL_THICKNESS
 LENGTH = 9.0
 NORTH_RECESS = 1.0
 
