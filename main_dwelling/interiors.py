@@ -47,7 +47,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
         size=(INTERIOR_WALL_THICKNESS, GUEST_BEDROOM_DEPTH, ground_floor_wall_height),
     )
     add_door( "MD_GF_GuestBedroomWestWall", (west_partition_x - INTERIOR_WALL_THICKNESS / 2, oy + 1.6, FLOOR_TOP),
-        width=1.5, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X', open_angle_degrees=10, hinge_side='left',
+        width=1.5, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X', open_angle_degrees=0, hinge_side='left',
     )
 
     create_interior_wall( name="MD_GF_GuestBedroomSouthWall",

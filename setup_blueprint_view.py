@@ -654,6 +654,7 @@ def show_ground_floor_plan(option=1):
     create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
     create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
 
+    # east face
     create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=2.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
     create_dimension_line((4.5, 1.5), (4.5, -4.5), offset=1.6, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
     create_dimension_line((4.5, 1.5), (4.5, -1.75), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
@@ -710,6 +711,8 @@ def show_first_floor_plan(option=1):
         create_room_label('HWC', (0.2, -1.0, 3.8), size=0.3)
         create_room_label('sleep\ncave\n2mx1m', (0.1, 0.7, 3.8), size=0.3)
 
+    if option == 4:
+        create_room_label('HWC', (0.2, -0.8, 3.8), size=0.3)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -720,8 +723,10 @@ def show_first_floor_plan(option=1):
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="north_wall")
-    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=1.6, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.55), (4.5, -2.3), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_length")
+
+    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.6, text_size=0.3, z_height=3.8, name_suffix="east_wall")
+    create_dimension_line((4.5, 1.5), (4.5, -2.45), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+    create_dimension_line((4.5, -2.55), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
@@ -729,7 +734,9 @@ def show_first_floor_plan(option=1):
     if option == 3:
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
-
+    if option == 4:
+        create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")

@@ -83,11 +83,11 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_NorthWall", (ox - LENGTH / 4, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MD_FF_NorthWall", (ox + LENGTH / 4, north_wall_outer_face, window_z_first+0.5), width=1.8, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
-    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 1.5, oz + 1.65), width=1.5, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.5, oz + 1.65), width=0.9, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 1.0, oz + 1.65), width=1.5, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.6, oz + 1.65), width=0.9, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
-    add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 1.5, first_floor_z + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.5, first_floor_z + 1.5), width=0.9, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 1.0, first_floor_z + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.6, first_floor_z + 1.5), width=0.9, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, first_floor_z + 1.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
