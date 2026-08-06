@@ -2,7 +2,64 @@ import bpy  # type: ignore
 import math
 
 from materials import get_metal_roof_material
+from main_dwelling.materials_nodes import create_material
 from utils import add_window, add_door
+
+
+def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH):
+    """Add a ridge beam and paired rafters under the flush gable roof."""
+    ridge_height = oz + TOTAL_HEIGHT + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH))
+    pitch_rad = math.radians(ROOF_PITCH)
+
+    framing_mat = create_material("RoofFramingTimber", (0.55, 0.40, 0.25, 1.0))
+
+    ridge_beam_height = 0.18
+    ridge_beam_width = 0.10
+    ridge_beam_z = ridge_height - ridge_beam_height / 2 - 0.03
+
+    bpy.ops.mesh.primitive_cube_add(location=(ox, oy, ridge_beam_z))
+    ridge_beam = bpy.context.active_object
+    ridge_beam.name = "MainDwelling_RidgeBeam"
+    ridge_beam.scale = (LENGTH / 2, ridge_beam_width / 2, ridge_beam_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    ridge_beam.data.materials.append(framing_mat)
+
+    rafter_width = 0.06
+    rafter_depth = 0.14
+    rafter_spacing = 0.65
+    rafter_setback = 0.12
+
+    north_eave_y = oy + WIDTH / 2
+    south_eave_y = oy - WIDTH / 2
+    rafter_run = (WIDTH / 2) / math.cos(pitch_rad)
+
+    rafter_count = max(2, int((LENGTH - 2 * rafter_setback) / rafter_spacing) + 1)
+    start_x = ox - (LENGTH / 2) + rafter_setback
+    end_x = ox + (LENGTH / 2) - rafter_setback
+    actual_spacing = (end_x - start_x) / (rafter_count - 1)
+
+    rafter_north_center_y = (oy + north_eave_y) / 2
+    rafter_south_center_y = (oy + south_eave_y) / 2
+    rafter_center_z = ridge_height - ((WIDTH / 4) * math.tan(pitch_rad)) - (rafter_depth / 2) - 0.02
+
+    for i in range(rafter_count):
+        rafter_x = start_x + (i * actual_spacing)
+
+        bpy.ops.mesh.primitive_cube_add(location=(rafter_x, rafter_north_center_y, rafter_center_z))
+        north_rafter = bpy.context.active_object
+        north_rafter.name = f"MainDwelling_Rafter_North_{i + 1:02d}"
+        north_rafter.scale = (rafter_width / 2, rafter_run / 2, rafter_depth / 2)
+        north_rafter.rotation_euler[0] = -pitch_rad
+        bpy.ops.object.transform_apply(scale=True, rotation=True)
+        north_rafter.data.materials.append(framing_mat)
+
+        bpy.ops.mesh.primitive_cube_add(location=(rafter_x, rafter_south_center_y, rafter_center_z))
+        south_rafter = bpy.context.active_object
+        south_rafter.name = f"MainDwelling_Rafter_South_{i + 1:02d}"
+        south_rafter.scale = (rafter_width / 2, rafter_run / 2, rafter_depth / 2)
+        south_rafter.rotation_euler[0] = -pitch_rad
+        bpy.ops.object.transform_apply(scale=True, rotation=True)
+        south_rafter.data.materials.append(framing_mat)
 
 
 def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=1):
@@ -200,6 +257,8 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
 
         obj.data.materials.append(roof_mat)
         obj.data.materials.append(gable_material)
+
+        _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
 
         for i, face in enumerate(mesh.polygons):
             if i < 2:

@@ -11,8 +11,8 @@ def add_first_floor_balcony_railing(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIG
     FIRST_FLOOR_SLAB_THICKNESS = 0.2
 
     # Railing position - along north edge of first floor balcony
-    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS
-    railing_y = oy + WIDTH / 2  # At the north edge of the balcony (1m north of recessed wall)
+    first_floor_top = oz + GROUND_FLOOR_HEIGHT + FIRST_FLOOR_SLAB_THICKNESS - 0.05
+    railing_y = oy + WIDTH / 2 - 0.04 # At the north edge of the balcony (1m north of recessed wall)
     railing_west_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS  # Inside west wall
     railing_east_x = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS  # Inside east wall
     railing_length = railing_east_x - railing_west_x
