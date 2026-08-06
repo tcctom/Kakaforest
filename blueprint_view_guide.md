@@ -21,6 +21,7 @@ The `setup_blueprint_view.py` script creates a professional architectural floor 
 or 
    ```python
    exec(open(r"C:\Users\Tom (local)\GH\Kakaforest\setup_blueprint_view.py").read())
+   exec(open(r"C:\Users\Tom\source\Kakaforest\Kakaforest\setup_blueprint_view.py").read())
    ```
 
 

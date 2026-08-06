@@ -652,10 +652,12 @@ def show_ground_floor_plan(option=1):
     # north face
     create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
     create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
-    create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_estwest_width")
+    create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
 
-    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=1.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.6), (4.5, -1.7), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
+    create_dimension_line((4.5, 2.6), (4.5, -4.6), offset=2.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
+    create_dimension_line((4.5, 1.6), (4.5, -4.4), offset=1.6, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
+    create_dimension_line((4.5, 1.6), (4.5, -1.65), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
+    create_dimension_line((4.5, -1.77), (4.5, -4.4), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
 
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")

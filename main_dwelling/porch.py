@@ -391,7 +391,7 @@ def build_porch_south_side(
     porch_wall_z = floor_top + porch_wall_height / 2 
     porch_south_wall = create_porch_wall( name="MD_GF_SouthExtension",
         location=(ox + 0.5, south_wall_outer_y - PORCH_DEPTH, porch_wall_z-0.1),
-        size=(4.2, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.3),        exterior_mat=exterior_mat, interior_face_index=1, )
+        size=(4.15, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.3),        exterior_mat=exterior_mat, interior_face_index=1, )
     porch_east_wall = create_porch_wall( name="MD_GF_SouthExtension2",
         location=(ox + 2.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
         size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
