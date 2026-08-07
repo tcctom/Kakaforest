@@ -193,32 +193,39 @@ def create_section_cutter(cut_height):
     return cutter
 
 
-def apply_section_to_all_objects(cut_height):
+def apply_section_to_all_objects(cut_height, hide_site_elements=True):
     """
     Apply boolean difference modifiers to all mesh objects using section cutter.
     This physically removes geometry above the cut height to reveal interiors.
     Uses smart ordering to preserve windows/doors.
-    Also hides deck/verandah objects that clutter the floor plan.
+    Optionally hides deck/verandah/site objects that clutter the floor plan.
+
+    Args:
+        cut_height: Section cut height in meters.
+        hide_site_elements: If True, hide deck/site objects using keyword matching.
     """
     # Hide deck and verandah objects from view (they clutter floor plans)
     # BUT NOT walls that might have these keywords
     # Also hide terrain, boulders, and site elements
-    hide_keywords = ['deck', 'Deck', 'verandah', 'Verandah', 'Pile', 'Bearer', 'Joist',
-                     'Boulder', 'boulder', 'Terrain', 'terrain', 'Ground_', 'Gravel',
-                     'WaterTank', 'Pavers']
-    hidden_count = 0
-    for obj in bpy.data.objects:
-        if obj.type == 'MESH':
-            # Skip if it's a wall object
-            if 'Wall' in obj.name or 'wall' in obj.name:
-                continue
-            for keyword in hide_keywords:
-                if keyword in obj.name:
-                    obj.hide_viewport = True
-                    obj.hide_render = True
-                    hidden_count += 1
-                    break
-    print(f"  Hidden {hidden_count} deck/terrain/site objects")
+    if hide_site_elements:
+        hide_keywords = ['deck', 'Deck', 'verandah', 'Verandah', 'Pile', 'Bearer', 'Joist',
+                         'Boulder', 'boulder', 'Terrain', 'terrain', 'Ground_', 'Gravel',
+                         'WaterTank', 'Pavers', 'Driveway']
+        hidden_count = 0
+        for obj in bpy.data.objects:
+            if obj.type == 'MESH':
+                # Skip if it's a wall object
+                if 'Wall' in obj.name or 'wall' in obj.name:
+                    continue
+                for keyword in hide_keywords:
+                    if keyword in obj.name:
+                        obj.hide_viewport = True
+                        obj.hide_render = True
+                        hidden_count += 1
+                        break
+        print(f"  Hidden {hidden_count} deck/terrain/site objects")
+    else:
+        print("  Keeping deck/terrain/site objects visible")
     
     # FIRST: Enable wireframe on ALL mesh objects for edge visibility
     # EXCEPT the background plane and labels
@@ -303,7 +310,7 @@ def remove_section_from_all_objects():
     # Restore visibility of deck/verandah/terrain objects
     hide_keywords = ['deck', 'Deck', 'verandah', 'Verandah', 'Pile', 'Bearer', 'Joist',
                      'Boulder', 'boulder', 'Terrain', 'terrain', 'Ground_', 'Gravel',
-                     'WaterTank', 'Pavers']
+                     'WaterTank', 'Pavers', 'Driveway']
     for obj in bpy.data.objects:
         if obj.type == 'MESH':
             for keyword in hide_keywords:
@@ -580,7 +587,7 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
     return created_objects
 
 
-def show_ground_floor_plan(option=1):
+def show_ground_floor_plan(option=1, hide_site_elements=False):
     """
     ONE-COMMAND setup for ground floor plan view.
     Switches camera, applies section cutting, and adds default labels.
@@ -619,7 +626,7 @@ def show_ground_floor_plan(option=1):
     create_white_background_plane()
     
     print("Applying section cut to reveal interior walls...")
-    apply_section_to_all_objects(1.7)  # Slightly higher to avoid deck edge issues
+    apply_section_to_all_objects(1.7, hide_site_elements)  # Slightly higher to avoid deck edge issues
     
     # Add sample labels (customize these for your actual rooms)
     print("\nAdding room labels...")
@@ -681,7 +688,7 @@ def show_ground_floor_plan(option=1):
     print("="*60)
 
 
-def show_first_floor_plan(option=1):
+def show_first_floor_plan(option=1, hide_site_elements=False):
     """
     ONE-COMMAND setup for first floor plan view.
     Switches camera, applies section cutting, and adds default labels.
@@ -696,7 +703,7 @@ def show_first_floor_plan(option=1):
     
     # Apply section cutting at 4.0m
     print("Applying section cut to reveal interior walls...")
-    apply_section_to_all_objects(4.0)
+    apply_section_to_all_objects(4.0, hide_site_elements)
     
     # Add sample labels
     print("\nAdding room labels...")
