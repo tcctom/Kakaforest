@@ -280,6 +280,94 @@ def create_corrugated_iron_material():
     
     return mat
 
+
+def _get_white_four_panel_door_material(axis='Y'):
+    """
+    Returns a painted white door leaf material with a procedural 4-panel look.
+    Axis-specific variants keep panel direction correct for both Y and X walls.
+    """
+    axis_key = 'Y' if axis == 'Y' else 'X'
+    mat_name = f"DoorLeaf_White_4Panel_{axis_key}"
+    mat = bpy.data.materials.get(mat_name) or bpy.data.materials.new(name=mat_name)
+    mat.use_nodes = True
+
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+
+    output = nodes.new(type='ShaderNodeOutputMaterial')
+    bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+    texcoord = nodes.new(type='ShaderNodeTexCoord')
+    mapping = nodes.new(type='ShaderNodeMapping')
+    sep_xyz = nodes.new(type='ShaderNodeSeparateXYZ')
+    combine_xyz = nodes.new(type='ShaderNodeCombineXYZ')
+    brick = nodes.new(type='ShaderNodeTexBrick')
+    ramp = nodes.new(type='ShaderNodeValToRGB')
+    bump = nodes.new(type='ShaderNodeBump')
+
+    # Simple layout for readability in the shader editor.
+    texcoord.location = (-900, 0)
+    mapping.location = (-720, 0)
+    sep_xyz.location = (-560, -180)
+    combine_xyz.location = (-380, -20)
+    brick.location = (-180, 20)
+    ramp.location = (40, -120)
+    bump.location = (240, -120)
+    bsdf.location = (440, 20)
+    output.location = (650, 20)
+
+    # Use generated coordinates so the panel texture fits each door object bounds.
+    mapping.inputs['Scale'].default_value = (1.0, 1.0, 1.0)
+
+    # Align width/height mapping to the visible door face for each axis.
+    if axis_key == 'Y':
+        # Door width is local X; height is local Z.
+        links.new(sep_xyz.outputs['X'], combine_xyz.inputs['X'])
+        links.new(sep_xyz.outputs['Z'], combine_xyz.inputs['Y'])
+    else:
+        # Door width is local Y; height is local Z.
+        links.new(sep_xyz.outputs['Y'], combine_xyz.inputs['X'])
+        links.new(sep_xyz.outputs['Z'], combine_xyz.inputs['Y'])
+
+    combine_xyz.inputs['Z'].default_value = 0.0
+
+    # Brick texture configured as 2x2 panel blocks with narrow grooves.
+    brick.offset = 0.0
+    brick.offset_frequency = 1
+    brick.squash = 1.0
+    brick.squash_frequency = 1
+    brick.inputs['Scale'].default_value = 2.0
+    brick.inputs['Mortar Size'].default_value = 0.03
+    brick.inputs['Mortar Smooth'].default_value = 0.0
+    brick.inputs['Brick Width'].default_value = 0.44
+    brick.inputs['Row Height'].default_value = 0.44
+    brick.inputs['Color1'].default_value = (0.98, 0.98, 0.98, 1.0)
+    brick.inputs['Color2'].default_value = (0.93, 0.93, 0.93, 1.0)
+    brick.inputs['Mortar'].default_value = (0.74, 0.74, 0.74, 1.0)
+
+    # Convert panel boundaries to a subtle groove normal.
+    ramp.color_ramp.elements[0].position = 0.12
+    ramp.color_ramp.elements[0].color = (0.0, 0.0, 0.0, 1.0)
+    ramp.color_ramp.elements[1].position = 0.42
+    ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1.0)
+    bump.inputs['Strength'].default_value = 0.12
+    bump.inputs['Distance'].default_value = 0.02
+    bump.invert = True
+
+    bsdf.inputs['Roughness'].default_value = 0.4
+    bsdf.inputs['Specular IOR Level'].default_value = 0.35
+
+    links.new(texcoord.outputs['Generated'], mapping.inputs['Vector'])
+    links.new(mapping.outputs['Vector'], sep_xyz.inputs['Vector'])
+    links.new(combine_xyz.outputs['Vector'], brick.inputs['Vector'])
+    links.new(brick.outputs['Color'], bsdf.inputs['Base Color'])
+    links.new(brick.outputs['Fac'], ramp.inputs['Fac'])
+    links.new(ramp.outputs['Color'], bump.inputs['Height'])
+    links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+
+    return mat
+
 def add_corner_trim(origin, width, depth, height, trim_width=0.15, trim_depth=0.02):
     """
     Adds white corner trim planks to all 4 exterior corners of a building.
@@ -405,12 +493,7 @@ def add_door(
         door.location.y = hinge_y + rotated_dy
         door.rotation_euler[2] = theta
 
-    door_mat = bpy.data.materials.get("DoorLeaf") or bpy.data.materials.new(name="DoorLeaf")
-    door_mat.use_nodes = True
-    bsdf = door_mat.node_tree.nodes.get("Principled BSDF")
-    if bsdf:
-        bsdf.inputs['Base Color'].default_value = (0.35, 0.22, 0.12, 1.0)
-        bsdf.inputs['Roughness'].default_value = 0.45
+    door_mat = _get_white_four_panel_door_material(axis=axis)
 
     if not door.data.materials:
         door.data.materials.append(door_mat)

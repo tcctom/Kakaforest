@@ -437,7 +437,7 @@ def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
 
 
     create_balustrade(name="MD_StaircaseRail_BothFloors"
-                      , location=(1.22, -3.4, FLOOR_TOP+0.75)
+                      , location=(1.22, -3.6, FLOOR_TOP+0.75)
                       , size=(INTERIOR_WALL_THICKNESS, 2.2, 1.0), rise_top=1.85, rise_bottom=1.85
                       , rotation_z=90.0
                       )
@@ -453,8 +453,8 @@ def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
     )
     create_balustrade(
         name="MD_Staircase_Balustrade_Upstairs_2",
-        location=(-0.95, -3.4, oz + 2.7),
-        size=(INTERIOR_WALL_THICKNESS, 0.2, 1.0), 
+        location=(-0.95, -3.6, oz + 2.7),
+        size=(INTERIOR_WALL_THICKNESS, 0.4, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
     )
 

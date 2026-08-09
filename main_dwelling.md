@@ -130,6 +130,22 @@ Shower in north west corner and stepping in from east. toilet in south west corn
 ### Guest bedroom
 This will be in the north east corner of the ground floor. east west width 4 meters. north south length 3 meters. built in wardrobe the full 3 meter length on the west side. internal door on the south wall just clear of the wardrobe.
 
+## Services
+### Water
+#### Notes for AI
+Can you help us design the water intake for our new off grid dwelling near St Arnaud, Tasman, Nelson?
+We already have a reliable gravity fed pipe at the site that takes water from the creek on our boundary.
+You can see in the attached image that I have two 25000 liter tanks west of the property and a small tank at the property on the east side of our porch and utility area. There is a downstairs and upstairs bathroom on the south east corner of the dwelling near that tank.
+What do you think? 
+Currently the base of the 25000l tanks is about the same elevation as the ground floor of the house. Would it be better to use rain water or creek water or both? Are there any potential cost savings to consider and are you aware of the Tasman District Council rules?
+What contracters would you recommend to help us sort this? Would they also be the same people that could help us with the septic and waster?
+Great. I like the sound of Chethams & Co Drainlaying. Smaller family owned business in Richmond. We are considering underfloor heating too though. So should we be looking for someone to sort all three areas?
+
+
+### Electricity   
+We are about 100 meters from grid power but we prefer the idea of being fully off grid.
+
+
 ## Landscaping
 Create a timber deck extending 3 meters north from the north edge of our ground floor. It will be built with piles, bearers, joists and 90mm x 25mm decking. Joist hangers will be used to connect the deck to the buildin, so don't need a bearer there. please use this texture for the decking:
  textures/knotted-timber-staggered-1995-mm-architextures.jpg

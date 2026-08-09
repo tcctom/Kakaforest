@@ -356,27 +356,27 @@ def build_porch_south_side(
     exterior_mat,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
-    PORCH_LENGTH = 7.0  # West-to-east run
+    PORCH_LENGTH = 7.1  # West-to-east run
+    PORCH_DECK_LENGTH = 2.9  # West-to-east run
     PORCH_DEPTH = 1.7  # South projection depth
     PORCH_ROOF_PITCH = 20
-    PORCH_ROOF_OVERHANG = 0.1
+    PORCH_ROOF_OVERHANG = 0.01
     PORCH_EXTERIOR_WALL_THICKNESS = 0.15
     PORCH_INTERIOR_WALL_THICKNESS = 0.11
 
-    west_edge_x = ox - 4.4
+    porch_west_x = ox - LENGTH / 2
     south_wall_outer_y = oy - WIDTH / 2
     porch_roof_high_height = oz + 2.6
 
-    porch_west_x = west_edge_x
     porch_east_x = porch_west_x + PORCH_LENGTH
-    porch_center_x = (porch_west_x + porch_east_x) / 2
+    porch_deck_center_x = porch_west_x + PORCH_DECK_LENGTH / 2
     porch_center_y = south_wall_outer_y - PORCH_DEPTH / 2
     floor_top = oz - 0.1
 
-    bpy.ops.mesh.primitive_cube_add(location=(porch_center_x, porch_center_y, oz-0.15 ))
+    bpy.ops.mesh.primitive_cube_add(location=(porch_deck_center_x, porch_center_y, oz-0.25 ))
     porch_deck = bpy.context.active_object
-    porch_deck.name = "MainDwelling_PorchDeck_South"
-    porch_deck.scale = (PORCH_LENGTH / 2, PORCH_DEPTH / 2, 0.05)
+    porch_deck.name = "MD_PorchDeck_South"
+    porch_deck.scale = (PORCH_DECK_LENGTH / 2, PORCH_DEPTH / 2, 0.05)
     bpy.ops.object.transform_apply(scale=True)
 
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)

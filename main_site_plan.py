@@ -582,14 +582,9 @@ if SHOW_GROUND and linz_terrain:
 # 1c. Pavers extending east from cottage
 #outdoor_structures.build_pavers_east(origin=(27, -56, -7.55))
 
-
-# 1a. Build Main Dwelling
-# Now located at origin (0, 0, 0)
-# This is the new two-story 6m × 8m main dwelling structure
-# Roof options: 
-#   - "traditional": Overhang on all sides, separate gable end triangles
-#   - "flush": Flush with all walls, north side extends 1m down for balcony shading
-foundation = ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
+#main dwelling clearing with gravel finish
+ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
+ground_module.gravel_plane(ground_module.grid_points((2.56, -3.8, 0.2), (-1.55, -6.48, 0.2)),thickness=0.4)
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
@@ -637,13 +632,13 @@ if option == 1:
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 3 or option == 4:
-    outdoor_structures.build_water_tank(origin=(3.1, -5.1, -0.0), diameter=0.9, height=2.0)
+    outdoor_structures.build_water_tank(origin=(3.3, -5.25, 0.1), diameter=0.9, height=2.0)
 
 from driveway import create_sloping_driveway  
 
 path_points_dwelling_drive = [
-        mathutils.Vector((4.5, -6.5, 0.0)),       
-        mathutils.Vector((-3.0, -6.5, 0.0)),       
+        mathutils.Vector((4.5, -6.5, -0.10)),       
+        mathutils.Vector((-3.0, -6.5, -0.10)),       
         mathutils.Vector((-7.9, -6.2, -0.15)),       
         mathutils.Vector((-12, -2.4, -1.2)),       
         mathutils.Vector((-17, -1.9, -1.7)),       

@@ -587,7 +587,7 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
     return created_objects
 
 
-def show_ground_floor_plan(option=1, hide_site_elements=False):
+def show_ground_floor_plan(option=1, hide_site_elements=True):
     """
     ONE-COMMAND setup for ground floor plan view.
     Switches camera, applies section cutting, and adds default labels.
@@ -647,6 +647,7 @@ def show_ground_floor_plan(option=1, hide_site_elements=False):
         create_room_label('Hall', (1.2, -3, 1.3), size=0.4)
     if option == 4:
         create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
+        create_room_label('Utility', (1.7, -5.5, 1.3), size=0.4)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -657,15 +658,20 @@ def show_ground_floor_plan(option=1, hide_site_elements=False):
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     # north face
-    create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
+    create_dimension_line((-4.5, 2.0), (4.5, 2.0), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
     create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
     create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
 
     # east face
-    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=2.6, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.5), (4.5, -4.5), offset=1.6, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
+    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="east_wall")
+    create_dimension_line((4.5, 1.5), (4.5, -4.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
     create_dimension_line((4.5, 1.5), (4.5, -1.75), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
     create_dimension_line((4.5, -1.85), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
+
+    if option == 4:
+        create_dimension_line((4.5, -4.7), (4.5, -6.45), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
+        create_dimension_line((-4.5, -6.5), (2.6, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
+
 
     print("\n" + "="*60)
     print("✓ GROUND FLOOR PLAN READY!")
@@ -688,7 +694,7 @@ def show_ground_floor_plan(option=1, hide_site_elements=False):
     print("="*60)
 
 
-def show_first_floor_plan(option=1, hide_site_elements=False):
+def show_first_floor_plan(option=1, hide_site_elements=True):
     """
     ONE-COMMAND setup for first floor plan view.
     Switches camera, applies section cutting, and adds default labels.
@@ -729,9 +735,9 @@ def show_first_floor_plan(option=1, hide_site_elements=False):
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
-    create_dimension_line((-4.5, 2.6), (4.5, 2.6), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="north_wall")
+    create_dimension_line((-4.5, 2.5), (4.5, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
 
-    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.6, text_size=0.3, z_height=3.8, name_suffix="east_wall")
+    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
     create_dimension_line((4.5, 1.5), (4.5, -2.45), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
     create_dimension_line((4.5, -2.55), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
 
@@ -742,8 +748,8 @@ def show_first_floor_plan(option=1, hide_site_elements=False):
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
-        create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
+        create_dimension_line((-4.3, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((0.8, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")
