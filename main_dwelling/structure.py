@@ -839,6 +839,7 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
 
     laminate_mat = create_laminate_floor_material()
     laminate_mat_darker = create_laminate_floor_material(tone='darker')
+    laminate_mat_lighter = create_laminate_floor_material(tone='lighter')
     white_ceiling_mat = create_material("WhiteCeiling", (1.0, 1.0, 1.0, 1.0))
 
     bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, oz + 0.05))
@@ -929,7 +930,7 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     first_floor_slab.name = "MD_FirstFloor"
 
     first_floor_slab.data.materials.append(floor_mat)
-    first_floor_slab.data.materials.append(laminate_mat_darker)
+    first_floor_slab.data.materials.append(laminate_mat_lighter)
     first_floor_slab.data.materials.append(white_ceiling_mat)
 
     for i, poly in enumerate(first_floor_slab.data.polygons):

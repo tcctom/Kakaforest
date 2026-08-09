@@ -738,8 +738,9 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     create_dimension_line((-4.5, 2.5), (4.5, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
 
     create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.5), (4.5, -2.45), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
-    create_dimension_line((4.5, -2.55), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
+    create_dimension_line((4.5, 1.5), (4.5, -2.4), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+    create_dimension_line((4.5, -2.5), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
+    create_dimension_line((2.3, -4.7), (4.3, -4.7), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="bath_eastwest_length")
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")

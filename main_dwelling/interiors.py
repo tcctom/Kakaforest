@@ -285,7 +285,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.225, south_interior_face + ENSUITE_DEPTH - 0.7, first_floor_top + first_floor_wall_height / 2),
             size=(1.55, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
-    bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
+    bedroom_partition_y = south_interior_face + ENSUITE_DEPTH + INTERIOR_WALL_THICKNESS / 2
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
 
     if option == 1 or option == 2:
@@ -297,8 +297,8 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
             location=(bedroom_partition_center_x + 0.25, bedroom_partition_y, first_floor_top + first_floor_wall_height / 2),
             size=(MASTER_BEDROOM_WIDTH-0.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
-    ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH
-    ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2
+    ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH - INTERIOR_WALL_THICKNESS/2
+    ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2 
 
     create_wall( name="MD_FF_EnsuiteWardrobeWall",
         location=(ensuite_wardrobe_wall_x, ensuite_wardrobe_wall_center_y, first_floor_top + first_floor_wall_height / 2),
@@ -335,7 +335,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         add_opening( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.55, first_floor_top + 1.05), width=1.8, height=2.2, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     create_floor_covering(name="Ensuite_Floor"
-                          , location=(3.3,-3.55,first_floor_top+0.001), size=(2.05,2.0)
+                          , location=(3.3,-3.5,first_floor_top+0.001), size=(2.05,2.0)
                           , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
                           ,texture_image_width=0.5
                           )
