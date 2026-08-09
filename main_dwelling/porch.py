@@ -403,7 +403,7 @@ def build_porch_south_side(
         size=(PORCH_INTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
 
     porch_roof_building = south_wall_outer_y
-    porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG
+    porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG - 0.07
     porch_roof_span = abs(porch_roof_outer - porch_roof_building)
 
     porch_roof_drop = porch_roof_span * math.tan(math.radians(PORCH_ROOF_PITCH))
@@ -452,8 +452,8 @@ def build_porch_south_side(
     #bpy.ops.object.transform_apply(scale=True)
     #post_east.data.materials.append(floor_mat)
 
-    porch_roof_mesh = bpy.data.meshes.new("MainDwelling_PorchRoof_Monopitch_South")
-    porch_roof_obj = bpy.data.objects.new("MainDwelling_PorchRoof_South", porch_roof_mesh)
+    porch_roof_mesh = bpy.data.meshes.new("MD_PorchRoof_Monopitch_South")
+    porch_roof_obj = bpy.data.objects.new("MD_PorchRoof_South", porch_roof_mesh)
     bpy.context.collection.objects.link(porch_roof_obj)
 
     roof_thickness = 0.07

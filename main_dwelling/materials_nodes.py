@@ -108,17 +108,32 @@ def create_textured_material2(name, texture_path, rotation_z=0, scale=(1.0, 1.0,
     return mat
 
 
-def create_laminate_floor_material():
-    """Create or get laminate floor material with texture for top surfaces."""
-    mat = bpy.data.materials.get("LaminateFloor")
+def create_laminate_floor_material(tone='normal'):
+    """Create or get laminate floor material with optional tone adjustment.
+
+    Args:
+        tone: 'normal', 'lighter', or 'darker'. Aliases 'light' and 'dark' are supported.
+    """
+    tone_key = (tone or 'normal').strip().lower()
+    tone_aliases = {
+        'normal': 'normal',
+        'lighter': 'lighter',
+        'light': 'lighter',
+        'darker': 'darker',
+        'dark': 'darker',
+    }
+    tone_mode = tone_aliases.get(tone_key, 'normal')
+    mat_name = f"LaminateFloor_{tone_mode}"
+
+    mat = bpy.data.materials.get(mat_name)
     if mat:
-        print("DEBUG: Material 'LaminateFloor' already exists, returning cached version")
+        print(f"DEBUG: Material '{mat_name}' already exists, returning cached version")
         return mat
 
     texture_path = dwelling_config.get_texture_path("laminate_floor_02", "laminate_floor_02_diff_1k.jpg")
 
-    print(f"DEBUG: Creating new material 'LaminateFloor' with texture: {texture_path}")
-    mat = bpy.data.materials.new(name="LaminateFloor")
+    print(f"DEBUG: Creating new material '{mat_name}' with texture: {texture_path}")
+    mat = bpy.data.materials.new(name=mat_name)
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
@@ -139,12 +154,26 @@ def create_laminate_floor_material():
     mapping.location = (-600, 300)
     mapping.inputs['Scale'].default_value = (4.0, 4.0, 4.0)
 
+    bright_contrast = nodes.new(type='ShaderNodeBrightContrast')
+    bright_contrast.location = (-120, 300)
+
+    if tone_mode == 'lighter':
+        bright_contrast.inputs['Bright'].default_value = 0.18
+        bright_contrast.inputs['Contrast'].default_value = 0.04
+    elif tone_mode == 'darker':
+        bright_contrast.inputs['Bright'].default_value = -0.18
+        bright_contrast.inputs['Contrast'].default_value = 0.06
+    else:
+        bright_contrast.inputs['Bright'].default_value = 0.0
+        bright_contrast.inputs['Contrast'].default_value = 0.0
+
     tex_coord = nodes.new(type='ShaderNodeTexCoord')
     tex_coord.location = (-800, 300)
 
     links.new(tex_coord.outputs['Generated'], mapping.inputs['Vector'])
     links.new(mapping.outputs['Vector'], tex_image.inputs['Vector'])
-    links.new(tex_image.outputs['Color'], principled.inputs['Base Color'])
+    links.new(tex_image.outputs['Color'], bright_contrast.inputs['Color'])
+    links.new(bright_contrast.outputs['Color'], principled.inputs['Base Color'])
 
     principled.inputs['Roughness'].default_value = 0.4
     return mat

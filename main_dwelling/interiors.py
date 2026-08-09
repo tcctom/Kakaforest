@@ -231,7 +231,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     flue.data.materials.append(flue_mat)
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
-    create_floor_covering(name="Floor_A"
+    create_floor_covering(name="Bathroom_Floor"
                           , location=(3.3,-3.2,FLOOR_TOP+0.001), size=(2.05,2.7)
                           , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
                           ,texture_image_width=0.5
@@ -282,8 +282,8 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         create_wall( name="MD_FF_HWC_Back", location=(main_partition_x, oy + 0.55, first_floor_top + first_floor_wall_height / 2),
             size=(0.9, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
-        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.25, south_interior_face + ENSUITE_DEPTH - 0.75, first_floor_top + first_floor_wall_height / 2),
-            size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
+        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.225, south_interior_face + ENSUITE_DEPTH - 0.7, first_floor_top + first_floor_wall_height / 2),
+            size=(1.55, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
@@ -328,13 +328,17 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
         #large cupboard door
         add_door( "MD_FF_BedroomSouthPartition", (ensuite_wardrobe_wall_x - 0.75, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
-            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=15, hinge_side='left'
+            width=1.0, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=0, hinge_side='left'
         )
         
         #cave opening
-        add_opening( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.6, first_floor_top + 1.15), width=2.0, height=2.4, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
+        add_opening( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.55, first_floor_top + 1.05), width=1.8, height=2.2, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
-
+    create_floor_covering(name="Ensuite_Floor"
+                          , location=(3.3,-3.55,first_floor_top+0.001), size=(2.05,2.0)
+                          , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
+                          ,texture_image_width=0.5
+                          )
 
 
 def _create_stair_partitions(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS):
