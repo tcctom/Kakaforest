@@ -307,8 +307,8 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
     #add_window( "MD_FF_MainPartition", (main_partition_x + INTERIOR_WALL_THICKNESS / 2, oy + 2.0, first_floor_top + 1.0), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     #ensuite door
-    add_door( "MD_FF_BedroomSouthPartition", (east_interior_face - 0.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
-        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=-90, hinge_side='right'   )
+    add_door( "MD_FF_BedroomSouthPartition", (east_interior_face - 1.45, bedroom_partition_y - INTERIOR_WALL_THICKNESS / 2, first_floor_top),
+        width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y', open_angle_degrees=-90, hinge_side='left'   )
 
     if option == 1:
         #WIR door
@@ -323,7 +323,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     if option == 3 or option == 4:
         #MB main door
-        add_door( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.8, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', 
+        add_door( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy -0.9, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', 
                  open_angle_degrees=-90, hinge_side='right'   )
 
         #large cupboard door

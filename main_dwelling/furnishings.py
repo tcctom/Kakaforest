@@ -179,18 +179,18 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     )
 
     bpy.ops.mesh.primitive_cube_add(location=(east_interior_face - 0.03, bathroom_north - 0.2, FLOOR_TOP + WALL_HEIGHT / 2))
-    east_wall = bpy.context.active_object
-    east_wall.name = "MD_Bathroom_ShowerWallEast"
-    east_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
+    northsouth_wall = bpy.context.active_object
+    northsouth_wall.name = "MD_Bathroom_ShowerWallEast"
+    northsouth_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
-    east_wall.data.materials.append(tile_mat)
+    northsouth_wall.data.materials.append(tile_mat)
 
     bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, bathroom_north + 0.35, FLOOR_TOP + WALL_HEIGHT / 2))
-    north_wall = bpy.context.active_object
-    north_wall.name = "MD_Bathroom_ShowerWallNorth"
-    north_wall.scale = (0.5, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
+    eastwest_wall = bpy.context.active_object
+    eastwest_wall.name = "MD_Bathroom_ShowerWallNorth"
+    eastwest_wall.scale = (0.5, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
-    north_wall.data.materials.append(tile_mat)
+    eastwest_wall.data.materials.append(tile_mat)
 
 
     create_toilet(
@@ -231,27 +231,20 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
     chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
 
-    SHOWER_SIZE = 1.0
-    SHOWER_TRAY_HEIGHT = 0.15
+    SHOWER_SIZE = 0.9
+    SHOWER_TRAY_HEIGHT = 0 #0.15
     WALL_THICKNESS = 0.08
     WALL_HEIGHT = 2.0
 
     shower_west_edge = ensuite_west
     shower_east_edge = ensuite_west + SHOWER_SIZE
-    shower_north_edge = ensuite_north
-    shower_south_edge = ensuite_north - SHOWER_SIZE
+    shower_north_edge = ensuite_south + SHOWER_SIZE  #ensuite_north
+    shower_south_edge = ensuite_south #ensuite_north - SHOWER_SIZE
     shower_x_center = (shower_west_edge + shower_east_edge) / 2
     shower_y_center = (shower_north_edge + shower_south_edge) / 2
 
-    create_shower_tray(
-        x_center=shower_x_center,
-        y_center=shower_y_center,
-        z_bottom=first_floor_top,
-        size=SHOWER_SIZE,
-        height=SHOWER_TRAY_HEIGHT,
-        material=white_mat,
-        name_prefix="FirstFloor_Ensuite",
-    )
+    #create_shower_tray( x_center=shower_x_center, y_center=shower_y_center, z_bottom=first_floor_top,
+    #    size=SHOWER_SIZE, height=SHOWER_TRAY_HEIGHT, material=white_mat, name_prefix="FirstFloor_Ensuite", )
 
     granite_path = os.path.abspath("textures/granite_tile_03/granite_tile_03_diff_1k.jpg")
     tile_mat = create_textured_material2(
@@ -263,21 +256,21 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
         projection='BOX',
     )
 
-    west_wall_x = shower_west_edge + WALL_THICKNESS / 2
-    bpy.ops.mesh.primitive_cube_add(location=(west_wall_x-WALL_THICKNESS/2, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT / 2))
-    west_wall = bpy.context.active_object
-    west_wall.name = "MD_Ensuite_ShowerWallWest"
-    west_wall.scale = (WALL_THICKNESS / 4, SHOWER_SIZE / 2, WALL_HEIGHT / 2)
+    northsouth_wall_x = shower_west_edge + WALL_THICKNESS / 2
+    bpy.ops.mesh.primitive_cube_add(location=(northsouth_wall_x-WALL_THICKNESS/2, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT / 2))
+    northsouth_wall = bpy.context.active_object
+    northsouth_wall.name = "MD_Ensuite_ShowerWallWest"
+    northsouth_wall.scale = (WALL_THICKNESS / 4, SHOWER_SIZE / 2, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
-    west_wall.data.materials.append(tile_mat)
+    northsouth_wall.data.materials.append(tile_mat)
 
-    north_wall_y = shower_north_edge - WALL_THICKNESS / 2
-    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, north_wall_y + WALL_THICKNESS/2, first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT / 2))
-    north_wall = bpy.context.active_object
-    north_wall.name = "MD_Ensuite_ShowerWallNorth"
-    north_wall.scale = (SHOWER_SIZE / 2, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
+    eastwest_wall_y = shower_south_edge - WALL_THICKNESS / 2
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, eastwest_wall_y + WALL_THICKNESS/2, first_floor_top + SHOWER_TRAY_HEIGHT + WALL_HEIGHT / 2))
+    eastwest_wall = bpy.context.active_object
+    eastwest_wall.name = "MD_Ensuite_ShowerWallNorth"
+    eastwest_wall.scale = (SHOWER_SIZE / 2, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
-    north_wall.data.materials.append(tile_mat)
+    eastwest_wall.data.materials.append(tile_mat)
 
     glass_mat = bpy.data.materials.get("Glass")
     if not glass_mat:
@@ -310,39 +303,40 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
     east_glass.show_transparent = True
     east_glass.display_type = 'TEXTURED'
 
-    south_glass_y = shower_south_edge + glass_thickness / 2
+    north_glass_y = shower_north_edge - glass_thickness / 2
 
-    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, south_glass_y, glass_z_location))
-    south_glass = bpy.context.active_object
-    south_glass.name = "MD_Ensuite_ShowerScreenSouth"
-    south_glass.scale = (SHOWER_SIZE / 2, glass_thickness / 2, glass_height / 2)
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, north_glass_y, glass_z_location))
+    north_glass = bpy.context.active_object
+    north_glass.name = "MD_Ensuite_ShowerScreenNorth"
+    north_glass.scale = (SHOWER_SIZE / 2, glass_thickness / 2, glass_height / 2)
     bpy.ops.object.transform_apply(scale=True)
 
-    south_glass.data.materials.append(glass_mat)
-    south_glass.show_transparent = True
-    south_glass.display_type = 'TEXTURED'
+    north_glass.data.materials.append(glass_mat)
+    north_glass.show_transparent = True
+    north_glass.display_type = 'TEXTURED'
 
-    bpy.ops.mesh.primitive_uv_sphere_add(location=(west_wall_x + 0.15, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + 1.8), radius=0.1)
+    bpy.ops.mesh.primitive_uv_sphere_add(location=(northsouth_wall_x + 0.15, shower_y_center, first_floor_top + SHOWER_TRAY_HEIGHT + 1.8), radius=0.1)
     shower_head = bpy.context.active_object
     shower_head.name = "MD_Ensuite_ShowerHead"
     shower_head.data.materials.append(chrome_mat)
 
     create_toilet(
-        west_edge=ensuite_west,
+        west_edge=ensuite_west+1.2,
         south_edge=ensuite_south,
         floor_top=first_floor_top,
         material=white_mat,
         name_prefix="MD_Ensuite",
+        rotation_z_degrees=90
     )
 
     create_vanity(
         east_edge=ensuite_east - 0.05,
-        south_edge=ensuite_south - 0.05,
+        south_edge=ensuite_south +1.2,
         floor_top=first_floor_top,
         basin_material=white_mat,
         chrome_material=chrome_mat,
         name_prefix="MD_Ensuite",
-        rotation_z_degrees=270,
+        rotation_z_degrees=0,
     )
 
 def _furnish_guest_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, NORTH_RECESS):
@@ -398,7 +392,7 @@ def _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, 
     bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
 
     bed_x = east_interior_face - BED_LENGTH / 2 - 1.5
-    bed_y = north_interior_face - BED_WIDTH / 2 - 1
+    bed_y = north_interior_face - BED_WIDTH / 2 - 0.9
     bed_z = first_floor_top + BED_HEIGHT / 2
 
     bpy.ops.mesh.primitive_cube_add(location=(bed_x, bed_y, bed_z))
@@ -422,8 +416,11 @@ def create_shower_tray(x_center, y_center, z_bottom, size, height, material, nam
     return shower_tray
 
 
-def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MD"):
-    """Create a simple toilet fixture with bowl and tank from west/south room edges."""
+def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MD", rotation_z_degrees=0):
+    """Create a simple toilet fixture with bowl and tank from west/south room edges.
+
+    rotation_z_degrees rotates the toilet assembly around its center in plan.
+    """
     toilet_width = 0.4
     toilet_depth = 0.6
     toilet_height = 0.4
@@ -433,22 +430,25 @@ def create_toilet(west_edge, south_edge, floor_top, material, name_prefix="MD"):
 
     toilet_center_x = west_edge + toilet_depth / 2
     toilet_center_y = south_edge + toilet_width / 2 + south_offset
+    theta = math.radians(rotation_z_degrees)
 
     bpy.ops.mesh.primitive_cube_add(location=(toilet_center_x, toilet_center_y, floor_top + toilet_height / 2))
     toilet_bowl = bpy.context.active_object
     toilet_bowl.name = f"{name_prefix}_ToiletBowl"
     toilet_bowl.scale = (toilet_depth / 2, toilet_width / 2, toilet_height / 2)
+    toilet_bowl.rotation_euler[2] = theta
     bpy.ops.object.transform_apply(scale=True)
     toilet_bowl.data.materials.append(material)
 
-    bpy.ops.mesh.primitive_cube_add(location=(west_edge + toilet_tank_width / 2, toilet_center_y, floor_top + toilet_tank_height / 2))
+    """bpy.ops.mesh.primitive_cube_add(location=(west_edge + toilet_tank_width / 2, toilet_center_y, floor_top + toilet_tank_height / 2))
     toilet_tank = bpy.context.active_object
     toilet_tank.name = f"{name_prefix}_ToiletTank"
     toilet_tank.scale = (toilet_tank_width / 2, toilet_width / 2, toilet_tank_height / 2)
+    toilet_tank.rotation_euler[2] = theta
     bpy.ops.object.transform_apply(scale=True)
-    toilet_tank.data.materials.append(material)
+    toilet_tank.data.materials.append(material)"""
 
-    return toilet_bowl, toilet_tank
+    return toilet_bowl#, toilet_tank
 
 
 def create_vanity(east_edge, south_edge, floor_top, basin_material, chrome_material, name_prefix="MD", rotation_z_degrees=0):
