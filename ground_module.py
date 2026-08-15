@@ -50,7 +50,7 @@ def line_points(start, end, num_points=None, spacing=None):
     
     return points
 
-def grid_points(corner1, corner2, x_spacing=1.0, y_spacing=None, slope_direction='xy'):
+def grid_points(corner1, corner2, x_spacing=0.2, y_spacing=None, slope_direction='xy'):
     """
     Generate a rectangular grid of points with bilinear interpolation for slopes.
     

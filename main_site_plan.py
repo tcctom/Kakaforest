@@ -584,7 +584,7 @@ if SHOW_GROUND and linz_terrain:
 
 #main dwelling clearing with gravel finish
 ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
-ground_module.gravel_plane(ground_module.grid_points((2.65, -3.8, 0.2), (-1.55, -6.46, 0.2)),thickness=0.4)
+ground_module.gravel_plane(ground_module.grid_points((4.6, -4.2, 0.15), (-1.55, -6.56, 0.15)),thickness=0.35)
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
@@ -632,7 +632,7 @@ if option == 1:
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 3 or option == 4:
-    outdoor_structures.build_water_tank(origin=(3.3, -5.25, 0.1), diameter=0.9, height=2.0)
+    outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
 
 from driveway import create_sloping_driveway  
 

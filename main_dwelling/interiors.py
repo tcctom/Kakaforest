@@ -103,8 +103,8 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Create wall behind log burner (East)
     create_fireplace_wall( name="MD_HearthWallEast",
-        location=(west_partition_x-0.1, oy, oz + 0.6),
-        size=(0.1, 1.3, 1.2)
+        location=(west_partition_x-0.1, oy-0.15, oz + 0.6),
+        size=(0.1, 1.4, 1.2)
     )
 
     if option == 1:
@@ -116,7 +116,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Create wall north of log burner
     create_fireplace_wall( name="MD_HearthWallNorth",
-        location=(west_partition_x-0.45, oy + 0.6, oz + 0.6),
+        location=(west_partition_x-0.45, oy + 0.5, oz + 0.6),
         size=(0.6, 0.1, 1.2)
     )
 
@@ -151,7 +151,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     cupboard_south_edge_y = north_interior_face - CUPBOARD_DEPTH
     log_burner_x = west_partition_x - INTERIOR_WALL_THICKNESS / 2 - CUPBOARD_INTERIOR_XAXIS / 2 - 0.20
-    log_burner_y = oy
+    log_burner_y = oy-0.2
 
     FLOOR_TOP = oz + 0.1
     HEARTH_THICKNESS = 0.03
@@ -159,16 +159,14 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     HEARTH_WIDTH = LOG_BURNER_WIDTH + 0.4
     hearth_north_edge = cupboard_south_edge_y
-    HEARTH_DEPTH = 1.3
+    HEARTH_DEPTH = 1.4
     hearth_south_edge = hearth_north_edge - HEARTH_DEPTH
     hearth_y = (hearth_north_edge + hearth_south_edge) / 2
 
 
-
-
     bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, hearth_y, FLOOR_TOP + HEARTH_THICKNESS / 2))
     hearth = bpy.context.active_object
-    hearth.name = "MainDwelling_GuestBedroom_Hearth"
+    hearth.name = "MD_GuestBedroom_Hearth"
     hearth.scale = (HEARTH_WIDTH / 2, HEARTH_DEPTH / 2, HEARTH_THICKNESS / 2)
     bpy.ops.object.transform_apply(scale=True)
     hearth.data.materials.append(granite_mat)
@@ -180,7 +178,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     bpy.ops.mesh.primitive_cube_add(location=(log_burner_x, log_burner_y, log_burner_z))
     log_burner = bpy.context.active_object
-    log_burner.name = "MainDwelling_GuestBedroom_LogBurner"
+    log_burner.name = "MD_GuestBedroom_LogBurner"
     log_burner.scale = (LOG_BURNER_WIDTH / 2, LOG_BURNER_DEPTH / 2, LOG_BURNER_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     log_burner.data.materials.append(log_burner_mat)
@@ -201,7 +199,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
             depth=LEG_HEIGHT,
         )
         leg = bpy.context.active_object
-        leg.name = f"MainDwelling_GuestBedroom_LogBurner_Leg_{i + 1}"
+        leg.name = f"MD_GuestBedroom_LogBurner_Leg_{i + 1}"
         leg.data.materials.append(log_burner_mat)
 
     GLASS_WIDTH = LOG_BURNER_WIDTH * 0.8
@@ -213,7 +211,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     bpy.ops.mesh.primitive_cube_add(location=(glass_x, log_burner_y, glass_z))
     glass_door = bpy.context.active_object
-    glass_door.name = "MainDwelling_GuestBedroom_LogBurner_GlassDoor"
+    glass_door.name = "MD_GuestBedroom_LogBurner_GlassDoor"
     glass_door.scale = (GLASS_THICKNESS / 2, GLASS_WIDTH / 2, GLASS_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     glass_door.data.materials.append(glass_mat)
@@ -227,7 +225,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
     flue_z = FLOOR_TOP + HEARTH_THICKNESS + LEG_HEIGHT + LOG_BURNER_HEIGHT + FLUE_HEIGHT / 2
     bpy.ops.mesh.primitive_cylinder_add(location=(log_burner_x, log_burner_y, flue_z), radius=FLUE_DIAMETER / 2, depth=FLUE_HEIGHT)
     flue = bpy.context.active_object
-    flue.name = "MainDwelling_GuestBedroom_Flue"
+    flue.name = "MD_GuestBedroom_Flue"
     flue.data.materials.append(flue_mat)
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")

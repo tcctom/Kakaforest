@@ -356,9 +356,9 @@ def build_porch_south_side(
     exterior_mat,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
-    PORCH_LENGTH = 7.1  # West-to-east run
+    PORCH_LENGTH = 7.6  # West-to-east run
     PORCH_DECK_LENGTH = 2.9  # West-to-east run
-    PORCH_DEPTH = 1.7  # South projection depth
+    PORCH_DEPTH = 1.8  # South projection depth
     PORCH_ROOF_PITCH = 20
     PORCH_ROOF_OVERHANG = 0.01
     PORCH_EXTERIOR_WALL_THICKNESS = 0.15
@@ -372,8 +372,9 @@ def build_porch_south_side(
     porch_deck_center_x = porch_west_x + PORCH_DECK_LENGTH / 2
     porch_center_y = south_wall_outer_y - PORCH_DEPTH / 2
     floor_top = oz - 0.1
+    deck_z = oz-0.25
 
-    bpy.ops.mesh.primitive_cube_add(location=(porch_deck_center_x, porch_center_y, oz-0.25 ))
+    bpy.ops.mesh.primitive_cube_add(location=(porch_deck_center_x, porch_center_y, deck_z))
     porch_deck = bpy.context.active_object
     porch_deck.name = "MD_PorchDeck_South"
     porch_deck.scale = (PORCH_DECK_LENGTH / 2, PORCH_DEPTH / 2, 0.05)
@@ -390,17 +391,17 @@ def build_porch_south_side(
     porch_wall_height = 2.3
     porch_wall_z = floor_top + porch_wall_height / 2 
     porch_south_wall = create_porch_wall( name="MD_GF_SouthExtension",
-        location=(ox + 0.5, south_wall_outer_y - PORCH_DEPTH, porch_wall_z-0.1),
-        size=(4.15, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.3),        exterior_mat=exterior_mat, interior_face_index=1, )
+        location=(ox + 0.75, south_wall_outer_y - PORCH_DEPTH, porch_wall_z-0.2),
+        size=(PORCH_LENGTH-PORCH_DECK_LENGTH, PORCH_EXTERIOR_WALL_THICKNESS, porch_wall_height-0.3), exterior_mat=exterior_mat, interior_face_index=1, )
     porch_east_wall = create_porch_wall( name="MD_GF_SouthExtension2",
-        location=(ox + 2.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
-        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
+        location=(ox + 3.0, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
+        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height), exterior_mat=exterior_mat, interior_face_index=0, )
     porch_west_wall = create_porch_wall( name="MD_GF_SouthExtensionWest",
         location=(ox-1.5, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
-        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=2, )
+        size=(PORCH_EXTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height), exterior_mat=exterior_mat, interior_face_index=2, )
     porch_interior_wall = create_porch_wall( name="MD_GF_SouthExtensionInterior",
         location=(ox + 0.8, south_wall_outer_y - PORCH_DEPTH/2, porch_wall_z),
-        size=(PORCH_INTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height),        exterior_mat=exterior_mat, interior_face_index=0, )
+        size=(PORCH_INTERIOR_WALL_THICKNESS, PORCH_DEPTH, porch_wall_height), exterior_mat=exterior_mat, interior_face_index=0, )
 
     porch_roof_building = south_wall_outer_y
     porch_roof_outer = south_wall_outer_y - PORCH_DEPTH - PORCH_ROOF_OVERHANG - 0.07
@@ -434,20 +435,20 @@ def build_porch_south_side(
     POST_SIZE = 0.15
     POST_INSET = 0.2
     post_y = south_wall_outer_y - PORCH_DEPTH
-    post_height = porch_roof_low_height - oz
+    post_height = porch_roof_low_height - deck_z
 
     post_west_x = porch_west_x + POST_INSET
-    bpy.ops.mesh.primitive_cube_add(location=(post_west_x, post_y, oz + post_height / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(post_west_x, post_y, deck_z + post_height / 2) )
     post_west = bpy.context.active_object
-    post_west.name = "MainDwelling_PorchPost_SouthWest"
+    post_west.name = "MD_PorchPost_SouthWest"
     post_west.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     post_west.data.materials.append(floor_mat)
 
     #post_east_x = porch_east_x - POST_INSET
-    #bpy.ops.mesh.primitive_cube_add(location=(post_east_x, post_y, oz + post_height / 2))
+    #bpy.ops.mesh.primitive_cube_add(location=(post_east_x, post_y, deck_z + post_height / 2))
     #post_east = bpy.context.active_object
-    #post_east.name = "MainDwelling_PorchPost_SouthEast"
+    #post_east.name = "MD_PorchPost_SouthEast"
     #post_east.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
     #bpy.ops.object.transform_apply(scale=True)
     #post_east.data.materials.append(floor_mat)

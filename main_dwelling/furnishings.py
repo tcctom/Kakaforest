@@ -144,66 +144,55 @@ def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     """Furnish main bathroom with shower components."""
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
     south_interior_face = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
-
-    bathroom_west = east_interior_face - 2
+    west_interior_face = east_interior_face - 2
     bathroom_north = south_interior_face + 2.3
 
     white_mat = create_material("BathroomWhite", (0.95, 0.95, 0.95, 1))
     chrome_mat = create_material("Chrome", (0.8, 0.8, 0.8, 1))
     FLOOR_TOP = oz + 0.1
 
-    WALL_THICKNESS = 0.1
-    WALL_HEIGHT = 2.0
+    SHOWER_SIZE = 0.9
+    WALL_THICKNESS = 0.08
+    WALL_HEIGHT = 2.4
 
-    shower_x_center = east_interior_face - 0.5#(bathroom_west + bathroom_west + 1) / 2
-    shower_y_center = (bathroom_north + bathroom_north - 0.36) / 2
+    shower_x_center = west_interior_face + SHOWER_SIZE / 2
+    shower_y_center = south_interior_face + SHOWER_SIZE / 2
 
-    create_shower_tray(
-        x_center=shower_x_center,
-        y_center=shower_y_center,
-        z_bottom=FLOOR_TOP,
-        size=1.0,
-        height=0.15,
-        material=white_mat,
-        name_prefix="GroundFloor_Bathroom",
-    )
+    #create_shower_tray( x_center=shower_x_center, y_center=shower_y_center, z_bottom=FLOOR_TOP, size=SHOWER_SIZE, height=0.15,
+    #    material=white_mat, name_prefix="GroundFloor_Bathroom", )
 
     granite_path = os.path.abspath("textures/granite_tile_03/granite_tile_03_diff_1k.jpg")
-    tile_mat = create_textured_material2(
-        name="ShowerTile",
-        texture_path=granite_path,
-        rotation_z=0,
-        scale=(1.5, 1.5, 1.5),
-        roughness=0.2,
-        projection='BOX',
-    )
+    tile_mat = create_textured_material2( name="ShowerTile", texture_path=granite_path,
+        rotation_z=0, scale=(1.5, 1.5, 1.5),
+        roughness=0.2, projection='BOX', )
 
-    bpy.ops.mesh.primitive_cube_add(location=(east_interior_face - 0.03, bathroom_north - 0.2, FLOOR_TOP + WALL_HEIGHT / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(west_interior_face + 0.03, south_interior_face + SHOWER_SIZE/2 + 0.03, FLOOR_TOP + WALL_HEIGHT / 2))
     northsouth_wall = bpy.context.active_object
-    northsouth_wall.name = "MD_Bathroom_ShowerWallEast"
+    northsouth_wall.name = "MD_Bathroom_ShowerWallWest"
     northsouth_wall.scale = (WALL_THICKNESS / 4, 0.5, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     northsouth_wall.data.materials.append(tile_mat)
 
-    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, bathroom_north + 0.35, FLOOR_TOP + WALL_HEIGHT / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(shower_x_center, south_interior_face + 0.03, FLOOR_TOP + WALL_HEIGHT / 2))
     eastwest_wall = bpy.context.active_object
-    eastwest_wall.name = "MD_Bathroom_ShowerWallNorth"
+    eastwest_wall.name = "MD_Bathroom_ShowerWallSouth"
     eastwest_wall.scale = (0.5, WALL_THICKNESS / 4, WALL_HEIGHT / 2)
     bpy.ops.object.transform_apply(scale=True)
     eastwest_wall.data.materials.append(tile_mat)
 
 
     create_toilet(
-        west_edge=bathroom_west,
+        west_edge=west_interior_face +1.2,
         south_edge=south_interior_face,
         floor_top=FLOOR_TOP,
         material=white_mat,
         name_prefix="MD_MainBathroom",
+        rotation_z_degrees=90
     )
 
     create_vanity(
-        east_edge=east_interior_face,
-        south_edge=south_interior_face,
+        east_edge=east_interior_face - 0.05,
+        south_edge=south_interior_face + 1.8,
         floor_top=FLOOR_TOP,
         basin_material=white_mat,
         chrome_material=chrome_mat,
@@ -391,7 +380,7 @@ def _furnish_master_bedroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, 
 
     bed_mat = create_material("BedFabric", (0.95, 0.95, 0.9, 1))
 
-    bed_x = east_interior_face - BED_LENGTH / 2 - 1.5
+    bed_x = east_interior_face - BED_LENGTH / 2 #- 1.5
     bed_y = north_interior_face - BED_WIDTH / 2 - 0.9
     bed_z = first_floor_top + BED_HEIGHT / 2
 
