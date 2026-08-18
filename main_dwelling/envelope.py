@@ -8,12 +8,12 @@ from utils import add_window, add_door
 
 def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH):
     """Add a ridge beam and paired rafters under the flush gable roof."""
-    ridge_height = oz + TOTAL_HEIGHT + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH))
+    ridge_height = oz + TOTAL_HEIGHT + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH)) -0.02
     pitch_rad = math.radians(ROOF_PITCH)
 
     framing_mat = create_material("RoofFramingTimber", (0.55, 0.40, 0.25, 1.0))
 
-    ridge_beam_height = 0.18
+    ridge_beam_height = 0.24
     ridge_beam_width = 0.10
     ridge_beam_z = ridge_height - ridge_beam_height / 2 - 0.03
 
@@ -25,13 +25,13 @@ def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
     ridge_beam.data.materials.append(framing_mat)
 
     rafter_width = 0.06
-    rafter_depth = 0.14
-    rafter_spacing = 0.65
-    rafter_setback = 0.12
+    rafter_depth = 0.24
+    rafter_spacing = 0.6
+    rafter_setback = 0.05
 
     north_eave_y = oy + WIDTH / 2
     south_eave_y = oy - WIDTH / 2
-    rafter_run = (WIDTH / 2) / math.cos(pitch_rad)
+    rafter_run = (WIDTH / 2) / math.cos(pitch_rad) -0.17
 
     rafter_count = max(2, int((LENGTH - 2 * rafter_setback) / rafter_spacing) + 1)
     start_x = ox - (LENGTH / 2) + rafter_setback
@@ -83,7 +83,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_NorthWall", (ox - LENGTH / 4, north_wall_outer_face, window_z_first), width=2.0, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     add_window("MD_FF_NorthWall", (ox + LENGTH / 4, north_wall_outer_face, window_z_first+0.5), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
 
-    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 0.8, oz + 1.65), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    #add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 0.8, oz + 1.65), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.8, oz + 1.65), width=0.8, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     #add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 0.8, window_z_first + 0.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
