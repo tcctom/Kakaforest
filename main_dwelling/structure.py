@@ -866,7 +866,7 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     first_floor_center_z = first_floor_z + first_floor_thickness / 2
 
     stairwell_width = 1.2
-    stairwell_length = 3.15
+    stairwell_length = 3.1
 
     opening_west_x = ox - floor_length / 2 + 3.4
     opening_east_x = opening_west_x + stairwell_length

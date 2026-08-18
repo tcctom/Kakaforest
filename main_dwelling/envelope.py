@@ -91,7 +91,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 0.6, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.8, window_z_first + 0.6), width=0.6, height=0.8, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
-    add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, window_z_first + 0.45), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, window_z_first + 0.6), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
     if option == 1:
         #south wall windows - option 1
@@ -141,79 +141,27 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         add_window("MD_GF_WestWall", (ox - LENGTH / 2, oy + 1.2, oz + 1.45), width=0.9, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
 
-def _add_west_gable_window(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, roof_style):
-    """Add a small window on the west gable after the roof has been created."""
+def _add_gable_windows(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, option=1):
+    """Add windows to gable exterior walls after roof/gables are created."""
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
     west_x = ox - LENGTH / 2
-    window_z = first_floor_z + 3.45
-    inset_depth = EXTERIOR_WALL_THICKNESS * 0.35
+    east_x = ox + LENGTH / 2
 
-    if roof_style == "traditional":
-        # Historical side naming in gable creation can be swapped.
-        # Pick whichever gable object is physically closest to the west side.
-        gable_candidates = []
-        for name in ("MainDwelling_Gable_West", "MainDwelling_Gable_East"):
-            obj = bpy.data.objects.get(name)
-            if obj:
-                gable_candidates.append(obj)
+    # West gable window (existing default behavior)
+    add_window( "MD_FF_WestGableWall",
+        (west_x, oy, first_floor_z + 3.8),
+        width=1.8, height=0.7, depth=EXTERIOR_WALL_THICKNESS,
+        axis='X', inward_offset='+X', )
 
-        if not gable_candidates:
-            print("West gable window skipped: no gable objects were found")
-            return
-
-        def _world_x_center(obj):
-            if getattr(obj.data, "vertices", None):
-                xs = [(obj.matrix_world @ v.co).x for v in obj.data.vertices]
-                return sum(xs) / len(xs)
-            return obj.location.x
-
-        target = min(gable_candidates, key=lambda obj: abs(_world_x_center(obj) - west_x))
-        target_x = _world_x_center(target)
-
-        # Gable faces are single-surface meshes (no thickness), so offset outward
-        # so the frame and glass are visible from the exterior.
-        inward_offset = '-X' if target_x <= ox else '+X'
-
-        window_parts = add_window(
-            target.name,
-            (target_x, oy, window_z),
-            width=0.6,
-            height=0.6,
-            depth=EXTERIOR_WALL_THICKNESS,
-            axis='X',
-            inward_offset=inward_offset,
-        )
-
-        if window_parts:
-            frame, glass = window_parts
-            interior_sign = 1.0 if target_x <= ox else -1.0
-            frame.location.x += interior_sign * inset_depth
-            glass.location.x += interior_sign * inset_depth
-        return
-
-    # Flush roof has integrated gable faces in MainDwelling_Roof.
-    roof_obj = bpy.data.objects.get("MainDwelling_Roof")
-    if not roof_obj:
-        print("West gable window skipped: MainDwelling_Roof not found")
-        return
-
-    window_parts = add_window(
-        "MainDwelling_Roof",
-        (west_x, oy, window_z),
-        width=0.6,
-        height=0.6,
-        depth=EXTERIOR_WALL_THICKNESS,
-        axis='X',
-        inward_offset='+X',
-    )
-
-    if window_parts:
-        frame, glass = window_parts
-        frame.location.x += inset_depth
-        glass.location.x += inset_depth
+    # Optional east gable window variant used in option 4.
+    if option == 4:
+        add_window( "MD_FF_EastGableWall",
+            (east_x, oy, first_floor_z + 3.8),
+            width=1.8, height=0.7, depth=EXTERIOR_WALL_THICKNESS,
+            axis='X', inward_offset='-X', )
 
 
-def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, roof_style, potius_mat):
+def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, EXTERIOR_WALL_THICKNESS, roof_style, potius_mat):
     """Create the main gable roof with either traditional or flush style.
 
     Args:
@@ -224,8 +172,60 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
     ridge_height = eave_height + roof_height_from_eaves
 
     roof_mat = get_metal_roof_material()
-    # Use the same exterior cladding material for gable ends
-    gable_material = potius_mat
+    interior_wall_mat = create_material("InteriorWallPaint", (0.96, 0.94, 0.90, 1.0))
+
+    def _create_gable_wall(side_name, x_outer, x_inner):
+        object_name = f"MD_FF_{side_name}GableWall"
+        verts = [
+            (x_outer, oy - WIDTH / 2, eave_height),
+            (x_outer, oy + WIDTH / 2, eave_height),
+            (x_outer, oy, ridge_height),
+            (x_inner, oy - WIDTH / 2, eave_height),
+            (x_inner, oy + WIDTH / 2, eave_height),
+            (x_inner, oy, ridge_height),
+        ]
+
+        faces = [
+            (0, 1, 2),      # outer triangular face
+            (3, 5, 4),      # inner triangular face
+            (0, 3, 4, 1),   # north sloped side
+            (1, 4, 5, 2),   # ridge side
+            (2, 5, 3, 0),   # south sloped side
+        ]
+
+        gable_mesh = bpy.data.meshes.new(f"{object_name}Mesh")
+        gable_mesh.from_pydata(verts, [], faces)
+        gable_mesh.update()
+
+        gable = bpy.data.objects.new(object_name, gable_mesh)
+        bpy.context.collection.objects.link(gable)
+        gable.data.materials.append(potius_mat)
+        gable.data.materials.append(interior_wall_mat)
+
+        interior_target_x = x_inner
+        interior_face = None
+        best_delta = None
+        for poly in gable_mesh.polygons:
+            center_x = sum(gable_mesh.vertices[idx].co.x for idx in poly.vertices) / len(poly.vertices)
+            delta = abs(center_x - interior_target_x)
+            if interior_face is None or delta < best_delta:
+                interior_face = poly
+                best_delta = delta
+
+        if interior_face is not None:
+            interior_face.material_index = 1
+
+        if not gable_mesh.uv_layers:
+            gable_mesh.uv_layers.new(name="UVMap")
+        uv_layer = gable_mesh.uv_layers.active.data
+
+        for poly in gable_mesh.polygons:
+            for loop_idx in poly.loop_indices:
+                loop = gable_mesh.loops[loop_idx]
+                vert = gable_mesh.vertices[loop.vertex_index]
+                u = (vert.co.y - (oy - WIDTH / 2)) / 2.0
+                v = (vert.co.z - eave_height) / 2.0
+                uv_layer[loop_idx].uv = (u, v)
 
     if roof_style == "flush":
         mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
@@ -250,23 +250,14 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         faces = [
             (0, 1, 3, 2),  # North roof slope
             (2, 3, 5, 4),  # South roof slope
-            (0, 2, 4),  # East gable triangle
-            (1, 5, 3),  # West gable triangle
         ]
 
         mesh.from_pydata(verts, [], faces)
         mesh.update()
 
         obj.data.materials.append(roof_mat)
-        obj.data.materials.append(gable_material)
 
         _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
-
-        for i, face in enumerate(mesh.polygons):
-            if i < 2:
-                face.material_index = 0
-            else:
-                face.material_index = 1
 
         # Create UV layer and set UVs for gable faces
         if not mesh.uv_layers:
@@ -274,28 +265,30 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
 
         uv_layer = mesh.uv_layers.active.data
         for poly_idx, poly in enumerate(mesh.polygons):
-            if poly_idx >= 2:  # Gable faces
-                for loop_idx in poly.loop_indices:
-                    loop = mesh.loops[loop_idx]
-                    vert = mesh.vertices[loop.vertex_index]
-                    # Scale UVs: world_dimension / 2.0 to match wall UV scale
-                    # This gives ~150mm grooves after material's 13.33x scaling
-                    u = (vert.co.y - (oy + WIDTH / 2)) / 2.0
-                    v = (vert.co.z - eave_height) / 2.0
-                    uv_layer[loop_idx].uv = (u, v)
+            for loop_idx in poly.loop_indices:
+                loop = mesh.loops[loop_idx]
+                vert = mesh.vertices[loop.vertex_index]
+                u = (vert.co.x - (ox - LENGTH / 2)) / 2.0
+                v = (vert.co.y - (oy - WIDTH / 2)) / 2.0
+                uv_layer[loop_idx].uv = (u, v)
 
         # UV unwrap roof faces only
         bpy.context.view_layer.objects.active = obj
         obj.select_set(True)
         bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
-        for i in range(2):
-            mesh.polygons[i].select = True
-        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
         bpy.ops.object.mode_set(mode='OBJECT')
         obj.select_set(False)
+
+        # Flush gable walls sit directly at the main east/west wall outer faces.
+        west_x_outer = ox - LENGTH / 2
+        west_x_inner = west_x_outer + EXTERIOR_WALL_THICKNESS
+        east_x_outer = ox + LENGTH / 2
+        east_x_inner = east_x_outer - EXTERIOR_WALL_THICKNESS
+
+        _create_gable_wall("West", west_x_outer, west_x_inner)
+        _create_gable_wall("East", east_x_outer, east_x_inner)
     else:  # traditional
         mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
         obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
@@ -332,46 +325,10 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         bpy.ops.object.mode_set(mode='OBJECT')
         obj.select_set(False)
 
-        # Create separate gable end triangles
-        for side, x_pos in [("East", ox - LENGTH / 2), ("West", ox + LENGTH / 2)]:
-            verts = [
-                (x_pos, oy - WIDTH / 2, eave_height),
-                (x_pos, oy + WIDTH / 2, eave_height),
-                (x_pos, oy, ridge_height),
-            ]
-            edges = []
-            faces = [(0, 1, 2)]
+        west_x_outer = ox - LENGTH / 2
+        west_x_inner = west_x_outer + EXTERIOR_WALL_THICKNESS
+        east_x_outer = ox + LENGTH / 2
+        east_x_inner = east_x_outer - EXTERIOR_WALL_THICKNESS
 
-            gable_mesh = bpy.data.meshes.new(f"MainDwelling_Gable_{side}")
-            gable_mesh.from_pydata(verts, edges, faces)
-            gable_mesh.update()
-
-            gable = bpy.data.objects.new(f"MainDwelling_Gable_{side}", gable_mesh)
-            bpy.context.collection.objects.link(gable)
-            gable.data.materials.append(gable_material)
-
-            # Create UV layer with normalized coordinates (0-1 range)
-            if not gable_mesh.uv_layers:
-                gable_mesh.uv_layers.new(name="UVMap")
-            uv_layer = gable_mesh.uv_layers.active.data
-
-            # Calculate gable dimensions
-            gable_width = WIDTH
-            gable_height = roof_height_from_eaves
-
-            for poly in gable_mesh.polygons:
-                for loop_idx in poly.loop_indices:
-                    loop = gable_mesh.loops[loop_idx]
-                    vert = gable_mesh.vertices[loop.vertex_index]
-                    # Scale UVs so that 150mm (0.15m) = 1 texture repeat BEFORE material scaling
-                    # We want: actual_dimension / 0.15m texture repeats
-                    # Then material's 13.33x brings it to correct scale
-                    # So: UV = world_dimension / (0.15m * 13.33) = world_dimension / 2.0
-                    u = (vert.co.y - (oy - WIDTH / 2)) / 2.0  # 7m span / 2.0 = 3.5 UV units
-                    v = (vert.co.z - eave_height) / 2.0
-                    uv_layer[loop_idx].uv = (u, v)
-                    print(f"  Gable face {poly}, vert: Y={vert.co.y:.2f}, Z={vert.co.z:.2f} -> UV=({u:.4f}, {v:.4f})")
-
-            print("=== END GABLE UV DEBUG ===\\n")
-
-            print(f"DEBUG: Created gable {side} with material {gable_material.name}")
+        _create_gable_wall("West", west_x_outer, west_x_inner)
+        _create_gable_wall("East", east_x_outer, east_x_inner)

@@ -103,22 +103,19 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     # Create wall behind log burner (East)
     create_fireplace_wall( name="MD_HearthWallEast",
-        location=(west_partition_x-0.1, oy-0.15, oz + 0.6),
-        size=(0.1, 1.4, 1.2)
-    )
+        location=(west_partition_x-0.1, oy-0.1, oz + 0.6),
+        size=(0.1, 1.4, 1.2)    )
 
     if option == 1:
         # Create wall south of log burner
         create_fireplace_wall( name="MD_HearthWallSouth",
             location=(west_partition_x-0.45, oy - 0.6, oz + 0.6),
-            size=(0.6, 0.1, 1.2)
-        )
+            size=(0.6, 0.1, 1.2)        )
 
     # Create wall north of log burner
     create_fireplace_wall( name="MD_HearthWallNorth",
-        location=(west_partition_x-0.45, oy + 0.5, oz + 0.6),
-        size=(0.6, 0.1, 1.2)
-    )
+        location=(west_partition_x-0.45, oy + 0.55, oz + 0.6),
+        size=(0.6, 0.1, 1.2)    )
 
     # --- 2. Place Candlestick on top of South Wall ---
     # Radius = 0.04m (8cm total diameter base)
