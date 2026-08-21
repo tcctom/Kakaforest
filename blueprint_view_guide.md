@@ -22,6 +22,7 @@ or
    ```python
    exec(open(r"C:\Users\Tom (local)\GH\Kakaforest\setup_blueprint_view.py").read())
    show_ground_floor_plan(option=4)
+   show_first_floor_plan(option=4)
 
    exec(open(r"C:\Users\Tom\source\Kakaforest\Kakaforest\setup_blueprint_view.py").read())
    ```
