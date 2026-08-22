@@ -80,6 +80,9 @@ def setup_blueprint_viewport():
     space.overlay.show_wireframes = True  # Enable wireframe edges on objects
     space.overlay.show_ortho_grid = False  # Hide orthographic grid
     space.overlay.show_outline_selected = False  # Don't highlight selected
+    # Hide helper gizmos (camera frames/lights/empties) while keeping overlays on.
+    if hasattr(space.overlay, 'show_extras'):
+        space.overlay.show_extras = False
     
     print("✓ Viewport configured for blueprint view")
     return True
@@ -103,6 +106,14 @@ def create_blueprint_camera(name="Blueprint_Camera", location=(0, 0, 15), clip_h
     # Create camera data and object
     cam_data = bpy.data.cameras.new(name=name)
     cam_object = bpy.data.objects.new(name, cam_data)
+
+    # Disable only diagonal composition guides (the big X), preserving other guides.
+    for attr in dir(cam_data):
+        if attr.startswith('show_composition_') and 'diagonal' in attr:
+            try:
+                setattr(cam_data, attr, False)
+            except Exception:
+                pass
     
     # Link to scene collection
     bpy.context.scene.collection.objects.link(cam_object)
@@ -133,6 +144,42 @@ def create_blueprint_camera(name="Blueprint_Camera", location=(0, 0, 15), clip_h
     print(f"  - Clipping at Z={clip_height}m (clip_start={cam_data.clip_start}m)")
     
     return cam_object
+
+
+def restore_image_reference_empties():
+    """
+    Recovery helper: unhide IMAGE empties that may have been hidden by older
+    blueprint script versions, so window markers become visible again.
+    """
+    restored = 0
+    for obj in bpy.data.objects:
+        if obj.type == 'EMPTY' and getattr(obj, 'empty_display_type', None) == 'IMAGE':
+            if obj.hide_viewport or obj.hide_render:
+                obj.hide_viewport = False
+                obj.hide_render = False
+                restored += 1
+
+    if restored:
+        print(f"✓ Restored {restored} image reference empty object(s)")
+    return restored
+
+
+def hide_area_light_helpers():
+    """
+    Hide AREA light helper gizmos in viewport.
+    AREA lights display as a rectangle with a diagonal X, which can clutter
+    blueprint views. This does not touch window/image reference empties.
+    """
+    hidden = 0
+    for obj in bpy.data.objects:
+        if obj.type == 'LIGHT' and getattr(obj.data, 'type', None) == 'AREA':
+            if not obj.hide_viewport:
+                obj.hide_viewport = True
+                hidden += 1
+
+    if hidden:
+        print(f"✓ Hid {hidden} AREA light helper object(s) in viewport")
+    return hidden
 
 
 def setup_section_plane_method(clip_height=1.2):
@@ -620,7 +667,20 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     
     # Switch to ground floor camera
     switch_to_camera('BP_Ground_Floor')
+    set_blueprint_camera_visibility('BP_Ground_Floor')
+
+    # Ensure no helper object stays selected (selected camera draws orange X frame).
+    if bpy.context.view_layer.objects.active is not None:
+        bpy.context.view_layer.objects.active = None
+    for obj in bpy.context.selected_objects:
+        obj.select_set(False)
+
     view_through_camera()
+
+    # Restore any image empties hidden by older script runs.
+    restore_image_reference_empties()
+    # Hide only AREA light helper gizmos that look like a big X rectangle.
+    hide_area_light_helpers()
     
     # Create white background plane
     create_white_background_plane()
@@ -659,18 +719,21 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     # north face
     create_dimension_line((-4.5, 2.0), (4.5, 2.0), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
-    create_dimension_line((-4.3, 1.5), (0.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
-    create_dimension_line((1.1, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
+    create_dimension_line((-4.35, 1.5), (0.35, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
+    create_dimension_line((1.15, 1.5), (4.35, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
 
     # east face
     create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.5), (4.5, -4.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
-    create_dimension_line((4.5, 1.5), (4.5, -1.75), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
-    create_dimension_line((4.5, -1.85), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
+    create_dimension_line((4.5, 1.55), (4.5, -4.55), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
+    create_dimension_line((4.5, 1.55), (4.5, -1.7), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
+    create_dimension_line((4.5, -1.8), (4.5, -4.55), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
 
     if option == 4:
-        create_dimension_line((4.5, -4.7), (4.5, -6.45), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
-        create_dimension_line((-4.5, -6.5), (2.6, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
+        create_dimension_line((4.5, -4.7), (4.5, -6.55), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
+        create_dimension_line((-4.5, -6.5), (-1.6, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
+        create_dimension_line((-1.45, -6.5), (0.7, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="entrance_eastwest_length")
+        create_dimension_line((0.81, -6.5), (2.95, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
+        create_dimension_line((-1.6, -6.5), (3.1, -6.5), offset=-1.2, text_size=0.3, z_height=1.3, name_suffix="porch_eastwest_length")
 
 
     print("\n" + "="*60)
@@ -705,7 +768,13 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     
     # Switch to first floor camera
     switch_to_camera('BP_First_Floor')
+    set_blueprint_camera_visibility('BP_First_Floor')
     view_through_camera()
+
+    # Restore any image empties hidden by older script runs.
+    restore_image_reference_empties()
+    # Hide only AREA light helper gizmos that look like a big X rectangle.
+    hide_area_light_helpers()
     
     # Apply section cutting at 4.0m
     print("Applying section cut to reveal interior walls...")
@@ -744,12 +813,12 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
-        create_dimension_line((-4.3, 2.5), (0.2, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.35, 2.5), (0.2, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 3:
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
-        create_dimension_line((-4.3, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.3, 2.5), (-0.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.35, 2.5), (-0.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
         create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
         create_dimension_line((0.8, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
@@ -768,6 +837,7 @@ def show_roof_plan():
     print("="*60 + "\n")
     
     switch_to_camera('BP_Roof_Plan')
+    set_blueprint_camera_visibility('BP_Roof_Plan')
     view_through_camera()
     apply_section_to_all_objects(7.5)
     
@@ -785,6 +855,7 @@ def show_site_plan():
     print("="*60 + "\n")
     
     switch_to_camera('BP_Site_Plan')
+    set_blueprint_camera_visibility('BP_Site_Plan')
     view_through_camera()
     remove_section_from_all_objects()
     
@@ -823,6 +894,36 @@ def switch_to_camera(camera_name):
     else:
         print(f"✗ Camera '{camera_name}' not found!")
         return False
+
+
+def set_blueprint_camera_visibility(active_camera_name):
+    """
+    Show only the active blueprint camera object and hide other blueprint
+    camera objects in viewport. This removes large ortho camera frames (X box)
+    from floor plan views.
+    """
+    camera_names = (
+        'BP_Ground_Floor',
+        'BP_First_Floor',
+        'BP_Roof_Plan',
+        'BP_Site_Plan',
+    )
+
+    for cam_name in camera_names:
+        cam_obj = bpy.data.objects.get(cam_name)
+        if cam_obj is None:
+            continue
+        should_hide = (cam_name != active_camera_name)
+        cam_obj.hide_viewport = should_hide
+        # Per-view-layer hide is more reliable in viewport than hide_viewport alone.
+        try:
+            cam_obj.hide_set(should_hide)
+        except Exception:
+            pass
+
+    # Clear selection so hidden cameras do not keep selected outlines/guides.
+    for obj in bpy.context.selected_objects:
+        obj.select_set(False)
 
 
 def create_floor_plan_cameras(center_x=0, center_y=-1.5):
@@ -892,6 +993,7 @@ def main():
     
     # Step 3: Set ground floor as default active camera
     switch_to_camera("BP_Ground_Floor")
+    set_blueprint_camera_visibility('BP_Ground_Floor')
     
     # Step 4: Switch viewport to camera view
     view_through_camera()
