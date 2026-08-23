@@ -257,7 +257,7 @@ def apply_section_to_all_objects(cut_height, hide_site_elements=True):
     if hide_site_elements:
         hide_keywords = ['deck', 'Deck', 'verandah', 'Verandah', 'Pile', 'Bearer', 'Joist',
                          'Boulder', 'boulder', 'Terrain', 'terrain', 'Ground_', 'Gravel',
-                         'WaterTank', 'Pavers', 'Driveway']
+                         'xWaterTank', 'Pavers', 'Drive', 'Tree', 'Bush', 'Fence', 'Gate']
         hidden_count = 0
         for obj in bpy.data.objects:
             if obj.type == 'MESH':
@@ -783,7 +783,7 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     # Add sample labels
     print("\nAdding room labels...")
     create_room_label('FIRST\nFLOOR', (-6.5, 0, 3.8), size=0.8)
-    create_room_label('Master bedroom', (+2.5, 0, 3.8), size=0.4)
+    create_room_label('Master\nbedroom', (+3.5, 0, 3.8), size=0.4)
     create_room_label('Living', (-2, 0, 3.8), size=0.4)
 
     if option == 1:
