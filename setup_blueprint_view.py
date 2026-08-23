@@ -730,10 +730,10 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
 
     if option == 4:
         create_dimension_line((4.5, -4.7), (4.5, -6.55), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
-        create_dimension_line((-4.5, -6.5), (-1.6, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
+        create_dimension_line((-4.5, -4.7), (-1.6, -4.7), offset=-2.2, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
         create_dimension_line((-1.45, -6.5), (0.7, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="entrance_eastwest_length")
         create_dimension_line((0.81, -6.5), (2.95, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
-        create_dimension_line((-1.6, -6.5), (3.1, -6.5), offset=-1.2, text_size=0.3, z_height=1.3, name_suffix="porch_eastwest_length")
+        create_dimension_line((-1.6, -6.5), (3.1, -6.5), offset=-0.9, text_size=0.3, z_height=1.3, name_suffix="porch_eastwest_length")
 
 
     print("\n" + "="*60)
@@ -793,8 +793,8 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
         create_room_label('HWC', (0.2, -1.0, 3.8), size=0.3)
         create_room_label('sleep\ncave\n2mx1m', (0.1, 0.7, 3.8), size=0.3)
 
-    if option == 4:
-        create_room_label('HWC', (0.2, -0.8, 3.8), size=0.3)
+    #if option == 4:
+    #    create_room_label('HWC', (0.2, -0.8, 3.8), size=0.3)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -807,9 +807,10 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     create_dimension_line((-4.5, 2.5), (4.5, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
 
     create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.5), (4.5, -2.4), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
-    create_dimension_line((4.5, -2.5), (4.5, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
-    create_dimension_line((2.3, -4.7), (4.3, -4.7), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="bath_eastwest_length")
+    create_dimension_line((4.5, 2.7), (4.5, 1.7), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
+    create_dimension_line((4.5, 1.55), (4.5, -2.45), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+    create_dimension_line((4.5, -2.55), (4.5, -4.55), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
+    create_dimension_line((2.35, -4.7), (4.35, -4.7), offset=-0.4, text_size=0.3, z_height=3.8, name_suffix="bath_eastwest_length")
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
@@ -818,9 +819,9 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.35, 2.5), (-0.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
-        create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
-        create_dimension_line((0.8, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
+        create_dimension_line((-4.35, 1.7), (0.75, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        #create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
+        create_dimension_line((0.85, 1.7), (4.35, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")

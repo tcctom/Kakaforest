@@ -253,8 +253,8 @@ def _create_staircase_southmiddle4(ox, oy, oz,  floor_mat):
     create_step(ox,oy-STEP_TREAD*1.5-STEP_WIDTH/2, oz, 3, floor_mat, STEP_WIDTH, STEP_WIDTH, STEP_RISE,chop="diagonal2a")
 
 
-    ox = ox + 0.43
-    oy = oy - 0.85
+    ox = ox + 0.36
+    oy = oy - 0.83
     create_step(ox-4 * STEP_TREAD, oy, oz, 4, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox-5 * STEP_TREAD, oy, oz, 5, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
     create_step(ox-6 * STEP_TREAD, oy, oz, 6, floor_mat, STEP_TREAD, STEP_WIDTH, STEP_RISE)
@@ -868,7 +868,7 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     stairwell_width = 1.2
     stairwell_length = 3.1
 
-    opening_west_x = ox - floor_length / 2 + 3.4
+    opening_west_x = ox - floor_length / 2 + 3.46
     opening_east_x = opening_west_x + stairwell_length
     opening_south_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     opening_north_y = opening_south_y + stairwell_width 
@@ -907,7 +907,7 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
 
 
     sw_width = opening_west_x - ox + floor_length / 2 
-    sw_depth = 1.25
+    sw_depth = se_depth # 1.25
     print(f"  SW width = {sw_width:.2f}, SW depth = {sw_depth:.2f}")
     bpy.ops.mesh.primitive_cube_add(location=(opening_west_x - sw_width / 2, se_center_y, first_floor_center_z))
     southwest_block = bpy.context.active_object

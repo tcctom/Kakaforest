@@ -91,7 +91,8 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 0.6, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.8, window_z_first + 0.6), width=0.6, height=0.8, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
-    add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, window_z_first + 0.6), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    #add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, window_z_first + 0.6), width=1.8, height=1.1, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+    add_window("MD_FF_WestWall", (ox - LENGTH / 2, oy, window_z_first + 0.7), width=0.9, height=1.5, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
     if option == 1:
         #south wall windows - option 1
@@ -147,11 +148,52 @@ def _add_gable_windows(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_TH
     west_x = ox - LENGTH / 2
     east_x = ox + LENGTH / 2
 
+    def _add_west_upper_window_fin(
+        window_center_y,
+        window_center_z,
+        window_width,
+        window_height,
+        fin_depth=0.275,
+        fin_thickness=0.045,
+        edge_gap=0.06,
+    ):
+        """Create a vertical external fin just north of the upper west window."""
+        fin_height = window_height
+        fin_center_y = window_center_y + (window_width / 2) + edge_gap + (fin_thickness / 2)
+        fin_center_x = west_x - (fin_depth / 2)
+        fin_center_z = window_center_z
+
+        bpy.ops.mesh.primitive_cube_add(location=(fin_center_x, fin_center_y, fin_center_z))
+        fin = bpy.context.active_object
+        fin.name = "MD_FF_WestUpperWindow_Fin"
+        fin.scale = (fin_depth / 2, fin_thickness / 2, fin_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+
+        # Match the exterior cladding material from the west gable wall.
+        west_gable = bpy.data.objects.get("MD_FF_WestGableWall")
+        if west_gable and west_gable.data and len(west_gable.data.materials) > 0:
+            fin_mat = west_gable.data.materials[0]
+        else:
+            fin_mat = create_material("WindowFinPaint", (0.93, 0.93, 0.93, 1.0))
+        fin.data.materials.append(fin_mat)
+
     # West gable window (existing default behavior)
+    #add_window( "MD_FF_WestGableWall", (west_x, oy, first_floor_z + 3.8), width=1.8, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X', )
+    west_window_center_y = oy
+    west_window_center_z = first_floor_z + 3.1
+    west_window_width = 0.9
+    west_window_height = 1.1
     add_window( "MD_FF_WestGableWall",
-        (west_x, oy, first_floor_z + 3.8),
-        width=1.8, height=0.7, depth=EXTERIOR_WALL_THICKNESS,
-        axis='X', inward_offset='+X', )
+        (west_x, west_window_center_y, west_window_center_z),
+        width=west_window_width, height=west_window_height,
+        depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X', )
+    
+    _add_west_upper_window_fin(
+        west_window_center_y,
+        west_window_center_z - 0.7,
+        west_window_width,
+        west_window_height + 1.4,
+    )
 
     # Optional east gable window variant used in option 4.
     if option == 4:

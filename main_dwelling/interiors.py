@@ -277,8 +277,8 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         #create_wall( name="MD_FF_HWC_Back", location=(main_partition_x, oy + 0.55, first_floor_top + first_floor_wall_height / 2),
         #    size=(0.9, INTERIOR_WALL_THICKNESS, first_floor_wall_height), material=interior_wall_mat, )
 
-        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.225, south_interior_face + ENSUITE_DEPTH - 0.7, first_floor_top + first_floor_wall_height / 2 + 0.4),
-            size=(1.55, INTERIOR_WALL_THICKNESS, first_floor_wall_height+0.8), material=interior_wall_mat, )
+        create_wall( name="MD_FF_ByStairwell", location=(main_partition_x + 1.2, south_interior_face + ENSUITE_DEPTH - 0.74, first_floor_top + first_floor_wall_height / 2 + 0.4),
+            size=(1.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height+0.8), material=interior_wall_mat, )
 
     bedroom_partition_y = south_interior_face + ENSUITE_DEPTH + INTERIOR_WALL_THICKNESS / 2
     bedroom_partition_center_x = east_interior_face - MASTER_BEDROOM_WIDTH / 2
@@ -321,7 +321,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
 
     if option == 3 or option == 4:
         #MB main door
-        add_door( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy - 1.0, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', 
+        add_door( "MD_FF_MainPartition", (main_partition_x + 0.5 + INTERIOR_WALL_THICKNESS / 2, oy - 1.04, first_floor_top), width=0.8, height=2.0, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', 
                  open_angle_degrees=-90, hinge_side='right'   )
 
         #large cupboard door
@@ -448,7 +448,7 @@ def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
     # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
     create_balustrade(
         name="MD_Staircase_Balustrade_Upstairs",
-        location=(0.7, -3.2, oz + 2.7),
+        location=(0.75, -3.29, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 1.7, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
         rotation_z=90.0 # Flips the rail to line up East-West
