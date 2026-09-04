@@ -356,8 +356,8 @@ def build_porch_south_side(
     exterior_mat,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
-    PORCH_LENGTH = 7.6  # West-to-east run
-    PORCH_DECK_LENGTH = 2.9  # West-to-east run
+    PORCH_LENGTH = 7.9  # West-to-east run
+    PORCH_DECK_LENGTH = 3.2  # West-to-east run
     PORCH_DEPTH = 1.8  # South projection depth
     PORCH_ROOF_PITCH = 20
     PORCH_ROOF_OVERHANG = 0.01
@@ -416,8 +416,8 @@ def build_porch_south_side(
     slope_wall_top_to_roof( porch_interior_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
 
 
-    add_window( "MD_GF_SouthExtension", (ox - 0.42, south_wall_outer_y - PORCH_DEPTH - PORCH_EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.4),
-        width=1.0, height=1.0, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',    )
+    add_window( "MD_GF_SouthExtension", (ox - 0.42, south_wall_outer_y - PORCH_DEPTH - PORCH_EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.5),
+        width=1.0, height=0.9, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',    )
 
     add_door( "MD_GF_SouthExtensionWest", (ox - 1.5 + PORCH_EXTERIOR_WALL_THICKNESS / 2, south_wall_outer_y - PORCH_DEPTH/2, floor_top),
         width=0.9, height=2.0, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', open_angle_degrees=90, hinge_side='right',    )

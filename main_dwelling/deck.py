@@ -4,7 +4,7 @@ from main_dwelling import config as dwelling_config
 from main_dwelling.materials_nodes import create_material, create_textured_material
 
 
-def build_north_deck(origin=(0, 0, 0), building_length=8.6, building_width=7.0, DECK_EXTENSION = 3.0, PILE_SIZE = 0.15, BEARER_SIZE = (0.150, 0.200), add_boundary_joist=False):
+def build_north_deck(origin=(0, 0, 0), building_length=9.3, building_width=7.0, DECK_EXTENSION = 3.0, PILE_SIZE = 0.15, BEARER_SIZE = (0.150, 0.200), add_boundary_joist=False):
     """
     Build a timber deck extending 3 meters north from the recessed north wall of the main dwelling.
     The deck is constructed with piles, bearers, joists, and 90mm x 25mm decking boards.

@@ -227,7 +227,7 @@ def _create_interior_partitions_ground_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, 
 
     #create_floor_covering("Floor_A", (0,0,0.501), (2,2), "textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg")
     create_floor_covering(name="Bathroom_Floor"
-                          , location=(3.3,-3.2,FLOOR_TOP+0.001), size=(2.05,2.7)
+                          , location=(3.6,-3.2,FLOOR_TOP+0.001), size=(2.05,2.7)
                           , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
                           ,texture_image_width=0.5
                           )
@@ -293,7 +293,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
             size=(MASTER_BEDROOM_WIDTH-0.5, INTERIOR_WALL_THICKNESS, first_floor_wall_height ), material=interior_wall_mat, )
         create_wall( name="MD_FF_BedroomCeiling",
             location=(bedroom_partition_center_x + 0.29, -0.8, first_floor_top + first_floor_wall_height),
-            size=(MASTER_BEDROOM_WIDTH-0.3, 5, 0.1 ), material=interior_wall_mat, )
+            size=(MASTER_BEDROOM_WIDTH-0.3, 4.90, 0.1 ), material=interior_wall_mat, )
 
     ensuite_wardrobe_wall_x = east_interior_face - ENSUITE_WIDTH - INTERIOR_WALL_THICKNESS/2
     ensuite_wardrobe_wall_center_y = south_interior_face + ENSUITE_DEPTH / 2 
@@ -333,7 +333,7 @@ def _create_interior_partitions_first_floor(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, L
         add_opening( "MD_FF_CaveAndHWC", (main_partition_x - 0.5 + INTERIOR_WALL_THICKNESS / 2, oy + 1.55, first_floor_top + 1.05), width=1.8, height=2.2, depth=INTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X',    )
 
     create_floor_covering(name="Ensuite_Floor"
-                          , location=(3.3,-3.5,first_floor_top+0.001), size=(2.05,2.0)
+                          , location=(3.6,-3.5,first_floor_top+0.001), size=(2.05,2.0)
                           , texture_path="C:\\Users\\Tom (local)\\GH\\Kakaforest\\textures\\granite_tile_03\\granite_tile_03_diff_1k.jpg"
                           ,texture_image_width=0.5
                           )
@@ -439,7 +439,7 @@ def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
 
 
     create_balustrade(name="MD_StaircaseRail_BothFloors"
-                      , location=(1.22, -3.6, FLOOR_TOP+0.75)
+                      , location=(1.52, -3.6, FLOOR_TOP+0.75)
                       , size=(INTERIOR_WALL_THICKNESS, 2.2, 1.0), rise_top=1.85, rise_bottom=1.85
                       , rotation_z=90.0
                       )
@@ -448,14 +448,14 @@ def _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FI
     # Adjusted size: (Thickness, Length/Run=1.0m, Height=1.0m)
     create_balustrade(
         name="MD_Staircase_Balustrade_Upstairs",
-        location=(0.75, -3.29, oz + 2.7),
+        location=(1.05, -3.29, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 1.7, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=True,
         rotation_z=90.0 # Flips the rail to line up East-West
     )
     create_balustrade(
         name="MD_Staircase_Balustrade_Upstairs_2",
-        location=(-0.91, -3.64, oz + 2.7),
+        location=(-0.61, -3.64, oz + 2.7),
         size=(INTERIOR_WALL_THICKNESS, 0.4, 1.0), 
         rise_top=0.0, rise_bottom=0.0, hide_start_post=True, hide_end_post=False
     )

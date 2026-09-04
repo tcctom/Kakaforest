@@ -516,7 +516,7 @@ cleanup()
 # Setting it to March 20th at 4:30 PM (16.5) for long afternoon autumn shadows
 #setup_nz_sun_and_sky( month=6, day=21, time=12.0, use_cycles=False)
 
-setup_nz_sun_and_sky2(    month=1,    day=21,    time=9)
+setup_nz_sun_and_sky2(    month=12,    day=21,    time=17)
 #setup_nz_sun_and_sky2(    month=12,    day=21,    time=11)
 #setup_nz_sun_and_sky2(    month=12,    day=21,    time=12)
 #setup_nz_sun_and_sky2(    month=6,    day=21,    time=15)
@@ -583,13 +583,13 @@ if SHOW_GROUND and linz_terrain:
 #outdoor_structures.build_pavers_east(origin=(27, -56, -7.55))
 
 #main dwelling clearing with gravel finish
-ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.5, -4.6, 0.2)),thickness=0.4)
+ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.8, -4.6, 0.2)),thickness=0.4)
 ground_module.gravel_plane(ground_module.grid_points((4.6, -4.2, 0.15), (-1.55, -6.56, 0.15)),thickness=0.35)
 main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
-main_dwelling_module.build_north_deck(origin=(0, 1.7, 0.17), add_boundary_joist = True) #ground level deck
-main_dwelling_module.build_north_deck(origin=(0, 1.7, 2.8), DECK_EXTENSION=1.0, PILE_SIZE=0.0, BEARER_SIZE = (0.0, 0.0), add_boundary_joist = True)  # upper level deck
+main_dwelling_module.build_north_deck(origin=(0, 1.65, 0.17), add_boundary_joist = True) #ground level deck
+main_dwelling_module.build_north_deck(origin=(0, 1.65, 2.8), DECK_EXTENSION=1.0, PILE_SIZE=0.0, BEARER_SIZE = (0.0, 0.0), add_boundary_joist = True)  # upper level deck
 
 # 1b. Build boulder row along south edge of clearing
 #outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)
@@ -633,7 +633,7 @@ if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 3 or option == 4:
     outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
-    outdoor_structures.build_water_tank(origin=(1.2, -1.1, 2.75), diameter=0.55, height=1.8)
+    outdoor_structures.build_water_tank(origin=(1.45, -2.9, 2.75), diameter=0.55, height=1.8)
     # At a standard 550mm diameter, a wetback-capable 250L cylinder usually stands between 1,730mm and 1,740mm tall (approx. 1.74 metres). 
     # Brands like Rinnai NZ build their 250L stainless steel wetback models exactly to this 550mm x 1740mm specification. 
     # Putting a wetback cylinder in the attic of a two-storey house directly above a ground-floor log burner is structurally and mechanically complex. 

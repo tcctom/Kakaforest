@@ -9,6 +9,75 @@ from mathutils import Euler  # type: ignore
 import math
 
 
+# -----------------------------------------------------------------------------
+# Blueprint Tuning
+# -----------------------------------------------------------------------------
+# One-switch style preset:
+# True  -> clean presentation mode (minimal clutter, clear walls/openings)
+# False -> legacy technical mode (heavier edge/wire overlays)
+PLAN_CLEAN_MODE = True
+
+# Clean mode contrast preset:
+# 'strong' (default) -> crisper wall/opening definition
+# 'soft'             -> lighter, more subdued drawing look
+PRESENTATION_CONTRAST = 'strong'
+
+# Structural objects that keep wire edges when clean mode is enabled.
+STRUCTURE_WIRE_KEYWORDS = ('wall', 'partition', 'slab', 'floor', 'roof', 'beam', 'column', 'stair')
+
+if PLAN_CLEAN_MODE:
+    SHOW_GLOBAL_WIREFRAME_OVERLAY = False
+    EMPHASIZE_OPENINGS_IN_SOLID_VIEW = True
+    SHOW_WIREFRAME_FOR_ALL_MESHES = False
+
+    if PRESENTATION_CONTRAST.lower() == 'soft':
+        ANNOTATION_COLOR = (0.2, 0.2, 0.2, 1.0)
+        DIMENSION_LINE_BEVEL = 0.004
+        WALL_FILL_COLOR = (0.985, 0.985, 0.985, 1.0)
+        CAVITY_RIDGE_FACTOR = 2.1
+        CAVITY_VALLEY_FACTOR = 2.1
+        OPENING_GUIDE_COLOR = (0.30, 0.30, 0.30, 1.0)
+    else:
+        # Default strong presentation preset
+        ANNOTATION_COLOR = (0.16, 0.16, 0.16, 1.0)
+        DIMENSION_LINE_BEVEL = 0.005
+        WALL_FILL_COLOR = (0.99, 0.99, 0.99, 1.0)
+        CAVITY_RIDGE_FACTOR = 2.6
+        CAVITY_VALLEY_FACTOR = 2.6
+        OPENING_GUIDE_COLOR = (0.22, 0.22, 0.22, 1.0)
+else:
+    # Previous stronger look (kept for comparison)
+    ANNOTATION_COLOR = (0.0, 0.0, 0.0, 1.0)
+    DIMENSION_LINE_BEVEL = 0.008
+    SHOW_GLOBAL_WIREFRAME_OVERLAY = True
+    EMPHASIZE_OPENINGS_IN_SOLID_VIEW = False
+    WALL_FILL_COLOR = (1.0, 1.0, 1.0, 1.0)
+    CAVITY_RIDGE_FACTOR = 1.8
+    CAVITY_VALLEY_FACTOR = 1.8
+    SHOW_WIREFRAME_FOR_ALL_MESHES = True
+    OPENING_GUIDE_COLOR = (0.0, 0.0, 0.0, 1.0)
+
+
+def _get_opening_cutter_objects():
+    """
+    Find boolean cutter objects used for door/window/opening modifiers.
+    These cutters can be displayed as lightweight opening guides in top-down plans.
+    """
+    cutters = set()
+    for obj in bpy.data.objects:
+        if obj.type != 'MESH':
+            continue
+        for mod in obj.modifiers:
+            if mod.type != 'BOOLEAN' or mod.object is None:
+                continue
+            if mod.name == 'Blueprint_Section':
+                continue
+            mod_name = mod.name.lower()
+            if any(token in mod_name for token in ('window', 'door', 'opening', 'cut')):
+                cutters.add(mod.object)
+    return cutters
+
+
 def setup_blueprint_viewport():
     """
     Configure the active 3D viewport for blueprint-style rendering.
@@ -43,9 +112,9 @@ def setup_blueprint_viewport():
     # Set shading mode to SOLID (flat)
     space.shading.type = 'SOLID'
     
-    # Use SINGLE white color
-    space.shading.color_type = 'SINGLE'
-    space.shading.single_color = (1.0, 1.0, 1.0)  # Pure white
+    # Use OBJECT colors so text/dimension objects can be forced to pure black
+    # while walls/background remain white.
+    space.shading.color_type = 'OBJECT'
     
     # Set viewport background color to white
     space.shading.background_type = 'VIEWPORT'
@@ -62,9 +131,9 @@ def setup_blueprint_viewport():
     space.shading.show_cavity = True
     space.shading.cavity_type = 'BOTH'  # Both world and screen
     
-    # Maximum cavity settings for strongest possible edge lines
-    space.shading.cavity_ridge_factor = 2.5  # Very strong ridge lines
-    space.shading.cavity_valley_factor = 2.5  # Very strong valley lines
+    # Strong but slightly reduced cavity settings for cleaner text edges.
+    space.shading.cavity_ridge_factor = CAVITY_RIDGE_FACTOR
+    space.shading.cavity_valley_factor = CAVITY_VALLEY_FACTOR
     
     # Set light to be flat for blueprint look
     space.shading.light = 'FLAT'
@@ -77,7 +146,8 @@ def setup_blueprint_viewport():
     space.overlay.show_cursor = False  # Hide 3D cursor
     space.overlay.show_object_origins = False  # Hide origin points
     space.overlay.show_text = True  # Keep text visible
-    space.overlay.show_wireframes = True  # Enable wireframe edges on objects
+    # Previous: True (caused hatched wire overlay on text glyphs)
+    space.overlay.show_wireframes = SHOW_GLOBAL_WIREFRAME_OVERLAY
     space.overlay.show_ortho_grid = False  # Hide orthographic grid
     space.overlay.show_outline_selected = False  # Don't highlight selected
     # Hide helper gizmos (camera frames/lights/empties) while keeping overlays on.
@@ -274,18 +344,53 @@ def apply_section_to_all_objects(cut_height, hide_site_elements=True):
     else:
         print("  Keeping deck/terrain/site objects visible")
     
+    opening_cutters = _get_opening_cutter_objects() if EMPHASIZE_OPENINGS_IN_SOLID_VIEW else set()
+
     # FIRST: Enable wireframe on ALL mesh objects for edge visibility
     # EXCEPT the background plane and labels
     wire_count = 0
+    structure_wire_count = 0
+    hidden_wire_count = 0
+    opening_guide_count = 0
     for obj in bpy.data.objects:
         if (obj.type == 'MESH' and 
             not obj.name.startswith('Label_') and 
             not obj.name.startswith('Blueprint_') and
             obj.name != 'Blueprint_Background'):
-            obj.show_wire = True
-            obj.show_all_edges = True
+            obj.color = WALL_FILL_COLOR
+            name_lower = obj.name.lower()
+            is_structure_obj = any(keyword in name_lower for keyword in STRUCTURE_WIRE_KEYWORDS)
+
+            # Previous behavior: show wireframe for every mesh object.
+            if SHOW_WIREFRAME_FOR_ALL_MESHES or is_structure_obj:
+                obj.show_wire = True
+                obj.show_all_edges = True
+                if is_structure_obj:
+                    structure_wire_count += 1
+            else:
+                obj.show_wire = False
+                obj.show_all_edges = False
+                hidden_wire_count += 1
+
+            # With global wireframe overlay off, small opening details can disappear.
+            # Show actual opening cutter meshes as wire guides for clear apertures.
+            if EMPHASIZE_OPENINGS_IN_SOLID_VIEW and obj in opening_cutters:
+                obj.hide_viewport = False
+                obj.hide_render = True
+                obj.display_type = 'WIRE'
+                obj.show_in_front = True
+                obj.color = OPENING_GUIDE_COLOR
+                opening_guide_count += 1
+            elif obj.display_type == 'WIRE':
+                obj.display_type = 'TEXTURED'
+
             wire_count += 1
     print(f"  Enabled wireframe on {wire_count} objects")
+    if not SHOW_WIREFRAME_FOR_ALL_MESHES:
+        print(f"  Structural wireframes: {structure_wire_count} objects")
+        print(f"  Non-structural wireframes suppressed: {hidden_wire_count} objects")
+    if EMPHASIZE_OPENINGS_IN_SOLID_VIEW:
+        print(f"  Showing {opening_guide_count} opening guide cutters (wireframe)")
     
     # Create the cutter cube
     cutter = create_section_cutter(cut_height)
@@ -299,6 +404,8 @@ def apply_section_to_all_objects(cut_height, hide_site_elements=True):
     
     for obj in bpy.data.objects:
         if obj.type == 'MESH' and obj != cutter and not obj.name.startswith('Label_'):
+            if obj in opening_cutters:
+                continue  # Keep opening guide cutters unmodified for consistent visibility
             has_boolean = any(mod.type == 'BOOLEAN' for mod in obj.modifiers)
             if has_boolean:
                 objects_with_booleans.append(obj)
@@ -457,6 +564,8 @@ def create_room_label(text, location, size=0.5):
     text_data = bpy.data.curves.new(name=label_name, type='FONT')
     text_data.body = text
     text_data.size = size
+    text_data.resolution_u = 24  # Smoother glyph curves in viewport
+    text_data.fill_mode = 'FRONT'
     text_data.align_x = 'CENTER'
     text_data.align_y = 'CENTER'
     
@@ -473,13 +582,16 @@ def create_room_label(text, location, size=0.5):
     # Make text visible in all viewports
     text_obj.show_name = False
     text_obj.show_in_front = True  # Always show in front (X-ray mode)
+    # text_obj.color = (0.0, 0.0, 0.0, 1.0)  # Previous: crisp black
+    text_obj.color = ANNOTATION_COLOR
     
     # Create simple material for text (materials have nodes by default in Blender 5.1+)
     if "Label_Material" not in bpy.data.materials:
         mat = bpy.data.materials.new(name="Label_Material")
         # Set base color to black for text visibility
         if mat.node_tree and "Principled BSDF" in mat.node_tree.nodes:
-            mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = (0, 0, 0, 1)
+            # mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = (0, 0, 0, 1)  # Previous: black
+            mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = ANNOTATION_COLOR
     
     if bpy.data.materials.get("Label_Material"):
         text_data.materials.append(bpy.data.materials["Label_Material"])
@@ -501,6 +613,21 @@ def cleanup_dimensions():
     
     if removed_count > 0:
         print(f"✓ Cleaned up {removed_count} old dimension objects")
+
+
+def cleanup_labels():
+    """
+    Remove all existing room label objects from the scene.
+    Call this before creating new labels to avoid stale labels when switching plans.
+    """
+    removed_count = 0
+    for obj in list(bpy.data.objects):
+        if obj.name.startswith("Label_"):
+            bpy.data.objects.remove(obj, do_unlink=True)
+            removed_count += 1
+
+    if removed_count > 0:
+        print(f"✓ Cleaned up {removed_count} old label objects")
 
 
 def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, name_suffix=""):
@@ -559,8 +686,11 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
     bpy.context.scene.collection.objects.link(dim_obj)
     
     # Set line properties
-    curve_data.bevel_depth = 0.005  # Thin line
+    # curve_data.bevel_depth = 0.008  # Previous: thicker/stronger
+    curve_data.bevel_depth = DIMENSION_LINE_BEVEL
     curve_data.use_fill_caps = True
+    # dim_obj.color = (0.0, 0.0, 0.0, 1.0)  # Previous: black
+    dim_obj.color = ANNOTATION_COLOR
     created_objects.append(dim_obj)
     
     # Create extension lines (ticks at ends)
@@ -585,8 +715,11 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
         
         ext_obj = bpy.data.objects.new(f'{dim_name}_ext{i}', ext_curve)
         bpy.context.scene.collection.objects.link(ext_obj)
-        ext_curve.bevel_depth = 0.005
+        # ext_curve.bevel_depth = 0.008  # Previous: thicker/stronger
+        ext_curve.bevel_depth = DIMENSION_LINE_BEVEL
         ext_curve.use_fill_caps = True
+        # ext_obj.color = (0.0, 0.0, 0.0, 1.0)  # Previous: black
+        ext_obj.color = ANNOTATION_COLOR
         created_objects.append(ext_obj)
     
     # Create measurement text
@@ -599,6 +732,8 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
     text_data = bpy.data.curves.new(f'{dim_name}_text', type='FONT')
     text_data.body = text_str
     text_data.size = text_size
+    text_data.resolution_u = 24  # Smoother numeric/text glyph curves
+    text_data.fill_mode = 'FRONT'
     text_data.align_x = 'CENTER'
     text_data.align_y = 'CENTER'
     
@@ -614,13 +749,16 @@ def create_dimension_line(start, end, offset=0.5, text_size=0.3, z_height=1.3, n
     
     text_obj.location = text_loc
     text_obj.show_in_front = True
+    # text_obj.color = (0.0, 0.0, 0.0, 1.0)  # Previous: black
+    text_obj.color = ANNOTATION_COLOR
     created_objects.append(text_obj)
     
     # Apply black material to all dimension objects
     if "Dimension_Material" not in bpy.data.materials:
         mat = bpy.data.materials.new(name="Dimension_Material")
         if mat.node_tree and "Principled BSDF" in mat.node_tree.nodes:
-            mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = (0, 0, 0, 1)
+            # mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = (0, 0, 0, 1)  # Previous: black
+            mat.node_tree.nodes["Principled BSDF"].inputs['Base Color'].default_value = ANNOTATION_COLOR
     
     dim_mat = bpy.data.materials.get("Dimension_Material")
     for obj in created_objects:
@@ -687,15 +825,18 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     
     print("Applying section cut to reveal interior walls...")
     apply_section_to_all_objects(1.7, hide_site_elements)  # Slightly higher to avoid deck edge issues
+
+    # Clean up old labels so floor-specific labels do not accumulate.
+    cleanup_labels()
     
     # Add sample labels (customize these for your actual rooms)
     print("\nAdding room labels...")
     # Example labels - adjust coordinates to match your building layout
     # Using Z at cut height so labels are visible
-    create_room_label('GROUND\nFLOOR', (-6.5, 0, 1.3), size=0.8)
+    create_room_label('GROUND FLOOR', (-2, -2, 1.3), size=0.4)
     create_room_label('Dining', (-2, 0, 1.3), size=0.4)
-    create_room_label('Bathroom', (+3.2, -3, 1.3), size=0.4)
-    create_room_label('Guest\nbedroom', (+3.3, 0, 1.3), size=0.4)
+    create_room_label('Bathroom', (+3.6, -3.1, 1.3), size=0.4)
+    create_room_label('Guest\nbedroom', (+3.5, 0, 1.3), size=0.4)
 
     if option == 1:
         create_room_label('Kitchen', (-0.8, -3, 1.3), size=0.4)
@@ -706,8 +847,8 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
         create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
         create_room_label('Hall', (1.2, -3, 1.3), size=0.4)
     if option == 4:
-        create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
-        create_room_label('Utility', (1.7, -5.5, 1.3), size=0.4)
+        create_room_label('Kitchen', (-2.8, -3.3, 1.3), size=0.4)
+        create_room_label('Utility', (1.8, -5.5, 1.3), size=0.4)
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -718,21 +859,22 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     # north face
-    create_dimension_line((-4.5, 2.0), (4.5, 2.0), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
-    create_dimension_line((-4.35, 1.5), (0.35, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
-    create_dimension_line((1.15, 1.5), (4.35, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
+    create_dimension_line((-4.8, 2.0), (4.8, 2.0), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="north_wall")
+    create_dimension_line((-4.65, 1.5), (0.65, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="dining_width")
+    create_dimension_line((0.75, 1.5), (1.35, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_wardrobe_width")
+    create_dimension_line((1.45, 1.5), (4.65, 1.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="gb_eastwest_width")
 
     # east face
-    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="east_wall")
-    create_dimension_line((4.5, 1.55), (4.5, -4.55), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
-    create_dimension_line((4.5, 1.55), (4.5, -1.7), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
-    create_dimension_line((4.5, -1.8), (4.5, -4.55), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
+    create_dimension_line((4.85, 2.65), (4.85, -4.65), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="east_wall")
+    create_dimension_line((4.85, 1.5), (4.85, -4.5), offset=1.4, text_size=0.3, z_height=1.3, name_suffix="northsouth_length")
+    create_dimension_line((4.85, 1.5), (4.85, -1.75), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
+    create_dimension_line((4.85, -1.85), (4.85, -4.5), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
 
     if option == 4:
-        create_dimension_line((4.5, -4.7), (4.5, -6.55), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
-        create_dimension_line((-4.5, -4.7), (-1.6, -4.7), offset=-2.2, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
-        create_dimension_line((-1.45, -6.5), (0.7, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="entrance_eastwest_length")
-        create_dimension_line((0.81, -6.5), (2.95, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
+        create_dimension_line((3.2, -4.65), (3.2, -6.5), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
+        create_dimension_line((-4.8, -4.7), (-1.6, -4.7), offset=-2.2, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
+        create_dimension_line((-1.45, -6.5), (0.75, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="entrance_eastwest_length")
+        create_dimension_line((0.85, -6.5), (2.95, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="utility_eastwest_length")
         create_dimension_line((-1.6, -6.5), (3.1, -6.5), offset=-0.9, text_size=0.3, z_height=1.3, name_suffix="porch_eastwest_length")
 
 
@@ -779,11 +921,14 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     # Apply section cutting at 4.0m
     print("Applying section cut to reveal interior walls...")
     apply_section_to_all_objects(4.0, hide_site_elements)
+
+    # Clean up old labels so floor-specific labels do not accumulate.
+    cleanup_labels()
     
     # Add sample labels
     print("\nAdding room labels...")
-    create_room_label('FIRST\nFLOOR', (-6.5, 0, 3.8), size=0.8)
-    create_room_label('Master\nbedroom', (+3.5, 0, 3.8), size=0.4)
+    create_room_label('FIRST FLOOR', (-2, -2, 3.8), size=0.4)
+    create_room_label('Master\nbedroom', (+3.4, 0, 3.8), size=0.4)
     create_room_label('Living', (-2, 0, 3.8), size=0.4)
 
     if option == 1:
@@ -804,13 +949,13 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     print("\nAdding dimension lines...")
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
-    create_dimension_line((-4.5, 2.5), (4.5, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
+    create_dimension_line((-4.8, 2.5), (4.8, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
 
-    create_dimension_line((4.5, 2.7), (4.5, -4.7), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((4.5, 2.7), (4.5, 1.7), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
-    create_dimension_line((4.5, 1.55), (4.5, -2.45), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
-    create_dimension_line((4.5, -2.55), (4.5, -4.55), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
-    create_dimension_line((2.35, -4.7), (4.35, -4.7), offset=-0.4, text_size=0.3, z_height=3.8, name_suffix="bath_eastwest_length")
+    create_dimension_line((4.8, 2.65), (4.8, -4.65), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
+    create_dimension_line((4.8, 2.65), (4.8, 1.65), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
+    create_dimension_line((4.8, 1.5), (4.8, -2.4), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+    create_dimension_line((4.8, -2.5), (4.8, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
+    create_dimension_line((2.65, -4.65), (4.65, -4.65), offset=-0.4, text_size=0.3, z_height=3.8, name_suffix="bath_eastwest_length")
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
@@ -819,9 +964,9 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.35, 1.7), (0.75, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.65, 1.7), (1.05, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
         #create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
-        create_dimension_line((0.85, 1.7), (4.35, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
+        create_dimension_line((1.15, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")
@@ -841,6 +986,7 @@ def show_roof_plan():
     set_blueprint_camera_visibility('BP_Roof_Plan')
     view_through_camera()
     apply_section_to_all_objects(7.5)
+    cleanup_labels()
     
     print("\n✓ Roof plan ready!")
     print("="*60)
@@ -859,6 +1005,7 @@ def show_site_plan():
     set_blueprint_camera_visibility('BP_Site_Plan')
     view_through_camera()
     remove_section_from_all_objects()
+    cleanup_labels()
     
     print("\n✓ Site plan ready!")
     print("="*60)
