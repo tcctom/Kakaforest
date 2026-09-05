@@ -6,7 +6,7 @@ from main_dwelling.deck import build_north_deck
 from main_dwelling.materials_nodes import (
     create_textured_material,
 )
-from main_dwelling.porch import build_porch_south_side, build_simple_open_porch
+from main_dwelling.porch import build_porch_south_side, build_simple_open_porch, build_verandah_west_side
 from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
@@ -79,18 +79,21 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     if option == 4:
         _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
         _create_staircase_southmiddle4( ox+2.06, oy-2.24, oz+0.1, floor_mat, )
-        build_porch_south_side(
-            ox,
-            oy,
-            oz,
-            WIDTH,
-            LENGTH,
+        build_porch_south_side( ox, oy, oz, WIDTH, LENGTH,
             GROUND_FLOOR_HEIGHT,
             EXTERIOR_WALL_THICKNESS,
             floor_mat,
             create_textured_material,
             runtime_context.porch_deck_texture_path,
             potius_mat,
+            west_corner_miter_run=1.80,
+        )
+        build_verandah_west_side( ox, oy, oz, WIDTH, LENGTH,
+            floor_mat,
+            create_textured_material,
+            runtime_context.porch_deck_texture_path,
+            south_overlap=0.0,
+            south_corner_miter_run=1.80,
         )
 
     

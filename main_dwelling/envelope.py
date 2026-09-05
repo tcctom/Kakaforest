@@ -78,12 +78,12 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         add_window("MD_FF_NorthWall", (ox - LENGTH / 4 + 0.2, north_wall_outer_face, window_z_first+0.05), width=2.7, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
         add_window("MD_FF_NorthWall", (ox + LENGTH / 4 + 0.4, north_wall_outer_face, window_z_first+0.55), width=1.8, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
     if option == 3 or option == 4:
-        add_window("MD_GF_NorthWall", (ox - 3.0, north_wall_outer_face, oz+1.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_GF_NorthWall", (ox - 0.4, north_wall_outer_face, oz+1.1), width=1.5, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_GF_NorthWall", (ox + LENGTH / 4 + 0.4, north_wall_outer_face, oz+1.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_NorthWall", (ox -3.0, north_wall_outer_face, window_z_first+0.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_NorthWall", (ox - 0.4, north_wall_outer_face, window_z_first+0.05), width=1.5, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_NorthWall", (ox + LENGTH / 4 + 0.4, north_wall_outer_face, window_z_first+0.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_GF_NorthWall", (ox - 3.05, north_wall_outer_face, oz+1.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_GF_NorthWall", (ox - 0.5, north_wall_outer_face, oz+1.1), width=1.5, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_GF_NorthWall", (ox + 3.05, north_wall_outer_face, oz+1.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_FF_NorthWall", (ox -3.05, north_wall_outer_face, window_z_first+0.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_FF_NorthWall", (ox - 0.5, north_wall_outer_face, window_z_first+0.05), width=1.5, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_FF_NorthWall", (ox + 3.05, north_wall_outer_face, window_z_first+0.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
         
 
 
@@ -136,7 +136,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
     if option == 4:
         #south wall windows - option 4
-        add_door("MD_GF_SouthWall", (ox - 0.8, south_wall_y, oz+0.1), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_door("MD_GF_SouthWall", (ox - 0.7, south_wall_y, oz+0.1), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_GF_SouthWall", (ox - 3.15, south_wall_y, oz + 1.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
         #add_window("MD_FF_SouthWall", (ox + 3.2, south_wall_y, window_z_first + 0.5), width=0.7, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
@@ -144,7 +144,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         add_window("MD_FF_SouthWall", (ox - 3.15, south_wall_y, window_z_first + 0.5), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_FF_SouthWall", (ox + 4.15, south_wall_y, window_z_first + 0.7), width=0.6, height=0.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
-        add_window("MD_GF_WestWall", (ox - LENGTH / 2, oy + 1.2, oz + 1.45), width=0.9, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
+        add_window("MD_GF_WestWall", (ox - LENGTH / 2, oy, oz + 1.55), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
 
 
 def _add_gable_windows(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, option=1):

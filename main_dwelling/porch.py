@@ -354,6 +354,7 @@ def build_porch_south_side(
     create_textured_material,
     deck_texture_path,
     exterior_mat,
+    west_corner_miter_run=0.90,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
     PORCH_LENGTH = 7.9  # West-to-east run
@@ -458,16 +459,20 @@ def build_porch_south_side(
     bpy.context.collection.objects.link(porch_roof_obj)
 
     roof_thickness = 0.07
+    # 45-degree miter seam from the building corner out to the southwest roof edge.
+    miter_run = max(0.0, min(west_corner_miter_run, porch_roof_span))
+    miter_low_x = porch_west_x - miter_run
+
     porch_verts = [
         # top surface
-        (porch_roof_west, porch_roof_building, porch_roof_high_height),
+        (porch_west_x, porch_roof_building, porch_roof_high_height),
         (porch_roof_east, porch_roof_building, porch_roof_high_height),
-        (porch_roof_west, porch_roof_outer, porch_roof_low_height),
+        (miter_low_x, porch_roof_outer, porch_roof_low_height),
         (porch_roof_east, porch_roof_outer, porch_roof_low_height),
         # underside surface
-        (porch_roof_west, porch_roof_building, porch_roof_high_height - roof_thickness),
+        (porch_west_x, porch_roof_building, porch_roof_high_height - roof_thickness),
         (porch_roof_east, porch_roof_building, porch_roof_high_height - roof_thickness),
-        (porch_roof_west, porch_roof_outer, porch_roof_low_height - roof_thickness),
+        (miter_low_x, porch_roof_outer, porch_roof_low_height - roof_thickness),
         (porch_roof_east, porch_roof_outer, porch_roof_low_height - roof_thickness),
     ]
     porch_faces = [
@@ -492,21 +497,28 @@ def build_porch_south_side(
     pitch_rad = math.radians(PORCH_ROOF_PITCH)
 
     # Run rafters close to full roof depth, with a slight extension beyond the wall lines.
-    rafter_span = max(0.2, porch_roof_span + (2 * rafter_end_overhang))
-    rafter_y = (porch_roof_building + porch_roof_outer) / 2
-    rafter_z = ((porch_roof_high_height + porch_roof_low_height) / 2) - roof_thickness - rafter_height / 2 - 0.01
-
     rafter_count = max(2, int(PORCH_LENGTH / rafter_spacing) + 1)
-    start_x = porch_west_x + rafter_inset
+    start_x = miter_low_x + rafter_inset
     end_x = porch_east_x - rafter_inset
     actual_spacing = (end_x - start_x) / (rafter_count - 1)
 
     for i in range(rafter_count):
         rafter_x = start_x + i * actual_spacing
-        bpy.ops.mesh.primitive_cube_add(location=(rafter_x, rafter_y, rafter_z))
+
+        # Respect the 45-degree miter by shortening rafters near the southwest corner.
+        local_high_y = porch_roof_building
+        if miter_run > 0.0 and rafter_x < porch_west_x:
+            local_high_y = porch_roof_building + (rafter_x - porch_west_x)
+        local_span = max(0.15, local_high_y - porch_roof_outer)
+        local_center_y = (local_high_y + porch_roof_outer) / 2
+        t = (local_center_y - porch_roof_building) / (porch_roof_outer - porch_roof_building)
+        local_top_z = porch_roof_high_height + (porch_roof_low_height - porch_roof_high_height) * t
+        local_rafter_z = local_top_z - roof_thickness - rafter_height / 2 - 0.01
+
+        bpy.ops.mesh.primitive_cube_add(location=(rafter_x, local_center_y, local_rafter_z))
         rafter = bpy.context.active_object
         rafter.name = f"MainDwelling_PorchRafter_{i + 1:02d}"
-        rafter.scale = (rafter_width / 2, rafter_span / 2, rafter_height / 2)
+        rafter.scale = (rafter_width / 2, local_span / 2, rafter_height / 2)
         rafter.rotation_euler[0] = pitch_rad
         bpy.ops.object.transform_apply(scale=True, rotation=True)
         rafter.data.materials.append(floor_mat)
@@ -518,3 +530,162 @@ def build_porch_south_side(
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
     porch_roof_obj.select_set(False)
+
+
+def build_verandah_west_side(
+    ox,
+    oy,
+    oz,
+    WIDTH,
+    LENGTH,
+    floor_mat,
+    create_textured_material,
+    deck_texture_path,
+    south_overlap=0.0,
+    south_corner_miter_run=0.90,
+):
+    """
+    Create a west-side verandah that connects to the south porch and runs
+    north along the outside of the main west wall.
+    Uses the same deck and roof style as the south porch.
+
+    Args:
+        south_overlap: Extra overlap (meters) to extend south for seamless
+            connection with the south porch deck/roof edge.
+    """
+    VERANDAH_RUN_NORTH = 5.0
+    VERANDAH_DEPTH = 1.8
+    VERANDAH_ROOF_PITCH = 20
+    VERANDAH_ROOF_OVERHANG = 0.01
+
+    west_wall_outer_x = ox - LENGTH / 2
+    south_wall_outer_y = oy - WIDTH / 2
+
+    # Extend slightly south to guarantee visual/physical overlap at junction.
+    verandah_south_y = south_wall_outer_y - south_overlap
+    verandah_north_y = south_wall_outer_y + VERANDAH_RUN_NORTH
+    verandah_total_run = verandah_north_y - verandah_south_y
+    verandah_center_y = (verandah_south_y + verandah_north_y) / 2
+    verandah_center_x = west_wall_outer_x - VERANDAH_DEPTH / 2
+
+    deck_z = oz - 0.25
+    porch_roof_high_height = oz + 2.6
+
+    # Deck slab (same material workflow as south porch).
+    bpy.ops.mesh.primitive_cube_add(location=(verandah_center_x, verandah_center_y, deck_z))
+    verandah_deck = bpy.context.active_object
+    verandah_deck.name = "MD_VerandahDeck_West"
+    verandah_deck.scale = (VERANDAH_DEPTH / 2, verandah_total_run / 2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+
+    deck_mat = create_textured_material("TimberDecking", deck_texture_path)
+    verandah_deck.data.materials.append(deck_mat)
+
+    bpy.context.view_layer.objects.active = verandah_deck
+    verandah_deck.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    verandah_deck.select_set(False)
+
+    verandah_roof_building_x = west_wall_outer_x
+    verandah_roof_outer_x = west_wall_outer_x - VERANDAH_DEPTH - VERANDAH_ROOF_OVERHANG - 0.07
+    verandah_roof_span = abs(verandah_roof_outer_x - verandah_roof_building_x)
+
+    verandah_roof_drop = verandah_roof_span * math.tan(math.radians(VERANDAH_ROOF_PITCH))
+    verandah_roof_low_height = porch_roof_high_height - verandah_roof_drop
+
+    verandah_roof_south = verandah_south_y - VERANDAH_ROOF_OVERHANG
+    verandah_roof_north = verandah_north_y + VERANDAH_ROOF_OVERHANG
+
+    # 45-degree miter seam from the building corner out to the southwest roof edge.
+    miter_run = max(0.0, min(south_corner_miter_run, verandah_roof_span))
+    verandah_roof_south = min(verandah_roof_south, south_wall_outer_y - miter_run)
+    miter_low_y = south_wall_outer_y - miter_run
+
+    # Corner posts along outer edge (open verandah).
+    POST_SIZE = 0.15
+    POST_INSET = 0.2
+    post_x = west_wall_outer_x - VERANDAH_DEPTH
+    post_height = verandah_roof_low_height - deck_z
+
+    for i, post_y in enumerate((verandah_roof_south + POST_INSET, verandah_roof_north - POST_INSET), start=1):
+        bpy.ops.mesh.primitive_cube_add(location=(post_x, post_y, deck_z + post_height / 2))
+        post = bpy.context.active_object
+        post.name = f"MD_VerandahPost_West_{i}"
+        post.scale = (POST_SIZE / 2, POST_SIZE / 2, post_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        post.data.materials.append(floor_mat)
+
+    verandah_roof_mesh = bpy.data.meshes.new("MD_VerandahRoof_Monopitch_West")
+    verandah_roof_obj = bpy.data.objects.new("MD_VerandahRoof_West", verandah_roof_mesh)
+    bpy.context.collection.objects.link(verandah_roof_obj)
+
+    roof_thickness = 0.07
+    roof_verts = [
+        # Top surface: high near building (east), low at outer west edge.
+        (verandah_roof_building_x, south_wall_outer_y, porch_roof_high_height),
+        (verandah_roof_building_x, verandah_roof_north, porch_roof_high_height),
+        (verandah_roof_outer_x, miter_low_y, verandah_roof_low_height),
+        (verandah_roof_outer_x, verandah_roof_north, verandah_roof_low_height),
+        # Underside.
+        (verandah_roof_building_x, south_wall_outer_y, porch_roof_high_height - roof_thickness),
+        (verandah_roof_building_x, verandah_roof_north, porch_roof_high_height - roof_thickness),
+        (verandah_roof_outer_x, miter_low_y, verandah_roof_low_height - roof_thickness),
+        (verandah_roof_outer_x, verandah_roof_north, verandah_roof_low_height - roof_thickness),
+    ]
+    roof_faces = [
+        (0, 1, 3, 2),
+        (4, 6, 7, 5),
+        (0, 2, 6, 4),
+        (1, 5, 7, 3),
+        (0, 4, 5, 1),
+        (2, 3, 7, 6),
+    ]
+
+    verandah_roof_mesh.from_pydata(roof_verts, [], roof_faces)
+    verandah_roof_mesh.update()
+    verandah_roof_obj.data.materials.append(create_black_box_profile_roof_material())
+
+    # Exposed rafters, matching south porch style but arrayed along north-south run.
+    rafter_width = 0.06
+    rafter_height = 0.12
+    rafter_inset = 0.15
+    rafter_end_overhang = 0.00
+    rafter_spacing = 0.8
+    pitch_rad = math.radians(VERANDAH_ROOF_PITCH)
+
+    rafter_count = max(2, int(verandah_total_run / rafter_spacing) + 1)
+    start_y = miter_low_y + rafter_inset
+    end_y = verandah_north_y - rafter_inset
+    actual_spacing = (end_y - start_y) / (rafter_count - 1)
+
+    for i in range(rafter_count):
+        rafter_y = start_y + i * actual_spacing
+
+        # Respect the 45-degree miter by shortening rafters near the southwest corner.
+        local_building_x = verandah_roof_building_x
+        if miter_run > 0.0 and rafter_y < south_wall_outer_y:
+            local_building_x = verandah_roof_building_x + (rafter_y - south_wall_outer_y)
+        local_span = max(0.15, local_building_x - verandah_roof_outer_x)
+        local_center_x = (local_building_x + verandah_roof_outer_x) / 2
+        t = (local_center_x - verandah_roof_building_x) / (verandah_roof_outer_x - verandah_roof_building_x)
+        local_top_z = porch_roof_high_height + (verandah_roof_low_height - porch_roof_high_height) * t
+        local_rafter_z = local_top_z - roof_thickness - rafter_height / 2 - 0.01
+
+        bpy.ops.mesh.primitive_cube_add(location=(local_center_x, rafter_y, local_rafter_z))
+        rafter = bpy.context.active_object
+        rafter.name = f"MD_VerandahRafter_West_{i + 1:02d}"
+        rafter.scale = (local_span / 2, rafter_width / 2, rafter_height / 2)
+        rafter.rotation_euler[1] = -pitch_rad
+        bpy.ops.object.transform_apply(scale=True, rotation=True)
+        rafter.data.materials.append(floor_mat)
+
+    bpy.context.view_layer.objects.active = verandah_roof_obj
+    verandah_roof_obj.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    verandah_roof_obj.select_set(False)
