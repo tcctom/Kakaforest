@@ -355,6 +355,7 @@ def build_porch_south_side(
     deck_texture_path,
     exterior_mat,
     west_corner_miter_run=0.90,
+    miter_seam_overlap=0.02,
 ):
     """Create a simple open porch on the south wall with a 6m west-to-east run and monopitch roof."""
     PORCH_LENGTH = 7.9  # West-to-east run
@@ -417,8 +418,8 @@ def build_porch_south_side(
     slope_wall_top_to_roof( porch_interior_wall, porch_roof_building, porch_roof_outer, porch_roof_high_height, porch_roof_low_height, )
 
 
-    add_window( "MD_GF_SouthExtension", (ox - 0.42, south_wall_outer_y - PORCH_DEPTH - PORCH_EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.5),
-        width=1.0, height=0.9, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',    )
+    add_window( "MD_GF_SouthExtension", (ox - 0.35, south_wall_outer_y - PORCH_DEPTH - PORCH_EXTERIOR_WALL_THICKNESS / 2, floor_top + 1.5),
+        width=1.2, height=0.9, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y',    )
 
     add_door( "MD_GF_SouthExtensionWest", (ox - 1.5 + PORCH_EXTERIOR_WALL_THICKNESS / 2, south_wall_outer_y - PORCH_DEPTH/2, floor_top),
         width=0.9, height=2.0, depth=PORCH_EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X', open_angle_degrees=90, hinge_side='right',    )
@@ -460,7 +461,8 @@ def build_porch_south_side(
 
     roof_thickness = 0.07
     # 45-degree miter seam from the building corner out to the southwest roof edge.
-    miter_run = max(0.0, min(west_corner_miter_run, porch_roof_span))
+    # Ensure the seam reaches at least the full roof span so the two roofs meet.
+    miter_run = max(0.0, max(west_corner_miter_run, porch_roof_span) + miter_seam_overlap)
     miter_low_x = porch_west_x - miter_run
 
     porch_verts = [
@@ -543,6 +545,8 @@ def build_verandah_west_side(
     deck_texture_path,
     south_overlap=0.0,
     south_corner_miter_run=0.90,
+    deck_south_extension=1.8,
+    miter_seam_overlap=0.02,
 ):
     """
     Create a west-side verandah that connects to the south porch and runs
@@ -571,11 +575,16 @@ def build_verandah_west_side(
     deck_z = oz - 0.25
     porch_roof_high_height = oz + 2.6
 
-    # Deck slab (same material workflow as south porch).
-    bpy.ops.mesh.primitive_cube_add(location=(verandah_center_x, verandah_center_y, deck_z))
+    # Deck slab extends south so it joins the south porch deck footprint.
+    deck_south_y = verandah_south_y - deck_south_extension
+    deck_north_y = verandah_north_y
+    deck_total_run = deck_north_y - deck_south_y
+    deck_center_y = (deck_south_y + deck_north_y) / 2
+
+    bpy.ops.mesh.primitive_cube_add(location=(verandah_center_x, deck_center_y, deck_z))
     verandah_deck = bpy.context.active_object
     verandah_deck.name = "MD_VerandahDeck_West"
-    verandah_deck.scale = (VERANDAH_DEPTH / 2, verandah_total_run / 2, 0.05)
+    verandah_deck.scale = (VERANDAH_DEPTH / 2, deck_total_run / 2, 0.05)
     bpy.ops.object.transform_apply(scale=True)
 
     deck_mat = create_textured_material("TimberDecking", deck_texture_path)
@@ -600,7 +609,8 @@ def build_verandah_west_side(
     verandah_roof_north = verandah_north_y + VERANDAH_ROOF_OVERHANG
 
     # 45-degree miter seam from the building corner out to the southwest roof edge.
-    miter_run = max(0.0, min(south_corner_miter_run, verandah_roof_span))
+    # Ensure the seam reaches at least the full roof span so the two roofs meet.
+    miter_run = max(0.0, max(south_corner_miter_run, verandah_roof_span) + miter_seam_overlap)
     verandah_roof_south = min(verandah_roof_south, south_wall_outer_y - miter_run)
     miter_low_y = south_wall_outer_y - miter_run
 
@@ -610,7 +620,10 @@ def build_verandah_west_side(
     post_x = west_wall_outer_x - VERANDAH_DEPTH
     post_height = verandah_roof_low_height - deck_z
 
-    for i, post_y in enumerate((verandah_roof_south + POST_INSET, verandah_roof_north - POST_INSET), start=1):
+    post_south_y = verandah_roof_south + POST_INSET
+    post_north_y = verandah_roof_north - POST_INSET
+    post_mid_y = (post_south_y + post_north_y) / 2
+    for i, post_y in enumerate((post_south_y, post_mid_y, post_north_y), start=1):
         bpy.ops.mesh.primitive_cube_add(location=(post_x, post_y, deck_z + post_height / 2))
         post = bpy.context.active_object
         post.name = f"MD_VerandahPost_West_{i}"
