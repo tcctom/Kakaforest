@@ -88,7 +88,7 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
 
     #add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 0.8, oz + 1.65), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.6, oz + 1.7), width=1.2, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+    add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy - 2.4, oz + 1.7), width=1.2, height=0.6, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
     #add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 0.8, window_z_first + 0.5), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
     add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 2.0, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')

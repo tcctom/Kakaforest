@@ -40,6 +40,13 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     ISLAND_BENCH_THICKNESS = BENCH_THICKNESS
     ISLAND_NORTH_OVERHANG = 0.38
     ISLAND_GAP_FROM_BENCH = 1.2
+    HOB_WIDTH_EW = 0.52
+    HOB_DEPTH_NS = 0.50
+    HOB_THICKNESS = 0.01
+    RANGEHOOD_WIDTH_EW = 0.58
+    RANGEHOOD_DEPTH_NS = 0.30
+    RANGEHOOD_THICKNESS = 0.06
+    RANGEHOOD_BOTTOM_GAP = 0.62
 
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
@@ -84,6 +91,9 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     fridge_handle_mat = create_material("KitchenFridgeHandle", (0.45, 0.47, 0.50, 1.0))
     sink_mat = create_material("KitchenSinkSteel", (0.70, 0.72, 0.75, 1.0))
     faucet_mat = create_material("KitchenFaucetChrome", (0.78, 0.80, 0.84, 1.0))
+    hob_glass_mat = create_material("KitchenHobGlass", (0.06, 0.06, 0.07, 1.0))
+    hob_mark_mat = create_material("KitchenHobMark", (0.18, 0.18, 0.18, 1.0))
+    rangehood_mat = create_material("KitchenRangehood", (0.74, 0.76, 0.79, 1.0))
 
     cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
 
@@ -232,15 +242,62 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bpy.ops.object.transform_apply(scale=True)
     benchtop_l.data.materials.append(bench_mat)
 
+    # Induction hob centered on the north-south bench run.
+    hob_z = bench_top_z + HOB_THICKNESS / 2 + 0.001
+    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, hob_z))
+    hob_top = bpy.context.active_object
+    hob_top.name = "MainDwelling_Kitchen_InductionHob"
+    hob_top.scale = (HOB_WIDTH_EW / 2, HOB_DEPTH_NS / 2, HOB_THICKNESS / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    hob_top.data.materials.append(hob_glass_mat)
+
+    burner_offsets = [
+        (-0.12, -0.10),
+        (0.12, -0.10),
+        (-0.12, 0.10),
+        (0.12, 0.10),
+    ]
+    for i, (dx, dy) in enumerate(burner_offsets, start=1):
+        bpy.ops.mesh.primitive_cylinder_add(
+            radius=0.055,
+            depth=0.0015,
+            location=(l_section_x + dx, l_section_y + dy, hob_z + HOB_THICKNESS / 2 + 0.001),
+        )
+        burner = bpy.context.active_object
+        burner.name = f"MainDwelling_Kitchen_InductionZone_{i}"
+        burner.data.materials.append(hob_mark_mat)
+
+    # Slim rangehood centered above the induction hob.
+    rangehood_z = bench_top_z + RANGEHOOD_BOTTOM_GAP + RANGEHOOD_THICKNESS / 2
+    bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, rangehood_z))
+    rangehood = bpy.context.active_object
+    rangehood.name = "MainDwelling_Kitchen_Rangehood"
+    rangehood.scale = (RANGEHOOD_WIDTH_EW / 2, RANGEHOOD_DEPTH_NS / 2, RANGEHOOD_THICKNESS / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    rangehood.data.materials.append(rangehood_mat)
+
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
 
     WALL_CABINET_DEPTH = 0.35
-    WALL_CABINET_HEIGHT = 0.7
-    WALL_CABINET_GAP = 0.45
-    wall_cabinet_z = bench_top_z + WALL_CABINET_GAP + WALL_CABINET_HEIGHT / 2
+    WALL_CABINET_GAP = 0.62
+    UPPER_CABINET_TOP_CLEARANCE = 0.02
+
+    # Lift N-S upper cabinets to ceiling height using wall top when available.
+    #ceiling_z = FLOOR_TOP + 2.6
+    #for wall_name in ("MD_GF_NorthWall", "MD_GF_SouthWall", "MD_GF_EastWall", "MD_GF_WestWall"):
+    #    wall_obj = bpy.data.objects.get(wall_name)
+    #    if wall_obj and wall_obj.type == 'MESH':
+    #        wall_top = wall_obj.location.z + wall_obj.dimensions.z / 2
+    #        ceiling_z = max(ceiling_z, wall_top)
+
+    wall_cabinet_bottom_z = bench_top_z + WALL_CABINET_GAP
+    #wall_cabinet_top_z = ceiling_z - UPPER_CABINET_TOP_CLEARANCE
+    #WALL_CABINET_HEIGHT = max(0.4, wall_cabinet_top_z - wall_cabinet_bottom_z)
+    WALL_CABINET_HEIGHT = 0.8
+    wall_cabinet_z = wall_cabinet_bottom_z + WALL_CABINET_HEIGHT / 2
 
     wall_cab_length_ns = BENCH_DEPTH + L_SECTION_LENGTH
     wall_cab_ns_y = south_interior_y + wall_cab_length_ns / 2
@@ -257,6 +314,9 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     print(f"Double-bowl kitchen sink (60/40) created at ({sink_center_x:.2f}, {sink_center_y:.2f}) with {SINK_OUTER_WIDTH_EW}m x {SINK_OUTER_DEPTH_NS}m footprint")
     print(f"Fridge/freezer placeholder cabinet created at ({fridge_center_x:.2f}, {fridge_center_y:.2f}): {FRIDGE_WIDTH}m x {FRIDGE_DEPTH}m x {FRIDGE_HEIGHT}m")
     print(f"Kitchen island created at ({island_base_center_x:.2f}, {island_base_center_y:.2f}): base {ISLAND_BASE_WIDTH_EW}m x {ISLAND_BASE_DEPTH_NS}m, top north overhang {ISLAND_NORTH_OVERHANG}m")
+    print(f"Induction hob created at ({l_section_x:.2f}, {l_section_y:.2f}): {HOB_WIDTH_EW}m x {HOB_DEPTH_NS}m")
+    print(f"Slim rangehood created at ({l_section_x:.2f}, {l_section_y:.2f})")
+    print(f"N-S upper cabinet height set to {WALL_CABINET_HEIGHT:.2f}m (to ceiling)")
 
 
 def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9):
