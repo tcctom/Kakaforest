@@ -11,27 +11,79 @@ FIRST_FLOOR_SLAB_THICKNESS = 0.2
 
 def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     """Create L-shaped kitchen bench"""
-    BENCH_LENGTH = 2.4
+    BENCH_LENGTH = 2.6
     BENCH_DEPTH = 0.6
     BENCH_HEIGHT = 0.9
     BENCH_THICKNESS = 0.05
     L_SECTION_LENGTH = 1.8
+    SINK_OUTER_WIDTH_EW = 0.55
+    SINK_OUTER_DEPTH_NS = 0.45
+    SINK_RIM = 0.03
+    SINK_DIVIDER_WIDTH = 0.04
+    SINK_LEFT_BOWL_RATIO = 0.6
+    SINK_CENTER_X_OFFSET = 0.2
+    SINK_BOWL_DEPTH = 0.22
+    FAUCET_STEM_RADIUS = 0.012
+    FAUCET_STEM_HEIGHT = 0.22
+    FAUCET_SPOUT_LENGTH = 0.16
+    FAUCET_SPOUT_RADIUS = 0.009
+    FRIDGE_WIDTH = 0.7
+    FRIDGE_DEPTH = 0.7
+    FRIDGE_HEIGHT = 2.4
+    FRIDGE_GAP = 0.05
+    FRIDGE_FACE_THICKNESS = 0.02
+    FRIDGE_HANDLE_WIDTH = 0.02
+    FRIDGE_HANDLE_DEPTH = 0.015
+    FRIDGE_HANDLE_HEIGHT = 1.4
+    ISLAND_BASE_WIDTH_EW = 1.5
+    ISLAND_BASE_DEPTH_NS = 0.6
+    ISLAND_BENCH_THICKNESS = BENCH_THICKNESS
+    ISLAND_NORTH_OVERHANG = 0.38
+    ISLAND_GAP_FROM_BENCH = 1.2
 
     south_interior_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
     west_interior_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
-
+    
     FLOOR_TOP = oz + 0.1
 
-    bench_center_x = west_interior_x + BENCH_LENGTH / 2 + 2.1
+    # This is the west end of the main E-W bench run (at the L-turn junction).
+    main_bench_west_end = west_interior_x 
+    main_bench_east_end = main_bench_west_end + BENCH_LENGTH
+    l_section_x = main_bench_west_end + BENCH_DEPTH / 2
+    l_section_y = south_interior_y + BENCH_DEPTH + L_SECTION_LENGTH / 2
+
+    bench_center_x = main_bench_west_end + BENCH_LENGTH / 2
     bench_center_y = south_interior_y + BENCH_DEPTH / 2
     bench_top_z = FLOOR_TOP + BENCH_HEIGHT
 
-    main_bench_east_end = west_interior_x + 2.1
-    l_section_x = main_bench_east_end + BENCH_DEPTH / 2
-    l_section_y = south_interior_y + BENCH_DEPTH + L_SECTION_LENGTH / 2
+
+    # Full-height fridge/freezer placeholder, placed just east of main bench.
+    fridge_center_x = main_bench_east_end + FRIDGE_GAP + FRIDGE_WIDTH / 2
+    fridge_center_y = south_interior_y + FRIDGE_DEPTH / 2
+
+    island_base_center_x = west_interior_x + BENCH_LENGTH + FRIDGE_WIDTH - ISLAND_BASE_WIDTH_EW / 2 - 0.1
+    island_base_south_y = south_interior_y + BENCH_DEPTH + ISLAND_GAP_FROM_BENCH
+    island_base_center_y = island_base_south_y + ISLAND_BASE_DEPTH_NS / 2
+    island_top_depth_ns = ISLAND_BASE_DEPTH_NS + ISLAND_NORTH_OVERHANG
+    island_top_center_y = island_base_center_y + ISLAND_NORTH_OVERHANG / 2
+
+    sink_center_x = bench_center_x + SINK_CENTER_X_OFFSET
+    sink_center_y = bench_center_y
+    sink_inner_width = SINK_OUTER_WIDTH_EW - (SINK_RIM * 2)
+    sink_inner_depth = SINK_OUTER_DEPTH_NS - (SINK_RIM * 2)
+    split_width = sink_inner_width - SINK_DIVIDER_WIDTH
+    sink_left_bowl_width = split_width * SINK_LEFT_BOWL_RATIO
+    sink_right_bowl_width = split_width - sink_left_bowl_width
+    sink_left_x = sink_center_x - (SINK_DIVIDER_WIDTH + sink_right_bowl_width) / 2
+    sink_right_x = sink_center_x + (SINK_DIVIDER_WIDTH + sink_left_bowl_width) / 2
 
     bench_mat = get_kitchen_bench_material()
     cabinet_mat = get_kitchen_cabinet_material()
+    fridge_body_mat = create_material("KitchenFridgeBody", (0.80, 0.82, 0.84, 1.0))
+    fridge_face_mat = create_material("KitchenFridgeFace", (0.90, 0.91, 0.92, 1.0))
+    fridge_handle_mat = create_material("KitchenFridgeHandle", (0.45, 0.47, 0.50, 1.0))
+    sink_mat = create_material("KitchenSinkSteel", (0.70, 0.72, 0.75, 1.0))
+    faucet_mat = create_material("KitchenFaucetChrome", (0.78, 0.80, 0.84, 1.0))
 
     cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
 
@@ -53,6 +105,118 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Double-bowl sink cutouts in center of main bench top.
+    bpy.ops.mesh.primitive_cube_add(location=(sink_left_x, sink_center_y, bench_top_z - BENCH_THICKNESS / 2))
+    sink_cutout_left = bpy.context.active_object
+    sink_cutout_left.name = "MainDwelling_KitchenSink_Cutout_Left"
+    sink_cutout_left.scale = (sink_left_bowl_width / 2, sink_inner_depth / 2, (BENCH_THICKNESS + 0.03) / 2)
+    bpy.ops.object.transform_apply(scale=True)
+
+    bpy.ops.mesh.primitive_cube_add(location=(sink_right_x, sink_center_y, bench_top_z - BENCH_THICKNESS / 2))
+    sink_cutout_right = bpy.context.active_object
+    sink_cutout_right.name = "MainDwelling_KitchenSink_Cutout_Right"
+    sink_cutout_right.scale = (sink_right_bowl_width / 2, sink_inner_depth / 2, (BENCH_THICKNESS + 0.03) / 2)
+    bpy.ops.object.transform_apply(scale=True)
+
+    sink_bool_left = benchtop_main.modifiers.new(name="KitchenSinkCutoutLeft", type='BOOLEAN')
+    sink_bool_left.operation = 'DIFFERENCE'
+    sink_bool_left.object = sink_cutout_left
+    sink_bool_left.solver = 'EXACT'
+
+    sink_bool_right = benchtop_main.modifiers.new(name="KitchenSinkCutoutRight", type='BOOLEAN')
+    sink_bool_right.operation = 'DIFFERENCE'
+    sink_bool_right.object = sink_cutout_right
+    sink_bool_right.solver = 'EXACT'
+
+    sink_cutout_left.hide_viewport = True
+    sink_cutout_left.hide_render = True
+    sink_cutout_right.hide_viewport = True
+    sink_cutout_right.hide_render = True
+
+    # Undermount double sink bowls beneath benchtop.
+    sink_bowl_z = bench_top_z - BENCH_THICKNESS - SINK_BOWL_DEPTH / 2 + 0.01
+    bpy.ops.mesh.primitive_cube_add(location=(sink_left_x, sink_center_y, sink_bowl_z))
+    sink_bowl_left = bpy.context.active_object
+    sink_bowl_left.name = "MainDwelling_KitchenSink_Bowl_Left"
+    sink_bowl_left.scale = (sink_left_bowl_width / 2, sink_inner_depth / 2, SINK_BOWL_DEPTH / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    sink_bowl_left.data.materials.append(sink_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(sink_right_x, sink_center_y, sink_bowl_z))
+    sink_bowl_right = bpy.context.active_object
+    sink_bowl_right.name = "MainDwelling_KitchenSink_Bowl_Right"
+    sink_bowl_right.scale = (sink_right_bowl_width / 2, sink_inner_depth / 2, SINK_BOWL_DEPTH / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    sink_bowl_right.data.materials.append(sink_mat)
+
+    # Simple faucet at the south side of the sink.
+    faucet_x = sink_center_x
+    faucet_y = sink_center_y - (SINK_OUTER_DEPTH_NS / 2) + 0.05
+    faucet_stem_z = bench_top_z + FAUCET_STEM_HEIGHT / 2
+    bpy.ops.mesh.primitive_cylinder_add(radius=FAUCET_STEM_RADIUS, depth=FAUCET_STEM_HEIGHT, location=(faucet_x, faucet_y, faucet_stem_z))
+    faucet_stem = bpy.context.active_object
+    faucet_stem.name = "MainDwelling_KitchenSink_FaucetStem"
+    faucet_stem.data.materials.append(faucet_mat)
+
+    faucet_spout_z = bench_top_z + FAUCET_STEM_HEIGHT - 0.02
+    bpy.ops.mesh.primitive_cylinder_add(radius=FAUCET_SPOUT_RADIUS, depth=FAUCET_SPOUT_LENGTH, location=(faucet_x, faucet_y + FAUCET_SPOUT_LENGTH / 2, faucet_spout_z))
+    faucet_spout = bpy.context.active_object
+    faucet_spout.name = "MainDwelling_KitchenSink_FaucetSpout"
+    faucet_spout.rotation_euler[0] = math.radians(90)
+    bpy.ops.object.transform_apply(rotation=True)
+    faucet_spout.data.materials.append(faucet_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(fridge_center_x, fridge_center_y, FLOOR_TOP + FRIDGE_HEIGHT / 2))
+    fridge_cabinet = bpy.context.active_object
+    fridge_cabinet.name = "MainDwelling_Kitchen_FridgeFreezer_Cabinet"
+    fridge_cabinet.scale = (FRIDGE_WIDTH / 2, FRIDGE_DEPTH / 2, FRIDGE_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    fridge_cabinet.data.materials.append(fridge_body_mat)
+
+    # Appliance front panel so the unit reads as a fridge/freezer face.
+    fridge_face_y = fridge_center_y + FRIDGE_DEPTH / 2 + FRIDGE_FACE_THICKNESS / 2
+    bpy.ops.mesh.primitive_cube_add(location=(fridge_center_x, fridge_face_y, FLOOR_TOP + FRIDGE_HEIGHT / 2))
+    fridge_face = bpy.context.active_object
+    fridge_face.name = "MainDwelling_Kitchen_FridgeFreezer_Face"
+    fridge_face.scale = (FRIDGE_WIDTH / 2, FRIDGE_FACE_THICKNESS / 2, FRIDGE_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    fridge_face.data.materials.append(fridge_face_mat)
+
+    # Horizontal split detail between freezer (top) and fridge (bottom).
+    split_height = FLOOR_TOP + FRIDGE_HEIGHT * 0.62
+    bpy.ops.mesh.primitive_cube_add(location=(fridge_center_x, fridge_face_y + 0.001, split_height))
+    fridge_split = bpy.context.active_object
+    fridge_split.name = "MainDwelling_Kitchen_FridgeFreezer_Split"
+    fridge_split.scale = (FRIDGE_WIDTH / 2, 0.0025, 0.003)
+    bpy.ops.object.transform_apply(scale=True)
+    fridge_split.data.materials.append(fridge_handle_mat)
+
+    # Vertical handle near the right side of the face.
+    handle_x = fridge_center_x + FRIDGE_WIDTH / 2 - 0.06
+    handle_y = fridge_face_y + FRIDGE_HANDLE_DEPTH / 2 + 0.002
+    handle_z = FLOOR_TOP + FRIDGE_HEIGHT / 2
+    bpy.ops.mesh.primitive_cube_add(location=(handle_x, handle_y, handle_z))
+    fridge_handle = bpy.context.active_object
+    fridge_handle.name = "MainDwelling_Kitchen_FridgeFreezer_Handle"
+    fridge_handle.scale = (FRIDGE_HANDLE_WIDTH / 2, FRIDGE_HANDLE_DEPTH / 2, FRIDGE_HANDLE_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    fridge_handle.data.materials.append(fridge_handle_mat)
+
+    # Kitchen island base and top (north overhang for stools).
+    bpy.ops.mesh.primitive_cube_add(location=(island_base_center_x, island_base_center_y, FLOOR_TOP + cabinet_height / 2))
+    island_base = bpy.context.active_object
+    island_base.name = "MainDwelling_KitchenIsland_Base"
+    island_base.scale = (ISLAND_BASE_WIDTH_EW / 2, ISLAND_BASE_DEPTH_NS / 2, cabinet_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    island_base.data.materials.append(cabinet_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(island_base_center_x, island_top_center_y, bench_top_z - ISLAND_BENCH_THICKNESS / 2))
+    island_top = bpy.context.active_object
+    island_top.name = "MainDwelling_KitchenIsland_Top"
+    island_top.scale = (ISLAND_BASE_WIDTH_EW / 2, island_top_depth_ns / 2, ISLAND_BENCH_THICKNESS / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    island_top.data.materials.append(bench_mat)
 
     bpy.ops.mesh.primitive_cube_add(location=(l_section_x, l_section_y, FLOOR_TOP + cabinet_height / 2))
     cabinets_l = bpy.context.active_object
@@ -80,7 +244,7 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
 
     wall_cab_length_ns = BENCH_DEPTH + L_SECTION_LENGTH
     wall_cab_ns_y = south_interior_y + wall_cab_length_ns / 2
-    wall_cab_ns_x = main_bench_east_end + WALL_CABINET_DEPTH / 2
+    wall_cab_ns_x = main_bench_west_end + WALL_CABINET_DEPTH / 2
 
     bpy.ops.mesh.primitive_cube_add(location=(wall_cab_ns_x, wall_cab_ns_y, wall_cabinet_z))
     wall_cab_ns = bpy.context.active_object
@@ -90,6 +254,9 @@ def _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     wall_cab_ns.data.materials.append(cabinet_mat)
 
     print(f"L-shaped kitchen bench created: {BENCH_LENGTH}m E-W section, {L_SECTION_LENGTH}m N-S section with N-S wall cabinet")
+    print(f"Double-bowl kitchen sink (60/40) created at ({sink_center_x:.2f}, {sink_center_y:.2f}) with {SINK_OUTER_WIDTH_EW}m x {SINK_OUTER_DEPTH_NS}m footprint")
+    print(f"Fridge/freezer placeholder cabinet created at ({fridge_center_x:.2f}, {fridge_center_y:.2f}): {FRIDGE_WIDTH}m x {FRIDGE_DEPTH}m x {FRIDGE_HEIGHT}m")
+    print(f"Kitchen island created at ({island_base_center_x:.2f}, {island_base_center_y:.2f}): base {ISLAND_BASE_WIDTH_EW}m x {ISLAND_BASE_DEPTH_NS}m, top north overhang {ISLAND_NORTH_OVERHANG}m")
 
 
 def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9):

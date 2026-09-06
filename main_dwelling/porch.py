@@ -3,7 +3,7 @@ import math
 import os
 
 from materials import get_interior_wall_material, get_metal_roof_material
-from utils import add_window, add_door
+from utils import add_opening, add_window, add_door
 
 
 def create_black_box_profile_roof_material():

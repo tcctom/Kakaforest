@@ -56,9 +56,12 @@ def run_main_dwelling_build_pipeline(
     if option == 2:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-1.9, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
-    if option == 3 or option == 4:
+    if option == 3:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-2.4, oy-0.5, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
+    if option == 4:
+        _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
+        _create_dining_table(ox-2.0, oy-0.2, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
 
     # Exterior openings
     _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option)

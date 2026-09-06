@@ -3,7 +3,7 @@ import math
 
 from materials import get_metal_roof_material
 from main_dwelling.materials_nodes import create_material
-from utils import add_window, add_door
+from utils import add_window, add_door, add_opening
 
 
 def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH):
@@ -136,7 +136,8 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
 
     if option == 4:
         #south wall windows - option 4
-        add_door("MD_GF_SouthWall", (ox - 0.7, south_wall_y, oz+0.1), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        #add_door("MD_GF_SouthWall", (ox - 0.7, south_wall_y, oz+0.1), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_opening("MD_GF_SouthWall", (ox - 0.6, south_wall_y, oz+1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_GF_SouthWall", (ox - 3.15, south_wall_y, oz + 1.5), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
         #add_window("MD_FF_SouthWall", (ox + 3.2, south_wall_y, window_z_first + 0.5), width=0.7, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
