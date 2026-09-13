@@ -201,19 +201,32 @@ def create_blueprint_camera(name="Blueprint_Camera", location=(0, 0, 15), clip_h
     # Rotation in Euler angles: (90° around X-axis points camera down)
     cam_object.rotation_euler = Euler((math.radians(0), 0, 0), 'XYZ')
     
-    # Set up clipping to cut at specified height
-    # The clip_start determines minimum distance from camera
-    # Since camera is at location[2] height and we want to clip at clip_height:
-    # clip_start = camera_height - clip_height
-    camera_height = location[2]
-    cam_data.clip_start = camera_height - clip_height
-    cam_data.clip_end = camera_height + 1.0  # Just above camera
+    clip_description = configure_blueprint_camera_clipping(cam_object, clip_height)
     
     print(f"✓ Camera '{name}' created at {location}")
     print(f"  - Orthographic scale: {cam_data.ortho_scale}m")
-    print(f"  - Clipping at Z={clip_height}m (clip_start={cam_data.clip_start}m)")
+    print(f"  - Clipping: {clip_description}")
     
     return cam_object
+
+
+def configure_blueprint_camera_clipping(cam_object, clip_height):
+    """
+    Keep blueprint camera clipping valid.
+    clip_height=None disables section-style near clipping for overview cameras.
+    """
+    camera_height = cam_object.location[2]
+    cam_data = cam_object.data
+
+    if clip_height is None:
+        cam_data.clip_start = 0.1
+        cam_data.clip_end = max(camera_height + 1000.0, 1000.0)
+        return "disabled"
+
+    clip_start = max(0.001, camera_height - clip_height)
+    cam_data.clip_start = clip_start
+    cam_data.clip_end = max(clip_start + 1.0, camera_height + 1.0)
+    return f"Z={clip_height}m (clip_start={cam_data.clip_start}m)"
 
 
 def restore_image_reference_empties():
@@ -325,9 +338,9 @@ def apply_section_to_all_objects(cut_height, hide_site_elements=True):
     # BUT NOT walls that might have these keywords
     # Also hide terrain, boulders, and site elements
     if hide_site_elements:
-        hide_keywords = ['deck', 'Deck', 'verandah', 'Verandah', 'Pile', 'Bearer', 'Joist',
+        hide_keywords = ['xdeck', 'xDeck', 'xverandah', 'xVerandah', 'Pile', 'Bearer', 'Joist',
                          'Boulder', 'boulder', 'Terrain', 'terrain', 'Ground_', 'Gravel',
-                         'xWaterTank', 'Pavers', 'Drive', 'Tree', 'Bush', 'Fence', 'Gate']
+                         'xWaterTank', 'Pavers', 'Drive', 'tree', 'Tree', 'Bush', 'Fence', 'Gate']
         hidden_count = 0
         for obj in bpy.data.objects:
             if obj.type == 'MESH':
@@ -488,6 +501,39 @@ def remove_section_from_all_objects():
     print(f"✓ Removed section modifiers from {count} objects")
     print(f"✓ Restored visibility of deck/verandah objects")
     print(f"✓ Disabled wireframe edge display")
+
+
+def apply_site_plan_display():
+    """
+    Restore a readable overview after section cuts are removed.
+    Keep outlines on structural meshes and water tanks so the site plan remains legible.
+    """
+    outlined_count = 0
+    for obj in bpy.data.objects:
+        if obj.type != 'MESH':
+            continue
+        if obj.name.startswith('Label_') or obj.name.startswith('Blueprint_'):
+            continue
+
+        name_lower = obj.name.lower()
+        is_structure_obj = any(keyword in name_lower for keyword in STRUCTURE_WIRE_KEYWORDS)
+        is_tank_obj = 'watertank' in name_lower
+
+        obj.color = WALL_FILL_COLOR
+        obj.display_type = 'TEXTURED'
+        obj.show_in_front = False
+
+        if is_structure_obj or is_tank_obj:
+            obj.show_wire = True
+            obj.show_all_edges = True
+            obj.hide_viewport = False
+            obj.hide_render = False
+            outlined_count += 1
+        else:
+            obj.show_wire = False
+            obj.show_all_edges = False
+
+    print(f"✓ Site plan display refreshed for {outlined_count} outlined mesh objects")
 
 
 def create_white_background_plane():
@@ -928,7 +974,7 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     # Add sample labels
     print("\nAdding room labels...")
     create_room_label('FIRST FLOOR', (-2, -2, 3.8), size=0.4)
-    create_room_label('Master\nbedroom', (+3.4, 0, 3.8), size=0.4)
+    create_room_label('Master\nbedroom', (+3.5, -0.1, 3.8), size=0.4)
     create_room_label('Living', (-2, 0, 3.8), size=0.4)
 
     if option == 1:
@@ -964,9 +1010,9 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.65, 1.7), (1.05, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.65, 1.7), (1.15, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
         #create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
-        create_dimension_line((1.15, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
+        create_dimension_line((1.25, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")
@@ -1000,11 +1046,16 @@ def show_site_plan():
     print("\n" + "="*60)
     print("Setting up SITE PLAN VIEW")
     print("="*60 + "\n")
+
+    site_camera = bpy.data.objects.get('BP_Site_Plan')
+    if site_camera is not None and site_camera.type == 'CAMERA':
+        configure_blueprint_camera_clipping(site_camera, None)
     
     switch_to_camera('BP_Site_Plan')
     set_blueprint_camera_visibility('BP_Site_Plan')
     view_through_camera()
     remove_section_from_all_objects()
+    apply_site_plan_display()
     cleanup_labels()
     
     print("\n✓ Site plan ready!")
@@ -1115,7 +1166,7 @@ def create_floor_plan_cameras(center_x=0, center_y=-1.5):
     cameras['site'] = create_blueprint_camera(
         name="BP_Site_Plan",
         location=(center_x, center_y, 50),
-        clip_height=-5.0,  # Below ground, shows everything
+        clip_height=None,  # Overview camera should not section the scene
         ortho_scale=50.0  # Wider view
     )
     
