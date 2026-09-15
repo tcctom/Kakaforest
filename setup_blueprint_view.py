@@ -1010,9 +1010,9 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
     if option == 4:
-        create_dimension_line((-4.65, 1.7), (1.15, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
+        create_dimension_line((-4.65, 1.7), (0.95, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
         #create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
-        create_dimension_line((1.25, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
+        create_dimension_line((1.05, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")
 
 
     print("\n✓ First floor plan ready!")
