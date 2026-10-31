@@ -6,12 +6,15 @@ from main_dwelling.materials_nodes import create_material
 from utils import add_window, add_door, add_opening
 
 
-def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH):
-    """Add a ridge beam and paired rafters under the flush gable roof."""
-    ridge_height = oz + TOTAL_HEIGHT + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH)) -0.02
+def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, overhang=0.0):
+    """Add a ridge beam, rafters, and a slim fascia to suggest a real roof build."""
+    eave_height = oz + TOTAL_HEIGHT
+    roof_drop = 0.06
+    ridge_height = eave_height + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH)) - roof_drop
     pitch_rad = math.radians(ROOF_PITCH)
 
     framing_mat = create_material("RoofFramingTimber", (0.55, 0.40, 0.25, 1.0))
+    fascia_mat = create_material("RoofFasciaTrim", (0.68, 0.52, 0.35, 1.0))
 
     ridge_beam_height = 0.24
     ridge_beam_width = 0.10
@@ -20,7 +23,7 @@ def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
     bpy.ops.mesh.primitive_cube_add(location=(ox, oy, ridge_beam_z))
     ridge_beam = bpy.context.active_object
     ridge_beam.name = "MainDwelling_RidgeBeam"
-    ridge_beam.scale = (LENGTH / 2, ridge_beam_width / 2, ridge_beam_height / 2)
+    ridge_beam.scale = ((LENGTH / 2) + overhang, ridge_beam_width / 2, ridge_beam_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     ridge_beam.data.materials.append(framing_mat)
 
@@ -29,9 +32,9 @@ def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
     rafter_spacing = 0.6
     rafter_setback = 0.05
 
-    north_eave_y = oy + WIDTH / 2
-    south_eave_y = oy - WIDTH / 2
-    rafter_run = (WIDTH / 2) / math.cos(pitch_rad) -0.17
+    north_eave_y = oy + (WIDTH / 2) + overhang
+    south_eave_y = oy - (WIDTH / 2) - overhang
+    rafter_run = ((WIDTH / 2) + overhang) / math.cos(pitch_rad) - 0.17
 
     rafter_count = max(2, int((LENGTH - 2 * rafter_setback) / rafter_spacing) + 1)
     start_x = ox - (LENGTH / 2) + rafter_setback
@@ -60,6 +63,27 @@ def _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
         south_rafter.rotation_euler[0] = pitch_rad
         bpy.ops.object.transform_apply(scale=True, rotation=True)
         south_rafter.data.materials.append(framing_mat)
+
+    fascia_depth = 0.035
+    fascia_height = 0.08
+    fascia_z = eave_height - fascia_height / 2 + 0.01
+
+    north_fascia_y = oy + (WIDTH / 2) + overhang + 0.01
+    south_fascia_y = oy - (WIDTH / 2) - overhang - 0.01
+
+    bpy.ops.mesh.primitive_cube_add(location=(ox, north_fascia_y, fascia_z))
+    north_fascia = bpy.context.active_object
+    north_fascia.name = "MainDwelling_Fascia_North"
+    north_fascia.scale = ((LENGTH / 2) - 0.08, fascia_depth / 2, fascia_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    north_fascia.data.materials.append(fascia_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(ox, south_fascia_y, fascia_z))
+    south_fascia = bpy.context.active_object
+    south_fascia.name = "MainDwelling_Fascia_South"
+    south_fascia.scale = ((LENGTH / 2) - 0.08, fascia_depth / 2, fascia_height / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    south_fascia.data.materials.append(fascia_mat)
 
 
 def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=1):
@@ -155,8 +179,9 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
         add_window("MD_GF_SouthWall", (ox - 3.15, south_wall_y, oz + 1.5), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
         #add_window("MD_FF_SouthWall", (ox + 3.2, south_wall_y, window_z_first + 0.5), width=0.7, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-        add_window("MD_FF_SouthWall", (ox - 0.35, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox - 0.6, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_FF_SouthWall", (ox - 3.15, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox + 1.95, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_FF_SouthWall", (ox + 4.15, south_wall_y, window_z_first + 0.7), width=0.6, height=0.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
         add_window("MD_GF_WestWall", (ox - LENGTH / 2, oy, oz + 1.55), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
@@ -217,7 +242,12 @@ def _add_gable_windows(ox, oy, oz, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_TH
 
 
 def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF_OVERHANG, EXTERIOR_WALL_THICKNESS, roof_style, potius_mat):
-    """Create the main gable roof with either traditional or flush style.
+    """Create the main gable roof with traditional, flush, or 150mm gable styles.
+
+    roof_style values:
+        - "traditional": default gable roof with standard north/south overhang
+        - "flush": roof plane runs flush with the main wall faces
+        - "gable_150mm": gable roof with a 150mm overhang on all four sides
 
     Args:
         potius_mat: Exterior cladding material for gable ends
@@ -312,7 +342,7 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
 
         obj.data.materials.append(roof_mat)
 
-        _add_flush_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH)
+        _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, overhang=0.0)
 
         # Create UV layer and set UVs for gable faces
         if not mesh.uv_layers:
@@ -337,6 +367,50 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         obj.select_set(False)
 
         # Flush gable walls sit directly at the main east/west wall outer faces.
+        west_x_outer = ox - LENGTH / 2
+        west_x_inner = west_x_outer + EXTERIOR_WALL_THICKNESS
+        east_x_outer = ox + LENGTH / 2
+        east_x_inner = east_x_outer - EXTERIOR_WALL_THICKNESS
+
+        _create_gable_wall("West", west_x_outer, west_x_inner)
+        _create_gable_wall("East", east_x_outer, east_x_inner)
+    elif roof_style == "gable_150mm":
+        mesh = bpy.data.meshes.new("MainDwelling_RoofMesh")
+        obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
+        bpy.context.collection.objects.link(obj)
+
+        overhang = 0.15
+        half_length = (LENGTH + 2 * overhang) / 2
+        north_eave_y = oy + WIDTH / 2 + overhang
+        south_eave_y = oy - WIDTH / 2 - overhang
+
+        verts = [
+            (ox - half_length, north_eave_y, eave_height),
+            (ox + half_length, north_eave_y, eave_height),
+            (ox - half_length, oy, ridge_height),
+            (ox + half_length, oy, ridge_height),
+            (ox - half_length, south_eave_y, eave_height),
+            (ox + half_length, south_eave_y, eave_height),
+        ]
+
+        faces = [
+            (0, 1, 3, 2),
+            (2, 3, 5, 4),
+        ]
+
+        mesh.from_pydata(verts, [], faces)
+        mesh.update()
+        obj.data.materials.append(roof_mat)
+        _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, overhang=0.15)
+
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        obj.select_set(False)
+
         west_x_outer = ox - LENGTH / 2
         west_x_inner = west_x_outer + EXTERIOR_WALL_THICKNESS
         east_x_outer = ox + LENGTH / 2
@@ -370,6 +444,7 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         mesh.from_pydata(verts, [], faces)
         mesh.update()
         obj.data.materials.append(roof_mat)
+        _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, overhang=ROOF_OVERHANG)
 
         # UV unwrap for texture display
         bpy.context.view_layer.objects.active = obj

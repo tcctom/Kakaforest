@@ -585,7 +585,7 @@ if SHOW_GROUND and linz_terrain:
 #main dwelling clearing with gravel finish
 ground_module.gravel_plane(ground_module.grid_points((5.0, 2.8, 0.2), (-4.8, -4.6, 0.2)),thickness=0.4)
 ground_module.gravel_plane(ground_module.grid_points((4.6, -4.2, 0.15), (-1.55, -6.56, 0.15)),thickness=0.35)
-main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="flush", option=option)
+main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_roof=True, roof_style="gable_150mm", option=option)
 
 # 1a. Build North Deck - extends 3m north from ground floor
 main_dwelling_module.build_north_deck(origin=(0, 1.65, 0.17), add_boundary_joist = True) #ground level deck

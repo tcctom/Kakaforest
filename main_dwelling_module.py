@@ -24,15 +24,15 @@ from materials import get_floor_wood_material
 def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_style="traditional", option=1):
     """
     Build the main dwelling with a SIMPLE OPEN PORCH entrance option:
-    - 2.5m Ã— 1.5m deck (same width as enclosed porch, but only 1.5m deep)
+    - 2.5m × 1.5m deck (same width as enclosed porch, but only 1.5m deep)
     - No walls - just a roof and deck
     - Monopitch (single-slope) roof sloping outward from building
     - Main entrance door on the main structure's west wall (not on porch)
-    
+
     Args:
         origin: (x, y, z) tuple for building location
         show_roof: Boolean to show/hide main roof for interior viewing
-        roof_style: "traditional" or "flush" for main building roof
+        roof_style: supported styles include "traditional", "flush", and "gable_150mm"
     """
     ox, oy, oz = origin
     
