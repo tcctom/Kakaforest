@@ -6,7 +6,7 @@ from materials import get_interior_wall_material
 from main_dwelling.materials_nodes import create_laminate_floor_material, create_material
 
 
-def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat):
+def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat, option=1):
     """Create all exterior walls for ground and first floors with recessed north wall."""
     wall_depth_ground = ENCLOSED_WIDTH - 2 * EXTERIOR_WALL_THICKNESS
     first_floor_z = oz + GROUND_FLOOR_HEIGHT
@@ -15,6 +15,13 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     print(f"Creating exterior walls at origin ({ox}, {oy}, {oz}) with dimensions: WIDTH={WIDTH}, ENCLOSED_WIDTH={ENCLOSED_WIDTH}, LENGTH={LENGTH}, GROUND_FLOOR_HEIGHT={GROUND_FLOOR_HEIGHT}, FIRST_FLOOR_HEIGHT={FIRST_FLOOR_HEIGHT}, EXTERIOR_WALL_THICKNESS={EXTERIOR_WALL_THICKNESS}, NORTH_RECESS={NORTH_RECESS}")
     print(f"oy : {oy}, WIDTH: {WIDTH}, NORTH_RECESS: {NORTH_RECESS}, EXTERIOR_WALL_THICKNESS: {EXTERIOR_WALL_THICKNESS}")
     north_wall_y = oy + WIDTH / 2 - NORTH_RECESS - EXTERIOR_WALL_THICKNESS / 2 + 0.01
+    north_wall_first_y = north_wall_y
+    if option == 5:
+        north_wall_first_y = oy + WIDTH / 2 - EXTERIOR_WALL_THICKNESS / 2 + 0.01
+
+    north_wall_first_height = FIRST_FLOOR_HEIGHT + 0.65
+    if option == 5:
+        north_wall_first_height = FIRST_FLOOR_HEIGHT
 
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, oz + GROUND_FLOOR_HEIGHT / 2))
     north_wall_ground = bpy.context.active_object
@@ -54,8 +61,7 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_ground.data.materials.append(interior_wall_mat)
     west_wall_ground.data.polygons[2].material_index = 1
 
-    north_wall_first_height = FIRST_FLOOR_HEIGHT + 0.65
-    bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_y, first_floor_z + north_wall_first_height / 2))
+    bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_first_y, first_floor_z + north_wall_first_height / 2))
     north_wall_first = bpy.context.active_object
     north_wall_first.name = "MD_FF_NorthWall"
     north_wall_first.scale = (LENGTH / 2, EXTERIOR_WALL_THICKNESS / 2, north_wall_first_height / 2)
@@ -945,3 +951,119 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
     bpy.ops.object.mode_set(mode='OBJECT')
+
+
+def _create_floors5(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
+    """Option 5: match option 4 layout, but keep the upstairs floor footprint full-width with no recessed balcony. The ground floor north recess remains unchanged."""
+    print("\n" + "="*50)
+    print(f"STARTING OPTION 5 FLOOR CREATION at origin ({ox:.2f}, {oy:.2f}, {oz:.2f}) with dimensions {LENGTH:.2f}m × {WIDTH:.2f}m")
+    print("="*50)
+
+    first_floor_z = oz + GROUND_FLOOR_HEIGHT
+
+    floor_length = LENGTH - 2 * EXTERIOR_WALL_THICKNESS
+    floor_width = WIDTH - EXTERIOR_WALL_THICKNESS
+    floor_center_y = oy + EXTERIOR_WALL_THICKNESS / 2
+
+    laminate_mat = create_laminate_floor_material()
+    laminate_mat_darker = create_laminate_floor_material(tone='darker')
+    white_ceiling_mat = create_material("WhiteCeiling", (1.0, 1.0, 1.0, 1.0))
+
+    bpy.ops.mesh.primitive_cube_add(location=(ox, floor_center_y, oz + 0.05))
+    ground_floor = bpy.context.active_object
+    ground_floor.name = "MainDwelling_GroundFloor"
+    ground_floor.scale = (floor_length / 2, floor_width / 2, 0.05)
+    bpy.ops.object.transform_apply(scale=True)
+
+    ground_floor.data.materials.append(floor_mat)
+    ground_floor.data.materials.append(laminate_mat)
+
+    for i, poly in enumerate(ground_floor.data.polygons):
+        if poly.normal.z > 0.9:
+            poly.material_index = 1
+            print(f"Ground floor: Assigned laminate to polygon {i} (top face)")
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    first_floor_thickness = 0.2
+    first_floor_center_z = first_floor_z + first_floor_thickness / 2
+
+    stairwell_width = 1.2
+    stairwell_length = 3.1
+
+    opening_west_x = ox - floor_length / 2 + 4.06
+    opening_east_x = opening_west_x + stairwell_length
+    opening_south_y = oy - WIDTH / 2 + EXTERIOR_WALL_THICKNESS
+    opening_north_y = opening_south_y + stairwell_width
+
+    floor_west_x = ox - floor_length / 2
+    floor_east_x = ox + floor_length / 2
+    floor_south_y = floor_center_y - floor_width / 2
+    floor_north_y = floor_center_y + floor_width / 2
+
+    slab_parts = []
+
+    north_strip_depth = floor_north_y - opening_north_y
+    if north_strip_depth > 0:
+        north_strip_center_y = (opening_north_y + floor_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(ox, north_strip_center_y, first_floor_center_z))
+        north_strip = bpy.context.active_object
+        north_strip.name = "MD_FirstFloor_NorthStrip"
+        north_strip.scale = (floor_length / 2, north_strip_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(north_strip)
+
+    se_width = floor_east_x - opening_east_x
+    se_depth = opening_north_y - floor_south_y
+    if se_width > 0 and se_depth > 0:
+        se_center_x = (opening_east_x + floor_east_x) / 2
+        se_center_y = (floor_south_y + opening_north_y) / 2
+        bpy.ops.mesh.primitive_cube_add(location=(se_center_x, se_center_y, first_floor_center_z))
+        southeast_block = bpy.context.active_object
+        southeast_block.name = "MD_FirstFloor_SouthEastBlock"
+        southeast_block.scale = (se_width / 2, se_depth / 2, first_floor_thickness / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        slab_parts.append(southeast_block)
+
+    sw_width = opening_west_x - ox + floor_length / 2
+    sw_depth = se_depth
+    bpy.ops.mesh.primitive_cube_add(location=(opening_west_x - sw_width / 2, se_center_y, first_floor_center_z))
+    southwest_block = bpy.context.active_object
+    southwest_block.name = "MD_FirstFloor_SouthWestBlock"
+    southwest_block.scale = (sw_width / 2, sw_depth / 2, first_floor_thickness / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    slab_parts.append(southwest_block)
+
+    if not slab_parts:
+        raise RuntimeError("Failed to create first-floor slab parts for option 5")
+
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in slab_parts:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = slab_parts[0]
+    if len(slab_parts) > 1:
+        bpy.ops.object.join()
+    first_floor_slab = bpy.context.view_layer.objects.active
+    first_floor_slab.name = "MD_FirstFloor"
+
+    first_floor_slab.data.materials.append(floor_mat)
+    first_floor_slab.data.materials.append(laminate_mat_darker)
+    first_floor_slab.data.materials.append(white_ceiling_mat)
+
+    for i, poly in enumerate(first_floor_slab.data.polygons):
+        if poly.normal.z > 0.9:
+            poly.material_index = 1
+            print(f"Option 5 first floor: Assigned laminate to polygon {i} (top face)")
+        elif poly.normal.z < -0.9:
+            poly.material_index = 2
+            print(f"Option 5 first floor: Assigned white ceiling to polygon {i} (bottom face)")
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.0)
+    bpy.ops.object.mode_set(mode='OBJECT')
+

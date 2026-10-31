@@ -892,7 +892,7 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     if option == 3:
         create_room_label('Kitchen', (-2.8, -3, 1.3), size=0.4)
         create_room_label('Hall', (1.2, -3, 1.3), size=0.4)
-    if option == 4:
+    if option == 4 or option == 5:
         create_room_label('Kitchen', (-2.8, -3.3, 1.3), size=0.4)
         create_room_label('Utility', (1.8, -5.5, 1.3), size=0.4)
 
@@ -916,7 +916,7 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     create_dimension_line((4.85, 1.5), (4.85, -1.75), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="gb_northsouth_length")
     create_dimension_line((4.85, -1.85), (4.85, -4.5), offset=0.6, text_size=0.3, z_height=1.3, name_suffix="bath_northsouth_length")
 
-    if option == 4:
+    if option == 4 or option == 5:
         create_dimension_line((3.2, -4.65), (3.2, -6.5), offset=2.2, text_size=0.3, z_height=1.3, name_suffix="utility_northsouth_length")
         create_dimension_line((-4.8, -4.7), (-1.6, -4.7), offset=-2.2, text_size=0.3, z_height=1.3, name_suffix="porchdeck_eastwest_length")
         create_dimension_line((-1.45, -6.5), (0.75, -6.5), offset=-0.4, text_size=0.3, z_height=1.3, name_suffix="entrance_eastwest_length")
@@ -1009,7 +1009,7 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     if option == 3:
         create_dimension_line((0.8, 1.5), (4.3, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
         create_dimension_line((-4.35, 1.5), (0.7, 1.5), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="living_width")
-    if option == 4:
+    if option == 4 or option == 5:
         create_dimension_line((-4.65, 1.7), (0.95, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="living_width")
         #create_dimension_line((-0.2, 2.5), (0.7, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="cave_width")
         create_dimension_line((1.05, 1.7), (4.65, 1.7), offset=1.2, text_size=0.3, z_height=3.8, name_suffix="mb_eastwest_width")

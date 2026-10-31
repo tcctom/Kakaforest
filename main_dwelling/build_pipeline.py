@@ -40,7 +40,7 @@ def run_main_dwelling_build_pipeline(
         _create_stair_partitions2(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
     if option == 3:
         _create_stair_partitions3(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
-    if option == 4:
+    if option == 4 or option == 5:
         _create_stair_partitions4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS)
 
     # Ensuite and bathroom
@@ -59,15 +59,16 @@ def run_main_dwelling_build_pipeline(
     if option == 3:
         _create_kitchen_bench(ox-2.1, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-2.4, oy-0.5, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
-    if option == 4:
+    if option == 4 or option == 5:
         _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
-        _create_dining_table(ox-2.0, oy-0.2, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 0.9, TABLE_WIDTH = 1.8)
+        _create_dining_table(ox-2.0, oy-0.2, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9)
 
     # Exterior openings
     _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option)
 
     # Balcony railing
-    add_first_floor_balcony_railing( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, create_material, )
+    if option != 5:
+        add_first_floor_balcony_railing( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, create_material, )
 
     # Gable roof
     if show_roof:

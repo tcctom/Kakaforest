@@ -10,7 +10,7 @@ from main_dwelling.porch import build_porch_south_side, build_simple_open_porch,
 from main_dwelling.runtime_context import get_main_dwelling_runtime_context
 from main_dwelling.structure import (
     _create_exterior_walls,
-    _create_floors,_create_floors2, _create_floors3, _create_floors4,
+    _create_floors,_create_floors2, _create_floors3, _create_floors4, _create_floors5,
     _create_180_degree_staircase_southwest,
     _create_180_degree_staircase_southmiddle,
     _create_staircase_southmiddle2,
@@ -61,7 +61,7 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
     floor_mat = get_floor_wood_material()
     
     # === CREATE SHARED COMPONENTS ===
-    _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat)
+    _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat, option=option)
     if option == 1:
         _create_floors(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
         _create_180_degree_staircase_southwest( ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat, )
@@ -78,6 +78,25 @@ def build_main_dwelling_simple_porch(origin=(0, 0, 0), show_roof=True, roof_styl
 
     if option == 4:
         _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
+        _create_staircase_southmiddle4( ox+2.06, oy-2.24, oz+0.1, floor_mat, )
+        build_porch_south_side( ox, oy, oz, WIDTH, LENGTH,
+            GROUND_FLOOR_HEIGHT,
+            EXTERIOR_WALL_THICKNESS,
+            floor_mat,
+            create_textured_material,
+            runtime_context.porch_deck_texture_path,
+            potius_mat,
+            west_corner_miter_run=1.80,
+        )
+        build_verandah_west_side( ox, oy, oz, WIDTH, LENGTH,
+            floor_mat,
+            create_textured_material,
+            runtime_context.porch_deck_texture_path,
+            south_overlap=0.0,south_corner_miter_run=1.80,
+        )
+
+    if option == 5:
+        _create_floors5(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat)
         _create_staircase_southmiddle4( ox+2.06, oy-2.24, oz+0.1, floor_mat, )
         build_porch_south_side( ox, oy, oz, WIDTH, LENGTH,
             GROUND_FLOOR_HEIGHT,

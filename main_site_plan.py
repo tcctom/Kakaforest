@@ -9,7 +9,7 @@ import math # Needed for the rotation correction
 
 from importlib import reload
 
-option = 4
+option = 5
 
 # Add current directory to sys.path so Blender can find your modules
 dir = os.path.dirname(bpy.data.filepath)
@@ -589,7 +589,9 @@ main_dwelling_module.build_main_dwelling_simple_porch(origin=(0, -1, 0.2), show_
 
 # 1a. Build North Deck - extends 3m north from ground floor
 main_dwelling_module.build_north_deck(origin=(0, 1.65, 0.17), add_boundary_joist = True) #ground level deck
-main_dwelling_module.build_north_deck(origin=(0, 1.65, 2.8), DECK_EXTENSION=1.0, PILE_SIZE=0.0, BEARER_SIZE = (0.0, 0.0), add_boundary_joist = True)  # upper level deck
+
+if option != 5:
+    main_dwelling_module.build_north_deck(origin=(0, 1.65, 2.8), DECK_EXTENSION=1.0, PILE_SIZE=0.0, BEARER_SIZE = (0.0, 0.0), add_boundary_joist = True)  # upper level deck
 
 # 1b. Build boulder row along south edge of clearing
 #outdoor_structures.build_boulder_row(start_pos=(5, -7.8, 0), end_pos=(-5, -7.8, 0), spacing=0.4)
@@ -620,8 +622,9 @@ main_dwelling_module.build_north_deck(origin=(0, 1.65, 2.8), DECK_EXTENSION=1.0,
 # 4. Water Tank - 25000 liter cylindrical tank
 # Diameter: 3.5m, Height: 2.5m, Bottom center relative to Main Dwelling 
 #outdoor_structures.build_water_tank(origin=(3.0, -73.0, 6.0))  #behind björken
-outdoor_structures.build_water_tank(origin=(-14.5, -13, -0.2))
-outdoor_structures.build_water_tank(origin=(-18.0, -15, -0.2))
+#https://www.promax.co.nz/products/30000l-water-tank-xpress
+outdoor_structures.build_water_tank(origin=(-14.5, -13, -0.2), diameter=3.845, height=3.01)
+outdoor_structures.build_water_tank(origin=(-18.0, -15, -0.2), diameter=3.845, height=3.01)
 
 #https://www.devan.co.nz/shop/tanks/water-tanks-above/4000-ltr-tank-2/
 #outdoor_structures.build_water_tank(origin=(-3.0, -4.5, -0.0), diameter=1.7, height=1.8)
@@ -631,9 +634,9 @@ if option == 1:
     outdoor_structures.build_water_tank(origin=(-2.0, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
-if option == 3 or option == 4:
+if option == 3 or option == 4 or option == 5:
     outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
-    outdoor_structures.build_water_tank(origin=(1.45, -2.9, 2.75), diameter=0.55, height=1.8)
+    outdoor_structures.build_water_tank(origin=(1.45, -2.85, 2.75), diameter=0.55, height=1.8)
     # At a standard 550mm diameter, a wetback-capable 250L cylinder usually stands between 1,730mm and 1,740mm tall (approx. 1.74 metres). 
     # Brands like Rinnai NZ build their 250L stainless steel wetback models exactly to this 550mm x 1740mm specification. 
     # Putting a wetback cylinder in the attic of a two-storey house directly above a ground-floor log burner is structurally and mechanically complex. 

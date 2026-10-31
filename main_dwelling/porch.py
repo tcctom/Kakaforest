@@ -434,7 +434,7 @@ def build_porch_south_side(
     porch_roof_west = porch_west_x - PORCH_ROOF_OVERHANG
     porch_roof_east = porch_east_x + PORCH_ROOF_OVERHANG
 
-    POST_SIZE = 0.15
+    POST_SIZE = 0.2
     POST_INSET = 0.2
     post_y = south_wall_outer_y - PORCH_DEPTH
     post_height = porch_roof_low_height - deck_z
@@ -615,7 +615,7 @@ def build_verandah_west_side(
     miter_low_y = south_wall_outer_y - miter_run
 
     # Corner posts along outer edge (open verandah).
-    POST_SIZE = 0.15
+    POST_SIZE = 0.2
     POST_INSET = 0.2
     post_x = west_wall_outer_x - VERANDAH_DEPTH
     post_height = verandah_roof_low_height - deck_z
