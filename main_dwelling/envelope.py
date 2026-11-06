@@ -10,8 +10,10 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
     """Add a ridge beam, rafters, and a slim fascia to suggest a real roof build."""
     eave_height = oz + TOTAL_HEIGHT
     roof_drop = 0.06
-    ridge_height = eave_height + (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH)) - roof_drop
     pitch_rad = math.radians(ROOF_PITCH)
+    pitch_tan = math.tan(pitch_rad)
+    ridge_height = eave_height + (WIDTH / 2) * pitch_tan - roof_drop
+    eave_edge_z = eave_height - (overhang * pitch_tan)
 
     framing_mat = create_material("RoofFramingTimber", (0.55, 0.40, 0.25, 1.0))
     fascia_mat = create_material("RoofFasciaTrim", (0.68, 0.52, 0.35, 1.0))
@@ -31,10 +33,25 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
     rafter_depth = 0.24
     rafter_spacing = 0.6
     rafter_setback = 0.05
+    rafter_tail_cutback = 0.14
+    rafter_tail_cut_raise = 0.045
+    rafter_tail_cut_height = 1.0
+    rafter_plumb_cut_half_span = 0.6
+    rafter_plumb_cut_height = max(2.0, (ridge_height - eave_edge_z) + 2.0)
+    rafter_plumb_cut_center_z = (ridge_height + eave_edge_z) / 2
 
+    fascia_depth = 0.014
+    fascia_height = 0.03
+    fascia_z = eave_edge_z - fascia_height / 2 - 0.03
+
+    north_fascia_y = oy + (WIDTH / 2) + overhang + 0.002
+    south_fascia_y = oy - (WIDTH / 2) - overhang - 0.002
+    fascia_half_length = (LENGTH / 2) + overhang - 0.04
+    north_fascia_inner_y = north_fascia_y - (fascia_depth / 2)
+    south_fascia_inner_y = south_fascia_y + (fascia_depth / 2)
     north_eave_y = oy + (WIDTH / 2) + overhang
     south_eave_y = oy - (WIDTH / 2) - overhang
-    rafter_run = ((WIDTH / 2) + overhang) / math.cos(pitch_rad) - 0.17
+    base_rafter_run = ((WIDTH / 2) + overhang) / math.cos(pitch_rad) - 0.17
 
     rafter_count = max(2, int((LENGTH - 2 * rafter_setback) / rafter_spacing) + 1)
     start_x = ox - (LENGTH / 2) + rafter_setback
@@ -43,7 +60,13 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
 
     rafter_north_center_y = (oy + north_eave_y) / 2
     rafter_south_center_y = (oy + south_eave_y) / 2
-    rafter_center_z = ridge_height - ((WIDTH / 4) * math.tan(pitch_rad)) - (rafter_depth / 2) - 0.02
+    rafter_center_z = ((ridge_height + eave_edge_z) / 2) - (rafter_depth / 2) - 0.02
+    rafter_extra_run = 0.10
+    tip_y_from_depth = (rafter_depth / 2) * math.sin(pitch_rad)
+    cos_pitch = max(0.001, math.cos(pitch_rad))
+    min_north_run = 2 * (north_fascia_inner_y - rafter_north_center_y - tip_y_from_depth + 0.01) / cos_pitch
+    min_south_run = 2 * (rafter_south_center_y - south_fascia_inner_y - tip_y_from_depth + 0.01) / cos_pitch
+    rafter_run = max(base_rafter_run, min_north_run, min_south_run) + rafter_extra_run
 
     for i in range(rafter_count):
         rafter_x = start_x + (i * actual_spacing)
@@ -55,6 +78,52 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
         north_rafter.rotation_euler[0] = -pitch_rad
         bpy.ops.object.transform_apply(scale=True, rotation=True)
         north_rafter.data.materials.append(framing_mat)
+        bpy.ops.mesh.primitive_cube_add(
+            location=(
+                rafter_x,
+                north_fascia_inner_y + rafter_plumb_cut_half_span,
+                rafter_plumb_cut_center_z,
+            )
+        )
+        north_plumb_cut = bpy.context.active_object
+        north_plumb_cut.scale = (
+            (rafter_width / 2) + 0.08,
+            rafter_plumb_cut_half_span,
+            rafter_plumb_cut_height / 2,
+        )
+        bpy.ops.object.transform_apply(scale=True)
+        bool_mod = north_rafter.modifiers.new(name="OuterPlumbCut", type='BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.solver = 'EXACT'
+        bool_mod.object = north_plumb_cut
+        bpy.context.view_layer.objects.active = north_rafter
+        bpy.ops.object.modifier_apply(modifier=bool_mod.name)
+        bpy.data.objects.remove(north_plumb_cut, do_unlink=True)
+
+        north_tip_y = north_rafter.location.y + max(corner[1] for corner in north_rafter.bound_box)
+        north_bottom_z = north_rafter.location.z + min(corner[2] for corner in north_rafter.bound_box)
+        north_cut_top_z = north_bottom_z + rafter_tail_cut_raise
+        bpy.ops.mesh.primitive_cube_add(
+            location=(
+                rafter_x,
+                north_tip_y - (rafter_tail_cutback / 2),
+                north_cut_top_z - (rafter_tail_cut_height / 2),
+            )
+        )
+        north_cut = bpy.context.active_object
+        north_cut.scale = (
+            (rafter_width / 2) + 0.01,
+            (rafter_tail_cutback / 2) + 0.01,
+            rafter_tail_cut_height / 2,
+        )
+        bpy.ops.object.transform_apply(scale=True)
+        bool_mod = north_rafter.modifiers.new(name="OuterTailCut", type='BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.solver = 'EXACT'
+        bool_mod.object = north_cut
+        bpy.context.view_layer.objects.active = north_rafter
+        bpy.ops.object.modifier_apply(modifier=bool_mod.name)
+        bpy.data.objects.remove(north_cut, do_unlink=True)
 
         bpy.ops.mesh.primitive_cube_add(location=(rafter_x, rafter_south_center_y, rafter_center_z))
         south_rafter = bpy.context.active_object
@@ -63,25 +132,64 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
         south_rafter.rotation_euler[0] = pitch_rad
         bpy.ops.object.transform_apply(scale=True, rotation=True)
         south_rafter.data.materials.append(framing_mat)
+        bpy.ops.mesh.primitive_cube_add(
+            location=(
+                rafter_x,
+                south_fascia_inner_y - rafter_plumb_cut_half_span,
+                rafter_plumb_cut_center_z,
+            )
+        )
+        south_plumb_cut = bpy.context.active_object
+        south_plumb_cut.scale = (
+            (rafter_width / 2) + 0.08,
+            rafter_plumb_cut_half_span,
+            rafter_plumb_cut_height / 2,
+        )
+        bpy.ops.object.transform_apply(scale=True)
+        bool_mod = south_rafter.modifiers.new(name="OuterPlumbCut", type='BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.solver = 'EXACT'
+        bool_mod.object = south_plumb_cut
+        bpy.context.view_layer.objects.active = south_rafter
+        bpy.ops.object.modifier_apply(modifier=bool_mod.name)
+        bpy.data.objects.remove(south_plumb_cut, do_unlink=True)
 
-    fascia_depth = 0.035
-    fascia_height = 0.08
-    fascia_z = eave_height - fascia_height / 2 + 0.01
-
-    north_fascia_y = oy + (WIDTH / 2) + overhang + 0.01
-    south_fascia_y = oy - (WIDTH / 2) - overhang - 0.01
+        south_tip_y = south_rafter.location.y + min(corner[1] for corner in south_rafter.bound_box)
+        south_bottom_z = south_rafter.location.z + min(corner[2] for corner in south_rafter.bound_box)
+        south_cut_top_z = south_bottom_z + rafter_tail_cut_raise
+        bpy.ops.mesh.primitive_cube_add(
+            location=(
+                rafter_x,
+                south_tip_y + (rafter_tail_cutback / 2),
+                south_cut_top_z - (rafter_tail_cut_height / 2),
+            )
+        )
+        south_cut = bpy.context.active_object
+        south_cut.scale = (
+            (rafter_width / 2) + 0.01,
+            (rafter_tail_cutback / 2) + 0.01,
+            rafter_tail_cut_height / 2,
+        )
+        bpy.ops.object.transform_apply(scale=True)
+        bool_mod = south_rafter.modifiers.new(name="OuterTailCut", type='BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.solver = 'EXACT'
+        bool_mod.object = south_cut
+        bpy.context.view_layer.objects.active = south_rafter
+        bpy.ops.object.modifier_apply(modifier=bool_mod.name)
+        bpy.data.objects.remove(south_cut, do_unlink=True)
 
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_fascia_y, fascia_z))
     north_fascia = bpy.context.active_object
     north_fascia.name = "MainDwelling_Fascia_North"
-    north_fascia.scale = ((LENGTH / 2) - 0.08, fascia_depth / 2, fascia_height / 2)
+    north_fascia.scale = (fascia_half_length, fascia_depth / 2, fascia_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     north_fascia.data.materials.append(fascia_mat)
 
     bpy.ops.mesh.primitive_cube_add(location=(ox, south_fascia_y, fascia_z))
     south_fascia = bpy.context.active_object
     south_fascia.name = "MainDwelling_Fascia_South"
-    south_fascia.scale = ((LENGTH / 2) - 0.08, fascia_depth / 2, fascia_height / 2)
+    south_fascia.scale = (fascia_half_length, fascia_depth / 2, fascia_height / 2)
     bpy.ops.object.transform_apply(scale=True)
     south_fascia.data.materials.append(fascia_mat)
 
@@ -255,6 +363,7 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
     roof_height_from_eaves = (WIDTH / 2) * math.tan(math.radians(ROOF_PITCH))
     eave_height = oz + TOTAL_HEIGHT
     ridge_height = eave_height + roof_height_from_eaves
+    pitch_tan = math.tan(math.radians(ROOF_PITCH))
 
     roof_mat = get_metal_roof_material()
     interior_wall_mat = create_material("InteriorWallPaint", (0.96, 0.94, 0.90, 1.0))
@@ -380,17 +489,18 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         bpy.context.collection.objects.link(obj)
 
         overhang = 0.15
+        eave_z = eave_height - (overhang * pitch_tan)
         half_length = (LENGTH + 2 * overhang) / 2
         north_eave_y = oy + WIDTH / 2 + overhang
         south_eave_y = oy - WIDTH / 2 - overhang
 
         verts = [
-            (ox - half_length, north_eave_y, eave_height),
-            (ox + half_length, north_eave_y, eave_height),
+            (ox - half_length, north_eave_y, eave_z),
+            (ox + half_length, north_eave_y, eave_z),
             (ox - half_length, oy, ridge_height),
             (ox + half_length, oy, ridge_height),
-            (ox - half_length, south_eave_y, eave_height),
-            (ox + half_length, south_eave_y, eave_height),
+            (ox - half_length, south_eave_y, eave_z),
+            (ox + half_length, south_eave_y, eave_z),
         ]
 
         faces = [
@@ -423,17 +533,18 @@ def _create_gable_roof(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH, ROOF
         obj = bpy.data.objects.new("MainDwelling_Roof", mesh)
         bpy.context.collection.objects.link(obj)
 
+        eave_z = eave_height - (ROOF_OVERHANG * pitch_tan)
         half_length = (LENGTH + 2 * ROOF_OVERHANG) / 2
         north_eave_y = oy + WIDTH / 2 + ROOF_OVERHANG
         south_eave_y = oy - WIDTH / 2 - ROOF_OVERHANG
 
         verts = [
-            (ox - half_length, north_eave_y, eave_height),
-            (ox + half_length, north_eave_y, eave_height),
+            (ox - half_length, north_eave_y, eave_z),
+            (ox + half_length, north_eave_y, eave_z),
             (ox - half_length, oy, ridge_height),
             (ox + half_length, oy, ridge_height),
-            (ox - half_length, south_eave_y, eave_height),
-            (ox + half_length, south_eave_y, eave_height),
+            (ox - half_length, south_eave_y, eave_z),
+            (ox + half_length, south_eave_y, eave_z),
         ]
 
         faces = [
