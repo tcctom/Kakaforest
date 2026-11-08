@@ -225,11 +225,11 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     if option == 5:
         add_window("MD_GF_NorthWall", (ox - 1.9, ground_north_wall_outer_face, oz+1.1), width=2.7, height=2.1, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
         add_window("MD_GF_NorthWall", (ox + 2.95, ground_north_wall_outer_face, oz+1.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_NorthWall", (ox - 1.9, first_north_wall_outer_face, window_z_first+0.55), width=2.7, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_NorthWall", (ox + 2.95, first_north_wall_outer_face, window_z_first+0.55), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
-        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 2.6, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
-        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.6, window_z_first + 0.4), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+        add_window("MD_FF_NorthWall", (ox - 1.9, first_north_wall_outer_face, window_z_first+0.5), width=2.7, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_FF_NorthWall", (ox + 2.95, first_north_wall_outer_face, window_z_first+0.5), width=1.5, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='-Y')
+        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy + 2.6, window_z_first + 0.5), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy, window_z_first + 0.5), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
+        add_window("MD_FF_EastWall", (ox + LENGTH / 2, oy - 2.6, window_z_first + 0.5), width=0.6, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
 
 
     #add_window("MD_GF_EastWall", (ox + LENGTH / 2, oy + 0.8, oz + 1.65), width=1.2, height=0.7, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='-X')
@@ -283,13 +283,12 @@ def _add_exterior_windows_and_doors(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, G
     if option == 4 or option == 5:
         #south wall windows - option 4/5
         #add_door("MD_GF_SouthWall", (ox - 0.7, south_wall_y, oz+0.1), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_GF_SouthWall", (ox - 3.25, south_wall_y, oz + 1.5), width=1.1, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_opening("MD_GF_SouthWall", (ox - 0.6, south_wall_y, oz+1.0), width=0.8, height=2.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-        add_window("MD_GF_SouthWall", (ox - 3.15, south_wall_y, oz + 1.5), width=1.2, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
-        #add_window("MD_FF_SouthWall", (ox + 3.2, south_wall_y, window_z_first + 0.5), width=0.7, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-        add_window("MD_FF_SouthWall", (ox - 0.6, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-        add_window("MD_FF_SouthWall", (ox - 3.15, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
-        add_window("MD_FF_SouthWall", (ox + 1.95, south_wall_y, window_z_first + 0.5), width=1.2, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox - 3.25, south_wall_y, window_z_first + 0.5), width=1.1, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox - 0.8, south_wall_y, window_z_first + 0.5), width=1.1, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
+        add_window("MD_FF_SouthWall", (ox + 1.65, south_wall_y, window_z_first + 0.5), width=1.1, height=1.2, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
         add_window("MD_FF_SouthWall", (ox + 4.15, south_wall_y, window_z_first + 0.7), width=0.6, height=0.8, depth=EXTERIOR_WALL_THICKNESS, axis='Y', inward_offset='+Y')
 
         add_window("MD_GF_WestWall", (ox - LENGTH / 2, oy, oz + 1.55), width=1.5, height=1.0, depth=EXTERIOR_WALL_THICKNESS, axis='X', inward_offset='+X')
