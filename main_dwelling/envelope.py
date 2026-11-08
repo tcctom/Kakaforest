@@ -32,7 +32,7 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
     rafter_width = 0.06
     rafter_depth = 0.24
     rafter_spacing = 0.6
-    rafter_setback = 0.05
+    rafter_setback = -0.05  # Negative setback to extend rafters beyond the wall edges
     rafter_tail_cutback = 0.14
     rafter_tail_cut_raise = 0.045
     rafter_tail_cut_height = 1.0
@@ -40,9 +40,9 @@ def _add_gable_roof_framing(ox, oy, oz, WIDTH, LENGTH, TOTAL_HEIGHT, ROOF_PITCH,
     rafter_plumb_cut_height = max(2.0, (ridge_height - eave_edge_z) + 2.0)
     rafter_plumb_cut_center_z = (ridge_height + eave_edge_z) / 2
 
-    fascia_depth = 0.014
-    fascia_height = 0.03
-    fascia_z = eave_edge_z - fascia_height / 2 - 0.03
+    fascia_depth = 0.025
+    fascia_height = 0.18
+    fascia_z = eave_edge_z - fascia_height / 2 - 0.01
 
     north_fascia_y = oy + (WIDTH / 2) + overhang + 0.002
     south_fascia_y = oy - (WIDTH / 2) - overhang - 0.002

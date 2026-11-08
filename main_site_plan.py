@@ -634,13 +634,17 @@ if option == 1:
     outdoor_structures.build_water_tank(origin=(-2.0, -5.1, -0.0), diameter=0.9, height=2.0)
 if option == 2:
     outdoor_structures.build_water_tank(origin=(2.6, -5.1, -0.0), diameter=0.9, height=2.0)
-if option == 3 or option == 4 or option == 5:
+if option == 3 or option == 4:
     outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
     outdoor_structures.build_water_tank(origin=(1.45, -2.85, 2.75), diameter=0.55, height=1.8)
     # At a standard 550mm diameter, a wetback-capable 250L cylinder usually stands between 1,730mm and 1,740mm tall (approx. 1.74 metres). 
     # Brands like Rinnai NZ build their 250L stainless steel wetback models exactly to this 550mm x 1740mm specification. 
     # Putting a wetback cylinder in the attic of a two-storey house directly above a ground-floor log burner is structurally and mechanically complex. 
     # Carefully evaluate the physical setup and the plumbing mechanics before committing to this design.
+if option == 5:
+    outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
+    outdoor_structures.build_water_tank(origin=(1.4, -1.2, 2.75), diameter=0.55, height=1.8)
+
 
 from driveway import create_sloping_driveway  
 
