@@ -247,7 +247,13 @@ def _create_staircase_southmiddle3(ox, oy, oz,  floor_mat):
     #create_step(ox-5 * STEP_TREAD - landing_x_offset, oy + landing_y_offset + 3*STEP_TREAD , oz, 10, floor_mat, STEP_WIDTH, STEP_TREAD,STEP_RISE)
 
 def _create_staircase_southmiddle4(ox, oy, oz,  floor_mat):
-    """Create a staircase near south-middle."""
+    """Create a staircase near south-middle.
+    
+    Args:
+        ox, oy, oz: Origin coordinates
+        floor_mat: Material for the steps
+        option: Option number (default is 4)
+    """
     STEP_TREAD = 0.24
     STEP_WIDTH = 0.95
     STEP_RISE = 0.186
@@ -954,7 +960,8 @@ def _create_floors4(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
 
 
 def _create_floors5(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, floor_mat):
-    """Option 5: match option 4 layout, but keep the upstairs floor footprint full-width with no recessed balcony. The ground floor north recess remains unchanged."""
+    """Option 5: match option 4 layout, but keep the upstairs floor footprint full-width with no recessed balcony. 
+    The ground floor north recess remains unchanged."""
     print("\n" + "="*50)
     print(f"STARTING OPTION 5 FLOOR CREATION at origin ({ox:.2f}, {oy:.2f}, {oz:.2f}) with dimensions {LENGTH:.2f}m × {WIDTH:.2f}m")
     print("="*50)
@@ -991,7 +998,7 @@ def _create_floors5(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WAL
     first_floor_thickness = 0.2
     first_floor_center_z = first_floor_z + first_floor_thickness / 2
 
-    stairwell_width = 1.2
+    stairwell_width = 1.4
     stairwell_length = 3.1
 
     opening_west_x = ox - floor_length / 2 + 4.06
