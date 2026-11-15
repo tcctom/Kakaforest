@@ -643,7 +643,7 @@ if option == 3 or option == 4:
     # Carefully evaluate the physical setup and the plumbing mechanics before committing to this design.
 if option == 5:
     outdoor_structures.build_water_tank(origin=(3.7, -5.4, 0.15), diameter=0.9, height=2.0)
-    outdoor_structures.build_water_tank(origin=(1.35, -1.1, 2.75), diameter=0.55, height=1.8)
+    outdoor_structures.build_water_tank(origin=(1.35, -1.55, 2.75), diameter=0.55, height=1.8)
 
 
 from driveway import create_sloping_driveway  

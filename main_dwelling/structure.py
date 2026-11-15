@@ -6,6 +6,40 @@ from materials import get_interior_wall_material
 from main_dwelling.materials_nodes import create_laminate_floor_material, create_material
 
 
+def _add_ground_floor_north_recess_interior_cladding(
+    ox,
+    oy,
+    oz,
+    WIDTH,
+    LENGTH,
+    GROUND_FLOOR_HEIGHT,
+    EXTERIOR_WALL_THICKNESS,
+    exterior_mat,
+):
+    """Add exterior-style interior cladding on the north-most 1m of GF east/west walls."""
+    strip_depth = min(1.0, WIDTH)
+    strip_thickness = 0.02
+
+    strip_center_y = oy + WIDTH / 2 - strip_depth / 2
+    strip_center_z = oz + GROUND_FLOOR_HEIGHT / 2
+    east_interior_face_x = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
+    west_interior_face_x = ox - LENGTH / 2 + EXTERIOR_WALL_THICKNESS
+
+    bpy.ops.mesh.primitive_cube_add(location=(east_interior_face_x - strip_thickness / 2, strip_center_y, strip_center_z))
+    east_strip = bpy.context.active_object
+    east_strip.name = "MD_GF_EastWall_InteriorNorthCladding"
+    east_strip.scale = (strip_thickness / 2, strip_depth / 2, GROUND_FLOOR_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    east_strip.data.materials.append(exterior_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(west_interior_face_x + strip_thickness / 2, strip_center_y, strip_center_z))
+    west_strip = bpy.context.active_object
+    west_strip.name = "MD_GF_WestWall_InteriorNorthCladding"
+    west_strip.scale = (strip_thickness / 2, strip_depth / 2, GROUND_FLOOR_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    west_strip.data.materials.append(exterior_mat)
+
+
 def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, FIRST_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, potius_mat, option=1):
     """Create all exterior walls for ground and first floors with recessed north wall."""
     wall_depth_ground = ENCLOSED_WIDTH - 2 * EXTERIOR_WALL_THICKNESS
@@ -60,6 +94,17 @@ def _create_exterior_walls(ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLO
     west_wall_ground.data.materials.append(potius_mat)
     west_wall_ground.data.materials.append(interior_wall_mat)
     west_wall_ground.data.polygons[2].material_index = 1
+
+    _add_ground_floor_north_recess_interior_cladding(
+        ox,
+        oy,
+        oz,
+        WIDTH,
+        LENGTH,
+        GROUND_FLOOR_HEIGHT,
+        EXTERIOR_WALL_THICKNESS,
+        potius_mat,
+    )
 
     bpy.ops.mesh.primitive_cube_add(location=(ox, north_wall_first_y, first_floor_z + north_wall_first_height / 2))
     north_wall_first = bpy.context.active_object

@@ -547,7 +547,7 @@ def _furnish_master_ensuite(ox, oy, oz, WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTE
 
     create_vanity(
         east_edge=ensuite_east - 0.05,
-        south_edge=ensuite_south +1.2,
+        south_edge=ensuite_south + 1.5,
         floor_top=first_floor_top,
         basin_material=white_mat,
         chrome_material=chrome_mat,

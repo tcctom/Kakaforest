@@ -895,6 +895,7 @@ def show_ground_floor_plan(option=1, hide_site_elements=True):
     if option == 4 or option == 5:
         create_room_label('Kitchen', (-2.8, -3.3, 1.3), size=0.4)
         create_room_label('Utility', (1.8, -5.5, 1.3), size=0.4)
+        create_room_label('Fr', (-1.7, -4.1, 1.3), size=0.3)  # Possibly 'Fridge' or 'Freezer'
 
     
     # Clean up old dimension lines (in case names were changed)
@@ -987,6 +988,8 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     #if option == 4:
     #    create_room_label('HWC', (0.2, -0.8, 3.8), size=0.3)
 
+    if option == 5:
+        create_room_label('HWC', (1.35, -1.55, 3.8), size=0.2)
     
     # Clean up old dimension lines (in case names were changed)
     cleanup_dimensions()
@@ -996,12 +999,17 @@ def show_first_floor_plan(option=1, hide_site_elements=True):
     # Example measurements - adjust to match your actual wall positions
     # Format: create_dimension_line((x1, y1), (x2, y2), offset, text_size, z_height, name)
     create_dimension_line((-4.8, 2.5), (4.8, 2.5), offset=0.9, text_size=0.3, z_height=3.8, name_suffix="north_wall")
-
     create_dimension_line((4.8, 2.65), (4.8, -4.65), offset=1.4, text_size=0.3, z_height=3.8, name_suffix="east_wall")
-    create_dimension_line((4.8, 2.65), (4.8, 1.65), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
-    create_dimension_line((4.8, 1.5), (4.8, -2.4), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
-    create_dimension_line((4.8, -2.5), (4.8, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
     create_dimension_line((2.65, -4.65), (4.65, -4.65), offset=-0.4, text_size=0.3, z_height=3.8, name_suffix="bath_eastwest_length")
+
+    if option != 5:
+        create_dimension_line((4.8, 2.65), (4.8, 1.65), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
+        create_dimension_line((4.8, 1.5), (4.8, -2.4), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+        create_dimension_line((4.8, -2.5), (4.8, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
+    if option == 5:
+        #create_dimension_line((4.8, 2.65), (4.8, 1.65), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="balcony_northsouth_length")
+        create_dimension_line((4.8, 2.5), (4.8, -1.9), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="mb_northsouth_length")
+        create_dimension_line((4.8, -2.0), (4.8, -4.5), offset=0.6, text_size=0.3, z_height=3.8, name_suffix="bath_northsouth_length")
 
     if option == 1 or option == 2:
         create_dimension_line((0.3, 2.5), (4.3, 2.5), offset=0.4, text_size=0.3, z_height=3.8, name_suffix="mb_width")
