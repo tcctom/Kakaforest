@@ -8,6 +8,7 @@ from main_dwelling.exterior_details import add_first_floor_balcony_railing
 from main_dwelling.furnishings import (
     _create_dining_table,
     _create_kitchen_bench,
+    _create_utility_bench_with_washer,
     _furnish_main_bathroom,
     _furnish_master_bedroom,
     _furnish_master_ensuite,
@@ -66,6 +67,8 @@ def run_main_dwelling_build_pipeline(
     if option == 4 or option == 5:
         _create_kitchen_bench(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS)
         _create_dining_table(ox-2.0, oy-0.2, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TABLE_LENGTH = 1.8, TABLE_WIDTH = 0.9)
+
+    _create_utility_bench_with_washer(ox, oy, oz, WIDTH)
 
     # Exterior openings
     _add_exterior_windows_and_doors( ox, oy, oz, WIDTH, ENCLOSED_WIDTH, LENGTH, GROUND_FLOOR_HEIGHT, EXTERIOR_WALL_THICKNESS, NORTH_RECESS, option=option)

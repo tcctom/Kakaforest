@@ -367,6 +367,91 @@ def _create_dining_table(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS, TAB
     print(f"Dining table created at ({table_x:.2f}, {table_y:.2f}, {oz}): {TABLE_LENGTH}m × {TABLE_WIDTH}m × {TABLE_HEIGHT}m")
 
 
+def _create_utility_bench_with_washer(ox, oy, oz, WIDTH):
+    """Create utility-room bench along porch east wall with a south-end washer."""
+    PORCH_DEPTH = 1.8
+    PORCH_WALL_THICKNESS = 0.15
+    BENCH_LENGTH_NS = 1.75
+    BENCH_DEPTH_EW = 0.62
+    BENCH_HEIGHT = 0.9
+    BENCH_THICKNESS = 0.05
+    WASHER_WIDTH_NS = 0.62
+    WASHER_DEPTH_EW = 0.60
+    WASHER_HEIGHT = 0.85
+    WASHER_PLINTH = 0.02
+    WASHER_CLEARANCE_NS = 0.02
+
+    floor_top = oz - 0.1
+    south_wall_outer_y = oy - WIDTH / 2
+
+    porch_east_wall_center_x = ox + 3.0
+    east_wall_inner_face_x = porch_east_wall_center_x - PORCH_WALL_THICKNESS / 2
+    bench_center_x = east_wall_inner_face_x - BENCH_DEPTH_EW / 2
+
+    south_wall_center_y = south_wall_outer_y - PORCH_DEPTH
+    south_wall_inner_face_y = south_wall_center_y + PORCH_WALL_THICKNESS / 2
+    bench_start_south_y = south_wall_inner_face_y + 0.03
+    bench_center_y = bench_start_south_y + BENCH_LENGTH_NS / 2
+    bench_end_north_y = bench_start_south_y + BENCH_LENGTH_NS
+
+    bench_mat = get_kitchen_bench_material()
+    cabinet_mat = get_kitchen_cabinet_material()
+    washer_body_mat = create_material("UtilityWasherBody", (0.90, 0.91, 0.93, 1.0))
+    washer_glass_mat = create_material("UtilityWasherDoorGlass", (0.20, 0.24, 0.28, 1.0))
+    washer_trim_mat = create_material("UtilityWasherTrim", (0.55, 0.57, 0.60, 1.0))
+
+    cabinet_height = BENCH_HEIGHT - BENCH_THICKNESS
+    washer_bay_north_y = bench_start_south_y + WASHER_WIDTH_NS + WASHER_CLEARANCE_NS
+    north_cabinet_length = max(0.0, bench_end_north_y - washer_bay_north_y)
+    if north_cabinet_length > 0.01:
+        north_cabinet_center_y = washer_bay_north_y + north_cabinet_length / 2
+        bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, north_cabinet_center_y, floor_top + cabinet_height / 2))
+        utility_cabinet = bpy.context.active_object
+        utility_cabinet.name = "MainDwelling_UtilityBench_Cabinet_North"
+        utility_cabinet.scale = (BENCH_DEPTH_EW / 2, north_cabinet_length / 2, cabinet_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+        utility_cabinet.data.materials.append(cabinet_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, bench_center_y, floor_top + BENCH_HEIGHT - BENCH_THICKNESS / 2))
+    utility_top = bpy.context.active_object
+    utility_top.name = "MainDwelling_UtilityBench_Top"
+    utility_top.scale = ((BENCH_DEPTH_EW + 0.02) / 2, (BENCH_LENGTH_NS + 0.02) / 2, BENCH_THICKNESS / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    utility_top.data.materials.append(bench_mat)
+
+    washer_center_y = bench_start_south_y + WASHER_WIDTH_NS / 2
+    washer_center_z = floor_top + WASHER_PLINTH + WASHER_HEIGHT / 2
+    bpy.ops.mesh.primitive_cube_add(location=(bench_center_x, washer_center_y, washer_center_z))
+    washer_body = bpy.context.active_object
+    washer_body.name = "MainDwelling_UtilityRoom_WashingMachine"
+    washer_body.scale = (WASHER_DEPTH_EW / 2, WASHER_WIDTH_NS / 2, WASHER_HEIGHT / 2)
+    bpy.ops.object.transform_apply(scale=True)
+    washer_body.data.materials.append(washer_body_mat)
+
+    washer_front_x = bench_center_x - WASHER_DEPTH_EW / 2 + 0.01
+    washer_front_z = floor_top + WASHER_PLINTH + WASHER_HEIGHT * 0.55
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=0.16,
+        depth=0.012,
+        location=(washer_front_x, washer_center_y, washer_front_z),
+        rotation=(0.0, math.radians(90), 0.0),
+    )
+    washer_door = bpy.context.active_object
+    washer_door.name = "MainDwelling_UtilityRoom_WasherDoor"
+    washer_door.data.materials.append(washer_glass_mat)
+
+    bpy.ops.mesh.primitive_cube_add(location=(washer_front_x + 0.002, washer_center_y, floor_top + WASHER_PLINTH + WASHER_HEIGHT - 0.07))
+    washer_panel = bpy.context.active_object
+    washer_panel.name = "MainDwelling_UtilityRoom_WasherPanel"
+    washer_panel.scale = (0.006, WASHER_WIDTH_NS * 0.38, 0.03)
+    bpy.ops.object.transform_apply(scale=True)
+    washer_panel.data.materials.append(washer_trim_mat)
+
+    print(
+        f"Utility bench created along porch east wall: {BENCH_LENGTH_NS}m N-S with open washer bay at south end"
+    )
+
+
 def _furnish_main_bathroom(ox, oy, oz, WIDTH, LENGTH, EXTERIOR_WALL_THICKNESS):
     """Furnish main bathroom with shower components."""
     east_interior_face = ox + LENGTH / 2 - EXTERIOR_WALL_THICKNESS
